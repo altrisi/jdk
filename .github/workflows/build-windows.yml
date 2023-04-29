@@ -90,14 +90,6 @@ jobs:
         with:
           platform: windows-x64
 
-      - name: 'Get JTReg'
-        id: jtreg
-        uses: ./.github/actions/get-jtreg
-
-      - name: 'Get GTest'
-        id: gtest
-        uses: ./.github/actions/get-gtest
-
       - name: 'Check toolchain installed'
         id: toolchain-check
         run: |
@@ -126,8 +118,6 @@ jobs:
           ${{ matrix.flags }}
           --with-version-opt=${GITHUB_ACTOR}-${GITHUB_SHA}
           --with-boot-jdk=${{ steps.bootjdk.outputs.path }}
-          --with-jtreg=${{ steps.jtreg.outputs.path }}
-          --with-gtest=${{ steps.gtest.outputs.path }}
           --with-msvc-toolset-version=${{ inputs.msvc-toolset-version }}
           --with-jmod-compress=zip-1
           ${{ inputs.extra-conf-options }} ${{ inputs.configure-arguments }} || (
