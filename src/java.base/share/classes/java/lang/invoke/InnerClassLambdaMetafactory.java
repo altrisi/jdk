@@ -26,6 +26,7 @@
 package java.lang.invoke;
 
 import jdk.internal.misc.CDS;
+import jdk.internal.misc.Unsafe;
 import jdk.internal.org.objectweb.asm.*;
 import jdk.internal.util.ClassFileDumper;
 import sun.invoke.util.BytecodeDescriptor;
@@ -81,6 +82,8 @@ import static jdk.internal.org.objectweb.asm.Opcodes.*;
 
     // For dumping generated classes to disk, for debugging purposes
     private static final ClassFileDumper lambdaProxyClassFileDumper;
+    
+    private static final Unsafe U = Unsafe.getUnsafe();
 
     private static final boolean disableEagerInitialization;
 
@@ -228,19 +231,25 @@ import static jdk.internal.org.objectweb.asm.Opcodes.*;
                         "Exception finding " + LAMBDA_INSTANCE_FIELD + " static field", e);
             }
         } else {
-            try {
-                MethodHandle mh = caller.findConstructor(innerClass, constructorType);
-                if (factoryType.parameterCount() == 0) {
-                    // In the case of a non-capturing lambda, we optimize linkage by pre-computing a single instance
-                    Object inst = mh.asType(methodType(Object.class)).invokeExact();
-                    return new ConstantCallSite(MethodHandles.constant(interfaceClass, inst));
-                } else {
-                    return new ConstantCallSite(mh.asType(factoryType));
+            if (factoryType.parameterCount() == 0) {
+                // In the case of a non-capturing lambda, we optimize linkage by pre-computing a single instance.
+                // We use Unsafe given we don't generate a constructor for it to save class space
+            	Object inst;
+            	try {
+            		inst = U.allocateInstance(innerClass);
+            	} catch (InstantiationException e) {
+            		throw new LambdaConversionException("Exception instantiating lambda object", e);
+            	}
+                return new ConstantCallSite(MethodHandles.constant(interfaceClass, inst));
+            } else {
+            	try {
+            		MethodHandle mh = caller.findConstructor(innerClass, constructorType);
+            		return new ConstantCallSite(mh.asType(factoryType));
+            	} catch (ReflectiveOperationException e) {
+                    throw new LambdaConversionException("Exception finding constructor", e);
+                } catch (Throwable e) {
+                    throw new LambdaConversionException("Exception instantiating lambda object", e);
                 }
-            } catch (ReflectiveOperationException e) {
-                throw new LambdaConversionException("Exception finding constructor", e);
-            } catch (Throwable e) {
-                throw new LambdaConversionException("Exception instantiating lambda object", e);
             }
         }
     }
@@ -327,7 +336,11 @@ import static jdk.internal.org.objectweb.asm.Opcodes.*;
             fv.visitEnd();
         }
 
-        generateConstructor();
+        if (factoryType.parameterCount() > 0 || disableEagerInitialization) {
+            // if the lambda doesn't capture, we don't generate the constructor to save class space
+            // unless disableEagerInitialization is enabled, given that calls the constructor
+            generateConstructor();
+        }
 
         if (factoryType.parameterCount() == 0 && disableEagerInitialization) {
             generateClassInitializer();
