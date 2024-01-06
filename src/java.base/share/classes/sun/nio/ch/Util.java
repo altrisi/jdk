@@ -37,6 +37,7 @@ import java.security.PrivilegedAction;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.Set;
+import java.util.Arrays;
 
 import jdk.internal.misc.TerminatingThreadLocal;
 import jdk.internal.misc.Unsafe;
@@ -333,11 +334,7 @@ public class Util {
     static ByteBuffer[] subsequence(ByteBuffer[] bs, int offset, int length) {
         if ((offset == 0) && (length == bs.length))
             return bs;
-        int n = length;
-        ByteBuffer[] bs2 = new ByteBuffer[n];
-        for (int i = 0; i < n; i++)
-            bs2[i] = bs[offset + i];
-        return bs2;
+        return Arrays.copyOfRange(bs, offset, offset + length);
     }
 
     static <E> Set<E> ungrowableSet(final Set<E> s) {
