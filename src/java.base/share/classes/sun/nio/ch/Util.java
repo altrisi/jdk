@@ -380,14 +380,6 @@ public class Util {
 
     private static final Unsafe unsafe = Unsafe.getUnsafe();
 
-    private static byte _get(long a) {
-        return unsafe.getByte(a);
-    }
-
-    private static void _put(long a, byte b) {
-        unsafe.putByte(a, b);
-    }
-
     static void erase(ByteBuffer bb) {
         unsafe.setMemory(((DirectBuffer)bb).address(), bb.capacity(), (byte)0);
     }
