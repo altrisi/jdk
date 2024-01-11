@@ -1300,14 +1300,14 @@ public class FileChannelImpl
             if ((!writable) || (prot == MAP_RO))
                 return Util.newMappedByteBufferR(0, 0, dummy, null, isSync);
             else
-                return SharedSecrets.getJavaNioAccess().newMappedByteBuffer(0, 0, dummy, null, isSync);
+                return SharedSecrets.getJavaNioAccess().newDirectByteBuffer(0, 0, dummy, null, isSync);
         } else if ((!writable) || (prot == MAP_RO)) {
             return Util.newMappedByteBufferR((int)unmapper.capacity(),
                     unmapper.address(),
                     unmapper.fileDescriptor(),
                     unmapper, unmapper.isSync());
         } else {
-            return SharedSecrets.getJavaNioAccess().newMappedByteBuffer((int)unmapper.capacity(),
+            return SharedSecrets.getJavaNioAccess().newDirectByteBuffer((int)unmapper.capacity(),
                     unmapper.address(),
                     unmapper.fileDescriptor(),
                     unmapper, unmapper.isSync());
