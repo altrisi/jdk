@@ -78,8 +78,8 @@ inline void frame::setup() {
   // Continuation frames on the java heap are not aligned.
   // When thawing interpreted frames the sp can be unaligned (see new_stack_frame()).
   assert(_on_heap ||
-         (is_aligned(_sp, alignment_in_bytes) || is_interpreted_frame()) &&
-         (is_aligned(_fp, alignment_in_bytes) || !is_fully_initialized()),
+         ((is_aligned(_sp, alignment_in_bytes) || is_interpreted_frame()) &&
+          (is_aligned(_fp, alignment_in_bytes) || !is_fully_initialized())),
          "invalid alignment sp:" PTR_FORMAT " unextended_sp:" PTR_FORMAT " fp:" PTR_FORMAT, p2i(_sp), p2i(_unextended_sp), p2i(_fp));
 }
 
@@ -224,7 +224,7 @@ inline oop* frame::interpreter_frame_temp_oop_addr() const {
 }
 
 inline intptr_t* frame::interpreter_frame_esp() const {
-  return (intptr_t*) at(ijava_idx(esp));
+  return (intptr_t*) at_relative(ijava_idx(esp));
 }
 
 // Convenient setters
@@ -235,7 +235,12 @@ inline void frame::interpreter_frame_set_monitor_end(BasicObjectLock* end) {
 }
 
 inline void frame::interpreter_frame_set_cpcache(ConstantPoolCache* cp)       { *interpreter_frame_cache_addr() = cp; }
-inline void frame::interpreter_frame_set_esp(intptr_t* esp)                   { get_ijava_state()->esp = (intptr_t) esp; }
+
+inline void frame::interpreter_frame_set_esp(intptr_t* esp) {
+  assert(is_interpreted_frame(), "interpreted frame expected");
+  // set relativized esp
+  get_ijava_state()->esp = (intptr_t) (esp - fp());
+}
 
 inline void frame::interpreter_frame_set_top_frame_sp(intptr_t* top_frame_sp) {
   assert(is_interpreted_frame(), "interpreted frame expected");
@@ -252,7 +257,7 @@ inline intptr_t* frame::interpreter_frame_expression_stack() const {
 
 // top of expression stack
 inline intptr_t* frame::interpreter_frame_tos_address() const {
-  return (intptr_t*)at(ijava_idx(esp)) + Interpreter::stackElementWords;
+  return interpreter_frame_esp() + Interpreter::stackElementWords;
 }
 
 inline int frame::interpreter_frame_monitor_size() {
@@ -354,20 +359,6 @@ inline void frame::set_saved_oop_result(RegisterMap* map, oop obj) {
   guarantee(result_adr != nullptr, "bad register save location");
 
   *result_adr = obj;
-}
-
-inline const ImmutableOopMap* frame::get_oop_map() const {
-  if (_cb == nullptr) return nullptr;
-  if (_cb->oop_maps() != nullptr) {
-    NativePostCallNop* nop = nativePostCallNop_at(_pc);
-    if (nop != nullptr && nop->displacement() != 0) {
-      int slot = ((nop->displacement() >> 24) & 0xff);
-      return _cb->oop_map_for_slot(slot, _pc);
-    }
-    const ImmutableOopMap* oop_map = OopMapSet::find_map(this);
-    return oop_map;
-  }
-  return nullptr;
 }
 
 inline int frame::compiled_frame_stack_argsize() const {
