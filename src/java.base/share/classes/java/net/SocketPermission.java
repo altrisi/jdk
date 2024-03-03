@@ -45,6 +45,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import sun.net.util.IPAddressUtil;
 import sun.net.PortConfig;
 import sun.security.action.GetBooleanAction;
+import sun.security.action.GetIntegerAction;
 import sun.security.util.RegisteredDomain;
 import sun.security.util.SecurityConstants;
 import sun.security.util.Debug;
@@ -242,8 +243,8 @@ public final class SocketPermission extends Permission
 
     // lazy initializer
     private static class EphemeralRange {
-        static final int low = initEphemeralPorts("low", DEF_EPH_LOW);
-            static final int high = initEphemeralPorts("high", PORT_MAX);
+        static final int low = GetIntegerAction.privilegedGetProperty("jdk.net.ephemeralPortRange.low", PortConfig.getLower());
+            static final int high = GetIntegerAction.privilegedGetProperty("jdk.net.ephemeralPortRange.high", PortConfig.getUpper());;
     };
 
     private static synchronized Debug getDebug() {
@@ -1214,29 +1215,6 @@ public final class SocketPermission extends Permission
         // Read in the action, then initialize the rest
         s.defaultReadObject();
         init(getName(),getMask(actions));
-    }
-
-    /**
-     * Check the system/security property for the ephemeral port range
-     * for this system. The suffix is either "high" or "low"
-     */
-    @SuppressWarnings("removal")
-    private static int initEphemeralPorts(String suffix, int defval) {
-        return AccessController.doPrivileged(
-            new PrivilegedAction<>(){
-                public Integer run() {
-                    int val = Integer.getInteger(
-                            "jdk.net.ephemeralPortRange."+suffix, -1
-                    );
-                    if (val != -1) {
-                        return val;
-                    } else {
-                        return suffix.equals("low") ?
-                            PortConfig.getLower() : PortConfig.getUpper();
-                    }
-                }
-            }
-        );
     }
 
     /**
