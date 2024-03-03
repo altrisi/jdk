@@ -40,6 +40,9 @@ import java.security.PrivilegedAction;
 import com.sun.jndi.ldap.pool.PoolCleaner;
 import com.sun.jndi.ldap.pool.Pool;
 import jdk.internal.misc.InnocuousThread;
+import sun.security.action.GetIntegerAction;
+import sun.security.action.GetLongAction;
+import sun.security.action.GetPropertyAction;
 
 /**
  * Contains utilities for managing connection pools of LdapClient.
@@ -400,21 +403,15 @@ public final class LdapPoolManager {
         }
     }
 
-    @SuppressWarnings("removal")
     private static final String getProperty(final String propName, final String defVal) {
-        PrivilegedAction<String> pa = () -> System.getProperty(propName, defVal);
-        return AccessController.doPrivileged(pa);
+        return GetPropertyAction.privilegedGetProperty(propName, defVal);
     }
 
-    @SuppressWarnings("removal")
     private static final int getInteger(final String propName, final int defVal) {
-        PrivilegedAction<Integer> pa = () -> Integer.getInteger(propName, defVal);
-        return AccessController.doPrivileged(pa);
+        return GetIntegerAction.privilegedGetProperty(propName, defVal);
     }
 
-    @SuppressWarnings("removal")
     private static final long getLong(final String propName, final long defVal) {
-        PrivilegedAction<Long> pa = () -> Long.getLong(propName, defVal);
-        return AccessController.doPrivileged(pa);
+        return GetLongAction.privilegedGetProperty(propName, defVal);
     }
 }
