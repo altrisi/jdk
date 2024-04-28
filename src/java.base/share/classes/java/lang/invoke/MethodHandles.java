@@ -3527,23 +3527,10 @@ return mh1;
          */
         /* package-private */ MethodHandle serializableConstructor(Class<?> decl, Constructor<?> c) throws IllegalAccessException {
             MemberName ctor = new MemberName(c);
-            assert(ctor.isConstructor() && constructorInSuperclass(decl, c));
+            assert(ctor.isConstructor() && c.getDeclaringClass().isAssignableFrom(decl));
             checkAccess(REF_newInvokeSpecial, decl, ctor);
             assert(!MethodHandleNatives.isCallerSensitive(ctor));  // maybeBindCaller not relevant here
             return DirectMethodHandle.makeAllocator(decl, ctor).setVarargs(ctor);
-        }
-
-        private static boolean constructorInSuperclass(Class<?> decl, Constructor<?> ctor) {
-            if (decl == ctor.getDeclaringClass())
-                return true;
-
-            Class<?> cl = decl;
-            while ((cl = cl.getSuperclass()) != null) {
-                if (cl == ctor.getDeclaringClass()) {
-                    return true;
-                }
-            }
-            return false;
         }
 
         /**
