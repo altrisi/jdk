@@ -118,7 +118,7 @@ final class MethodHandleAccessorFactory {
      * @return an accessible constructor
      */
     static ConstructorAccessorImpl newSerializableConstructorAccessor(Class<?> decl, Constructor<?> ctor) {
-        if (!constructorInSuperclass(decl, ctor)) {
+        if (!ctor.getDeclaringClass().isAssignableFrom(decl)) {
             throw new UnsupportedOperationException(ctor + " not a superclass of " + decl.getName());
         }
 
@@ -132,19 +132,6 @@ final class MethodHandleAccessorFactory {
         } catch (IllegalAccessException e) {
             throw new InternalError(e);
         }
-    }
-
-    private static boolean constructorInSuperclass(Class<?> decl, Constructor<?> ctor) {
-        if (decl == ctor.getDeclaringClass())
-            return true;
-
-        Class<?> cl = decl;
-        while ((cl = cl.getSuperclass()) != null) {
-            if (cl == ctor.getDeclaringClass()) {
-                return true;
-            }
-        }
-        return false;
     }
 
     private static MethodHandle makeConstructorHandle(MethodHandle ctor) {
