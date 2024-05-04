@@ -38,9 +38,6 @@ import jdk.internal.vm.annotation.Stable;
 public non-sealed class ConstantCallSite extends CallSite {
     private static final Unsafe UNSAFE = Unsafe.getUnsafe();
 
-    @Stable // should NOT be constant folded during instance initialization (isFrozen == false)
-    /*final*/ private boolean isFrozen; // Note: This field is known to the JVM.
-
     /**
      * Creates a call site with a permanent target.
      * @param target the target to be permanently associated with this call site
@@ -48,8 +45,7 @@ public non-sealed class ConstantCallSite extends CallSite {
      */
     public ConstantCallSite(MethodHandle target) {
         super(target);
-        isFrozen = true;
-        UNSAFE.storeStoreFence(); // properly publish isFrozen update
+        UNSAFE.storeStoreFence(); // properly publish isFrozen update TODO may not be needed, though maybe for the target that isn't constant outside
     }
 
     /**
@@ -87,8 +83,6 @@ public non-sealed class ConstantCallSite extends CallSite {
      */
     protected ConstantCallSite(MethodType targetType, MethodHandle createTargetHook) throws Throwable {
         super(targetType, createTargetHook); // "this" instance leaks into createTargetHook
-        isFrozen = true;
-        UNSAFE.storeStoreFence(); // properly publish isFrozen
     }
 
     /**
@@ -101,7 +95,7 @@ public non-sealed class ConstantCallSite extends CallSite {
      * @throws IllegalStateException if the {@code ConstantCallSite} constructor has not completed
      */
     @Override public final MethodHandle getTarget() {
-        if (!isFrozen)  throw new IllegalStateException();
+        if (target == null)  throw new IllegalStateException();
         return target;
     }
 
