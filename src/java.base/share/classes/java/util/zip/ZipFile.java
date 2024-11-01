@@ -731,7 +731,7 @@ public class ZipFile implements ZipConstants, Closeable {
             this.cleanable = CleanerFactory.cleaner().register(zf, this);
             this.istreams = Collections.newSetFromMap(new WeakHashMap<>());
             this.inflaterCache = new ArrayDeque<>();
-            this.zsrc = Source.get(file, (mode & OPEN_DELETE) != 0, zc);
+            this.zsrc = Source.get(file, (mode & OPEN_DELETE) != 0, zc, zf instanceof JarFile);
         }
 
         void clean() {
@@ -1194,6 +1194,7 @@ public class ZipFile implements ZipConstants, Closeable {
         private int[] signatureMetaNames;    // positions of signature related entries, if such exist
         private int[] metaVersions;          // list of unique versions found in META-INF/versions/
         private final boolean startsWithLoc; // true, if ZIP file starts with LOCSIG (usually true)
+        private final boolean isJarFile;
 
         // A Hashmap for all entries.
         //
@@ -1499,7 +1500,7 @@ public class ZipFile implements ZipConstants, Closeable {
         private static final java.nio.file.FileSystem builtInFS =
                 DefaultFileSystemProvider.theFileSystem();
 
-        static Source get(File file, boolean toDelete, ZipCoder zc) throws IOException {
+        static Source get(File file, boolean toDelete, ZipCoder zc, boolean isJarFile) throws IOException {
             final Key key;
             try {
                 key = new Key(file,
@@ -1516,7 +1517,7 @@ public class ZipFile implements ZipConstants, Closeable {
                     return src;
                 }
             }
-            src = new Source(key, toDelete, zc);
+            src = new Source(key, toDelete, zc, isJarFile);
 
             synchronized (files) {
                 Source prev = files.putIfAbsent(key, src);
@@ -1538,9 +1539,10 @@ public class ZipFile implements ZipConstants, Closeable {
             }
         }
 
-        private Source(Key key, boolean toDelete, ZipCoder zc) throws IOException {
+        private Source(Key key, boolean toDelete, ZipCoder zc, boolean isJarFile) throws IOException {
             this.zc = zc;
             this.key = key;
+            this.isJarFile = isJarFile;
             if (toDelete) {
                 if (OperatingSystem.isWindows()) {
                     this.zfile = SharedSecrets.getJavaIORandomAccessFileAccess()
@@ -1782,7 +1784,7 @@ public class ZipFile implements ZipConstants, Closeable {
                 idx += 3;
 
                 // Adds name to metanames.
-                if (isMetaName(cen, entryPos, nlen)) {
+                if (isJarFile && isMetaName(cen, entryPos, nlen)) {
                     // nlen is at least META_INF_LENGTH
                     if (isManifestName(entryPos + META_INF_LEN, nlen - META_INF_LEN)) {
                         manifestPos = pos;
