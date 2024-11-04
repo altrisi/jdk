@@ -508,7 +508,7 @@ public class JarFile extends ZipFile {
      */
     public ZipEntry getEntry(String name) {
         if (isMultiRelease()) {
-            JarEntry je = getVersionedEntry(name, null);
+            JarEntry je = getVersionedEntry(name);
             if (je == null) {
                 je = (JarEntry)super.getEntry(name);
             }
@@ -597,7 +597,7 @@ public class JarFile extends ZipFile {
         return name;
     }
 
-    private JarEntry getVersionedEntry(String name, JarEntry defaultEntry) {
+    private JarEntry getVersionedEntry(String name) {
         if (BASE_VERSION_FEATURE < versionFeature && !name.startsWith(META_INF)) {
             BitSet versions = JUZFA.getMetaInfVersions(this, name);
             int version = versions.previousSetBit(versionFeature);
@@ -610,7 +610,7 @@ public class JarFile extends ZipFile {
                 version = versions.previousSetBit(version - 1);
             }
         }
-        return defaultEntry;
+        return null;
     }
 
     // placeholder for now
