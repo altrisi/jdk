@@ -1084,10 +1084,7 @@ public class ZipFile implements ZipConstants, Closeable {
      * name.
      */
     private BitSet getMetaInfVersions(String name) {
-        synchronized (this) {
-            ensureOpen();
-            return res.zsrc.metaVersions.getOrDefault(ZipCoder.hash(name), EMPTY_VERSIONS);
-        }
+        return res.zsrc.metaVersions.getOrDefault(ZipCoder.hash(name), EMPTY_VERSIONS);
     }
 
     private static final BitSet EMPTY_VERSIONS = new BitSet();
@@ -1564,7 +1561,7 @@ public class ZipFile implements ZipConstants, Closeable {
             manifestPos = -1;
             manifestNum = 0;
             signatureMetaNames = null;
-            metaVersions = null;
+            metaVersions = Map.of();
         }
 
         private static final int BUF_SIZE = 8192;
