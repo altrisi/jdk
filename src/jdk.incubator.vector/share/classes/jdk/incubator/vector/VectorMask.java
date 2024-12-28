@@ -630,8 +630,9 @@ public abstract class VectorMask<E> extends jdk.internal.vm.vector.VectorSupport
      */
     @Override
     public final String toString() {
-        StringBuilder buf = new StringBuilder(length());
-        buf.append("Mask[");
+        String prefix = "Mask[";
+        StringBuilder buf = new StringBuilder(prefix.length() + length() + 1);
+        buf.append(prefix);
         for (boolean isSet : toArray()) {
             buf.append(isSet ? 'T' : '.');
         }
