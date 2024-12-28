@@ -118,13 +118,7 @@ class TempFileHelper {
 
         // loop generating random names until file or directory can be created
         for (;;) {
-            Path f;
-            try {
-                f = generatePath(prefix, suffix, dir);
-            } catch (InvalidPathException e) {
-                // don't reveal temporary directory location
-                throw e;
-            }
+            Path f = generatePath(prefix, suffix, dir);
             try {
                 if (createDirectory) {
                     return Files.createDirectory(f, attrs);
