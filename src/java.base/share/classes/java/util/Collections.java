@@ -5060,7 +5060,7 @@ public class Collections {
      */
     static <T> Spliterator<T> singletonSpliterator(final T element) {
         return new Spliterator<>() {
-            long est = 1;
+            int est = 1;
 
             @Override
             public Spliterator<T> trySplit() {
