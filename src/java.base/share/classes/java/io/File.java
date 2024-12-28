@@ -1763,15 +1763,11 @@ public class File
                     nusLength = shortenSubName(nusLength, excess, 5);
                 }
 
-                StringBuilder sb =
-                    new StringBuilder(prefixLength + nusLength + suffixLength);
-                sb.append(prefixLength < prefix.length() ?
-                    prefix.substring(0, prefixLength) : prefix);
-                sb.append(nusLength < nus.length() ?
-                    nus.substring(0, nusLength) : nus);
-                sb.append(suffixLength < suffix.length() ?
-                    suffix.substring(0, suffixLength) : suffix);
-                name = sb.toString();
+                name = new StringBuilder(prefixLength + nusLength + suffixLength)
+                        .append(prefix, 0, prefixLength)
+                        .append(nus,    0, nusLength)
+                        .append(suffix, 0, suffixLength)
+                        .toString();
             }
 
             // Normalize the path component
