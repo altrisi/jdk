@@ -595,7 +595,7 @@ class MethodHandleNatives {
     }
     static String getVarHandleGuardMethodName(MethodType guardType) {
         String prefix = "guard_";
-        StringBuilder sb = new StringBuilder(prefix.length() + guardType.parameterCount());
+        StringBuilder sb = new StringBuilder(prefix.length() + guardType.parameterCount() + 2);
 
         sb.append(prefix);
         for (int i = 1; i < guardType.parameterCount() - 1; i++) {
