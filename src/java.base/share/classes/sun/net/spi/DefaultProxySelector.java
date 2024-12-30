@@ -85,7 +85,7 @@ public class DefaultProxySelector extends ProxySelector {
 
     private static final String SOCKS_PROXY_VERSION = "socksProxyVersion";
 
-    private static boolean hasSystemProxies = false;
+    private static final boolean hasSystemProxies;
 
     private static final List<Proxy> NO_PROXY_LIST = List.of(Proxy.NO_PROXY);
 
@@ -95,6 +95,8 @@ public class DefaultProxySelector extends ProxySelector {
         if (b != null && b.booleanValue()) {
             jdk.internal.loader.BootLoader.loadLibrary("net");
             hasSystemProxies = init();
+        } else {
+            hasSystemProxies = false;
         }
     }
 
