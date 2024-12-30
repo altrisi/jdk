@@ -28,6 +28,8 @@ package java.net;
 import java.io.IOException;
 import java.util.List;
 
+import sun.net.spi.DefaultProxySelector;
+
 /**
  * Selects the proxy server to use, if any, when connecting to the
  * network resource referenced by a URL. A proxy selector is a
@@ -64,20 +66,7 @@ public abstract class ProxySelector {
      *
      * @see #setDefault(ProxySelector)
      */
-    private static volatile ProxySelector theProxySelector;
-
-    static {
-        try {
-            Class<?> c = Class.forName("sun.net.spi.DefaultProxySelector");
-            if (c != null && ProxySelector.class.isAssignableFrom(c)) {
-                @SuppressWarnings("deprecation")
-                ProxySelector tmp = (ProxySelector) c.newInstance();
-                theProxySelector = tmp;
-            }
-        } catch (Exception e) {
-            theProxySelector = null;
-        }
-    }
+    private static volatile ProxySelector theProxySelector = new DefaultProxySelector();
 
     /**
      * Constructor for subclasses to call.
