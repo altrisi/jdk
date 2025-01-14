@@ -132,15 +132,12 @@ class ZipCoder {
             return 0;
         }
 
-        int h = 0;
         // cb will be a newly allocated CharBuffer with pos == 0,
         // arrayOffset == 0, backed by an array.
         CharBuffer cb = decoder().decode(ByteBuffer.wrap(a, off, len));
         int limit = cb.limit();
         char[] decoded = cb.array();
-        for (int i = 0; i < limit; i++) {
-            h = 31 * h + decoded[i];
-        }
+        int h = ArraysSupport.hashCode(decoded, 0, limit, 0);
         if (limit > 0 && decoded[limit - 1] != '/') {
             h = 31 * h + '/';
         }
