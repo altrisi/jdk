@@ -104,36 +104,15 @@ public class SPI {
                                              cs.clzName);
                                  }
                              } else {
-                                 boolean methodEnd = true;
-                                 // non-final for SJIS and MS932 to support sun.nio.cs.map
-                                 if (cs.clzName.equals("SJIS") || cs.clzName.equals("MS932")) {
-                                     out.printf("    static String[] aliases_%s() { return aliases_%s; }%n%n",
-                                                cs.clzName, cs.clzName);
-                                     out.printf("    static String[] aliases_%s = new String[] {%n",
+                                 out.printf("    static String[] aliases_%s() { return new String[] {%n",
                                                 cs.clzName);
-                                     methodEnd = false;
-                                 } else {
-                                     out.printf("    static String[] aliases_%s() { return new String[] {%n",
-                                                cs.clzName);
-                                 }
                                  for (String alias : cs.aliases) {
                                      out.printf("            \"%s\",%n", alias);
                                  }
                                  out.printf("        };%n%n");
-                                 if (methodEnd) {
-                                     out.printf("    }%n%n");
-                                 }
+                                 out.printf("    }%n%n");
                              }
                          });
-                         Charset cs = charsets.get("SJIS");
-                         if (cs == null || cs.pkgName.equals("sun.nio.cs.ext")) {
-                              // StandardCharsets.java has explicit reference
-                              // to aliases_SJIS/MS932. If we don't have these
-                              // two in std, just put a pair of dummy fields to
-                              // make the compiler happy.
-                              out.printf("    static String[] aliases_SJIS = null;%n%n");
-                              out.printf("    static String[] aliases_MS932 = null;%n%n");
-                         }
                      } else if (line.indexOf("_INCLUDE_ALIASES_MAP_") != -1) {
                          Hasher.genClass(out, aliasKeys, aliasValues,
                                          null, "Aliases", "String",
