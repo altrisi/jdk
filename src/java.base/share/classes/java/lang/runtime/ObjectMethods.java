@@ -260,26 +260,32 @@ public final class ObjectMethods {
             splits = split(toSplit);
             mhs = new MethodHandle[splits.size()];
             for (int splitIndex = 0; splitIndex < splits.size(); splitIndex++) {
-                String recipe = "";
-                if (firstTime && splitIndex == 0) {
-                    recipe = receiverClass.getSimpleName() + "[";
-                }
-                for (int i = 0; i < splits.get(splitIndex).size(); i++) {
-                    recipe += firstTime ? names.get(namesIndex) + "=" + "\1" : "\1";
-                    if (firstTime && namesIndex != names.size() - 1) {
-                        recipe += ", ";
+                List<MethodHandle> currentSplit = splits.get(splitIndex);
+                String recipe;
+                if (firstTime) {
+                    recipe = "";
+                    if (splitIndex == 0) {
+                        recipe = receiverClass.getSimpleName() + "[";
                     }
-                    namesIndex++;
+                    for (int i = 0; i < currentSplit.size(); i++) {
+                        recipe += names.get(namesIndex) + "=" + "\1";
+                        if (namesIndex != names.size() - 1) {
+                            recipe += ", ";
+                        }
+                        namesIndex++;
+                    }
+                    if (splitIndex == splits.size() - 1) {
+                        recipe += "]";
+                    }
+                } else {
+                    recipe = "\1".repeat(currentSplit.size());
                 }
-                if (firstTime && splitIndex == splits.size() - 1) {
-                    recipe += "]";
-                }
-                Class<?>[] concatTypeArgs = new Class<?>[splits.get(splitIndex).size()];
+                Class<?>[] concatTypeArgs = new Class<?>[currentSplit.size()];
                 // special case: no need to create another getters if there is only one split
-                MethodHandle[] currentSplitGetters = new MethodHandle[splits.get(splitIndex).size()];
-                for (int j = 0; j < splits.get(splitIndex).size(); j++) {
-                    concatTypeArgs[j] = splits.get(splitIndex).get(j).type().returnType();
-                    currentSplitGetters[j] = splits.get(splitIndex).get(j);
+                MethodHandle[] currentSplitGetters = new MethodHandle[currentSplit.size()];
+                for (int j = 0; j < currentSplit.size(); j++) {
+                    concatTypeArgs[j] = currentSplit.get(j).type().returnType();
+                    currentSplitGetters[j] = currentSplit.get(j);
                 }
                 MethodType concatMT = MethodType.methodType(String.class, concatTypeArgs);
                 try {
@@ -294,7 +300,7 @@ public final class ObjectMethods {
                     mhs[splitIndex] = MethodHandles.permuteArguments(
                             mhs[splitIndex],
                             MethodType.methodType(String.class, receiverClass),
-                            new int[splits.get(splitIndex).size()]
+                            new int[currentSplit.size()]
                     );
                 } catch (Throwable t) {
                     throw new RuntimeException(t);
