@@ -419,7 +419,7 @@ public final class ObjectMethods {
             case "toString" -> {
                 if (methodType != null && !methodType.equals(MethodType.methodType(String.class, recordClass)))
                     throw new IllegalArgumentException("Bad method type: " + methodType);
-                String[] nameArray = names.isEmpty() ? new String[] : names.split(";");
+                String[] nameArray = names.isEmpty() ? new String[0] : names.split(";");
                 if (nameArray.length != getters.length)
                     throw new IllegalArgumentException("Name and accessor lists do not match");
                 yield makeToString(lookup, recordClass, getters, nameArray);
