@@ -237,8 +237,8 @@ public final class ObjectMethods {
     private static MethodHandle makeToString(MethodHandles.Lookup lookup,
                                             Class<?> receiverClass,
                                             MethodHandle[] getters,
-                                            List<String> names) {
-        assert getters.length == names.size();
+                                            String[] names) {
+        assert getters.length == names.length;
         if (getters.length == 0) {
             // special case
             MethodHandle emptyRecordCase = MethodHandles.constant(String.class, receiverClass.getSimpleName() + "[]");
@@ -268,8 +268,8 @@ public final class ObjectMethods {
                         recipe = receiverClass.getSimpleName() + "[";
                     }
                     for (int i = 0; i < currentSplit.size(); i++) {
-                        recipe += names.get(namesIndex) + "=" + "\1";
-                        if (namesIndex != names.size() - 1) {
+                        recipe += names[namesIndex] + "=" + "\1";
+                        if (namesIndex != names.length - 1) {
                             recipe += ", ";
                         }
                         namesIndex++;
@@ -419,10 +419,10 @@ public final class ObjectMethods {
             case "toString" -> {
                 if (methodType != null && !methodType.equals(MethodType.methodType(String.class, recordClass)))
                     throw new IllegalArgumentException("Bad method type: " + methodType);
-                List<String> nameList = "".equals(names) ? List.of() : List.of(names.split(";"));
-                if (nameList.size() != getterList.size())
-                    throw new IllegalArgumentException("Name list and accessor list do not match");
-                yield makeToString(lookup, recordClass, getters, nameList);
+                String[] nameArray = names.isEmpty() ? new String[] : names.split(";");
+                if (nameArray.length != getters.length)
+                    throw new IllegalArgumentException("Name and accessor lists do not match");
+                yield makeToString(lookup, recordClass, getters, nameArray);
             }
             default -> throw new IllegalArgumentException(methodName);
         };
