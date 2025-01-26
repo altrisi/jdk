@@ -60,13 +60,11 @@ public final class ObjectMethods {
     private static final MethodHandle CLASS_IS_INSTANCE;
     private static final MethodHandle OBJECTS_EQUALS;
     private static final MethodHandle OBJECTS_HASHCODE;
-    private static final MethodHandle OBJECTS_TOSTRING;
     private static final MethodHandle OBJECT_EQ;
     private static final MethodHandle HASH_COMBINER;
 
     private static final HashMap<Class<?>, MethodHandle> primitiveEquals = new HashMap<>();
     private static final HashMap<Class<?>, MethodHandle> primitiveHashers = new HashMap<>();
-    private static final HashMap<Class<?>, MethodHandle> primitiveToString = new HashMap<>();
 
     static {
         try {
@@ -80,8 +78,6 @@ public final class ObjectMethods {
                                                      MethodType.methodType(boolean.class, Object.class, Object.class));
             OBJECTS_HASHCODE = publicLookup.findStatic(Objects.class, "hashCode",
                                                        MethodType.methodType(int.class, Object.class));
-            OBJECTS_TOSTRING = publicLookup.findStatic(Objects.class, "toString",
-                                                       MethodType.methodType(String.class, Object.class));
 
             OBJECT_EQ = lookup.findStatic(OBJECT_METHODS_CLASS, "eq",
                                           MethodType.methodType(boolean.class, Object.class, Object.class));
@@ -121,23 +117,6 @@ public final class ObjectMethods {
                                                                  MethodType.methodType(int.class, double.class)));
             primitiveHashers.put(boolean.class, lookup.findStatic(Boolean.class, "hashCode",
                                                                   MethodType.methodType(int.class, boolean.class)));
-
-            primitiveToString.put(byte.class, lookup.findStatic(Byte.class, "toString",
-                                                                MethodType.methodType(String.class, byte.class)));
-            primitiveToString.put(short.class, lookup.findStatic(Short.class, "toString",
-                                                                 MethodType.methodType(String.class, short.class)));
-            primitiveToString.put(char.class, lookup.findStatic(Character.class, "toString",
-                                                                MethodType.methodType(String.class, char.class)));
-            primitiveToString.put(int.class, lookup.findStatic(Integer.class, "toString",
-                                                               MethodType.methodType(String.class, int.class)));
-            primitiveToString.put(long.class, lookup.findStatic(Long.class, "toString",
-                                                                MethodType.methodType(String.class, long.class)));
-            primitiveToString.put(float.class, lookup.findStatic(Float.class, "toString",
-                                                                 MethodType.methodType(String.class, float.class)));
-            primitiveToString.put(double.class, lookup.findStatic(Double.class, "toString",
-                                                                  MethodType.methodType(String.class, double.class)));
-            primitiveToString.put(boolean.class, lookup.findStatic(Boolean.class, "toString",
-                                                                   MethodType.methodType(String.class, boolean.class)));
         }
         catch (ReflectiveOperationException e) {
             throw new RuntimeException(e);
@@ -170,13 +149,6 @@ public final class ObjectMethods {
         return (clazz.isPrimitive()
                 ? primitiveHashers.get(clazz)
                 : OBJECTS_HASHCODE.asType(MethodType.methodType(int.class, clazz)));
-    }
-
-    /** Get the stringifier for a value of a given type */
-    private static MethodHandle stringifier(Class<?> clazz) {
-        return (clazz.isPrimitive()
-                ? primitiveToString.get(clazz)
-                : OBJECTS_TOSTRING.asType(MethodType.methodType(String.class, clazz)));
     }
 
     /**
