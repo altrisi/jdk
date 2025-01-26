@@ -123,10 +123,7 @@ public final class StringJoiner {
     public StringJoiner(CharSequence delimiter,
                         CharSequence prefix,
                         CharSequence suffix) {
-        Objects.requireNonNull(prefix, "The prefix must not be null");
-        Objects.requireNonNull(delimiter, "The delimiter must not be null");
-        Objects.requireNonNull(suffix, "The suffix must not be null");
-        // make defensive copies of arguments
+        // make defensive copies of arguments and check nulls
         this.prefix = prefix.toString();
         this.delimiter = delimiter.toString();
         this.suffix = suffix.toString();
@@ -148,8 +145,7 @@ public final class StringJoiner {
      *         {@code null}
      */
     public StringJoiner setEmptyValue(CharSequence emptyValue) {
-        this.emptyValue = Objects.requireNonNull(emptyValue,
-            "The empty value must not be null").toString();
+        this.emptyValue = emptyValue.toString();
         return this;
     }
 
@@ -225,8 +221,7 @@ public final class StringJoiner {
      * @return This {@code StringJoiner}
      */
     public StringJoiner merge(StringJoiner other) {
-        Objects.requireNonNull(other);
-        if (other.size == 0) {
+        if (other.size == 0) { // implicit null check
             return this;
         }
         other.compactElts();
