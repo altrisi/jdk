@@ -548,7 +548,9 @@ public final class ProcessBuilder
          * }</pre>
          * @since 9
          */
-        public static final Redirect DISCARD = new Redirect(Type.WRITE, NULL_FILE);
+        public static final Redirect DISCARD = new Redirect(Type.WRITE, NULL_FILE) {
+            public String toString() {return type.toString();}
+        };
 
         /**
          * Returns the {@link File} source or destination associated
