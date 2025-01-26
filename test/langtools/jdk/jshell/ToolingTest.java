@@ -88,7 +88,7 @@ public class ToolingTest extends ReplToolTesting {
             a -> assertCommandUserOutputContains(a, "javap(Class.forName(\"sun.util.PreHashedMap$1\"))",
                         "Classfile jrt:/java.base/sun/util/PreHashedMap$1.class",
                         "class sun.util.PreHashedMap$1 extends java.util.AbstractSet<java.lang.String>",
-                        "SourceFile: \"PreHashedMap.java\""
+                        "SourceFile: \"PreHashedMap.java\"")
         );
     }
     
@@ -101,8 +101,9 @@ public class ToolingTest extends ReplToolTesting {
                         ""),
             a -> assertCommandUserOutputContains(a, "javap(c)",
                         "Classfile ", // Classfile /.../TOOLING-16063368030094702464.class
-                        "$0 extends java.util.ArrayList<java.lang.Object>" // public class REPL.$JShell$11$$JShell$anonymous$$0 extends java.util.ArrayList<java.lang.Object>
+                        "$0 extends java.util.ArrayList<java.lang.Object>", // public class REPL.$JShell$11$$JShell$anonymous$$0 extends java.util.ArrayList<java.lang.Object>
                         "SourceFile: \"$JShell$" // SourceFile: "$JShell$11.java"
+            )
         );
     }
 }
