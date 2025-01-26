@@ -549,7 +549,7 @@ public final class ProcessBuilder
          * @since 9
          */
         public static final Redirect DISCARD = new Redirect(Type.WRITE, NULL_FILE) {
-            public String toString() {return type.toString();}
+            public String toString() { return Type.WRITE.toString(); }
         };
 
         /**
