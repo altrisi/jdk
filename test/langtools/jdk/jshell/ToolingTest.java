@@ -85,10 +85,11 @@ public class ToolingTest extends ReplToolTesting {
         test(
             a -> assertCommand(a, "/open TOOLING",
                         ""),
-            a -> assertCommandUserOutputContains(a, "javap(Class.forName(\"sun.util.PreHashedMap$1\"))",
-                        "Classfile jrt:/java.base/sun/util/PreHashedMap$1.class",
-                        "class sun.util.PreHashedMap$1 extends java.util.AbstractSet<java.lang.String>"
-                        "SourceFile: \"PreHashedMap.java\""
+            a -> assertCommandUserOutputContains(a, "javap(ProcessBuilder.Redirect.PIPE.getClass())",
+                        // not using full line in case number changes
+                        "Classfile jrt:/java.base/java/lang/ProcessBuilder$Redirect$",
+                        "class java.lang.ProcessBuilder$Redirect$", "extends java.lang.ProcessBuilder$Redirect",
+                        "SourceFile: \"ProcessBuilder.java\""
         );
     }
     
