@@ -395,7 +395,7 @@ public final class ObjectMethods {
         requireNonNull(recordClass);
         requireNonNull(names);
         requireNonNull(getters);
-        Arrays.stream(getters).forEach(Objects::requireNonNull);
+        List<MethodHandle> getterList = List.of(getters); // checks nulls
         MethodType methodType;
         if (type instanceof MethodType mt)
             methodType = mt;
@@ -404,7 +404,6 @@ public final class ObjectMethods {
             if (!MethodHandle.class.equals(type))
                 throw new IllegalArgumentException(type.toString());
         }
-        List<MethodHandle> getterList = List.of(getters);
         MethodHandle handle = switch (methodName) {
             case "equals"   -> {
                 if (methodType != null && !methodType.equals(MethodType.methodType(boolean.class, recordClass, Object.class)))
