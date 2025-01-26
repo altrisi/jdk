@@ -455,10 +455,17 @@ public final class ProcessBuilder
      *
      * @since 1.7
      */
-    public abstract static class Redirect {
+    public static class Redirect {
         private static final File NULL_FILE =
                 new File((OperatingSystem.isWindows() ? "NUL" : "/dev/null")
         );
+
+        private final File file;
+        private final Type type;
+        private Redirect(File file, Type type) {
+            this.file = file;
+            this.type = type;
+        }
 
         /**
          * The type of a {@link Redirect}.
@@ -497,7 +504,9 @@ public final class ProcessBuilder
          * Returns the type of this {@code Redirect}.
          * @return the type of this {@code Redirect}
          */
-        public abstract Type type();
+        public Type type() {
+            return type;
+        }
 
         /**
          * Indicates that subprocess I/O will be connected to the
@@ -511,9 +520,7 @@ public final class ProcessBuilder
          * Redirect.PIPE.type() == Redirect.Type.PIPE
          * }</pre>
          */
-        public static final Redirect PIPE = new Redirect() {
-                public Type type() { return Type.PIPE; }
-                public String toString() { return type().toString(); }};
+        public static final Redirect PIPE = new Redirect(Type.PIPE, null);
 
         /**
          * Indicates that subprocess I/O source or destination will be the
@@ -526,10 +533,7 @@ public final class ProcessBuilder
          * Redirect.INHERIT.type() == Redirect.Type.INHERIT
          * }</pre>
          */
-        public static final Redirect INHERIT = new Redirect() {
-                public Type type() { return Type.INHERIT; }
-                public String toString() { return type().toString(); }};
-
+        public static final Redirect INHERIT = new Redirect(Type.INHERIT, null);
 
         /**
          * Indicates that subprocess output will be discarded.
@@ -544,12 +548,7 @@ public final class ProcessBuilder
          * }</pre>
          * @since 9
          */
-        public static final Redirect DISCARD = new Redirect() {
-                public Type type() { return Type.WRITE; }
-                public String toString() { return type().toString(); }
-                public File file() { return NULL_FILE; }
-                boolean append() { return false; }
-        };
+        public static final Redirect DISCARD = new Redirect(Type.WRITE, NULL_FILE);
 
         /**
          * Returns the {@link File} source or destination associated
@@ -558,14 +557,20 @@ public final class ProcessBuilder
          * @return the file associated with this redirect,
          *         or {@code null} if there is no such file
          */
-        public File file() { return null; }
+        public File file() {
+            return file;
+        }
 
         /**
          * When redirected to a destination file, indicates if the output
          * is to be written to the end of the file.
          */
         boolean append() {
-            throw new UnsupportedOperationException();
+            return switch (type) {
+                case APPEND -> true;
+                case WRITE  -> false;
+                default -> throw new UnsupportedOperationException();
+            };
         }
 
         /**
@@ -583,13 +588,7 @@ public final class ProcessBuilder
         public static Redirect from(final File file) {
             if (file == null)
                 throw new NullPointerException();
-            return new Redirect() {
-                    public Type type() { return Type.READ; }
-                    public File file() { return file; }
-                    public String toString() {
-                        return "redirect to read from file \"" + file + "\"";
-                    }
-                };
+            return new Redirect(Type.READ, file);
         }
 
         /**
@@ -609,14 +608,7 @@ public final class ProcessBuilder
         public static Redirect to(final File file) {
             if (file == null)
                 throw new NullPointerException();
-            return new Redirect() {
-                    public Type type() { return Type.WRITE; }
-                    public File file() { return file; }
-                    public String toString() {
-                        return "redirect to write to file \"" + file + "\"";
-                    }
-                    boolean append() { return false; }
-                };
+            return new Redirect(Type.WRITE, file);
         }
 
         /**
@@ -639,14 +631,7 @@ public final class ProcessBuilder
         public static Redirect appendTo(final File file) {
             if (file == null)
                 throw new NullPointerException();
-            return new Redirect() {
-                    public Type type() { return Type.APPEND; }
-                    public File file() { return file; }
-                    public String toString() {
-                        return "redirect to append to file \"" + file + "\"";
-                    }
-                    boolean append() { return true; }
-                };
+            return new Redirect(Type.APPEND, file);
         }
 
         /**
@@ -661,10 +646,10 @@ public final class ProcessBuilder
                 return true;
             if (! (obj instanceof Redirect r))
                 return false;
-            if (r.type() != this.type())
+            if (r.type != this.type)
                 return false;
-            assert this.file() != null;
-            return this.file().equals(r.file());
+            assert this.file != null;
+            return this.file.equals(r.file);
         }
 
         /**
@@ -679,11 +664,14 @@ public final class ProcessBuilder
                 return file.hashCode();
         }
 
-        /**
-         * No public constructors.  Clients must use predefined
-         * static {@code Redirect} instances or factory methods.
-         */
-        private Redirect() {}
+        public String toString() {
+            return switch (type) {
+                case READ   -> "redirect to read from file \"" + file + "\"";
+                case WRITE  -> "redirect to write to file \""  + file + "\"";
+                case APPEND -> "redirect to append to file \"" + file + "\"";
+                default -> type.toString();
+            };
+        }
     }
 
     /**
@@ -696,13 +684,9 @@ public final class ProcessBuilder
         final FileDescriptor fd;
 
         RedirectPipeImpl() {
+            super(Type.PIPE, null);
             this.fd = new FileDescriptor();
         }
-        @Override
-        public Type type() { return Type.PIPE; }
-
-        @Override
-        public String toString() { return type().toString();}
 
         FileDescriptor getFd() { return fd; }
     }
