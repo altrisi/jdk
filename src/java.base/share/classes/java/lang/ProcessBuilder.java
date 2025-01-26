@@ -460,11 +460,11 @@ public final class ProcessBuilder
                 new File((OperatingSystem.isWindows() ? "NUL" : "/dev/null")
         );
 
-        private final File file;
         private final Type type;
-        private Redirect(File file, Type type) {
-            this.file = file;
+        private final File file;
+        private Redirect(Type type, File file) {
             this.type = type;
+            this.file = file;
         }
 
         /**
