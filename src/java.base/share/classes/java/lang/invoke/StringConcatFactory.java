@@ -1148,7 +1148,10 @@ public final class StringConcatFactory {
             // no instantiation
         }
 
-        private record MethodHandlePair(MethodHandle constructor, MethodHandle concatenator) { };
+        private class MethodHandlePair {
+            private @Stable MethodHandle constructor;
+            private @Stable MethodHandle concatenator;
+        }
 
         /**
          * The parameter types are normalized into 7 types: int,long,boolean,char,float,double,Object
@@ -1354,18 +1357,21 @@ public final class StringConcatFactory {
                             }
                     }});
             try {
+                MethodHandlePair cacheEntry = new MethodHandlePair();
                 var hiddenClass = lookup.makeHiddenClassDefiner(CLASS_NAME, classBytes, DUMPER)
-                                        .defineClass(true, null);
+                                        .defineClass(true, cacheEntry); // strong ref cache
 
                 if (staticConcat) {
                     return lookup.findStatic(hiddenClass, METHOD_NAME, concatArgs);
                 }
 
-                var constructor = lookup.findConstructor(hiddenClass, CONSTRUCTOR_METHOD_TYPE);
-                var concatenator = lookup.findVirtual(hiddenClass, METHOD_NAME, concatArgs);
-                CACHE.put(concatArgs, new SoftReference<>(new MethodHandlePair(constructor, concatenator)));
-                var instance = constructor.invokeBasic((Object)constants);
-                return concatenator.bindTo(instance);
+                cacheEntry.constructor = lookup.findConstructor(hiddenClass, CONSTRUCTOR_METHOD_TYPE);
+                cacheEntry.concatenator = lookup.findVirtual(hiddenClass, METHOD_NAME, concatArgs);
+                // TODO this may need some synchronization for publication
+                // Or just put an Object[1] in classdata and fill it with the final frozen obj
+                CACHE.put(concatArgs, new SoftReference<>(cacheEntry));
+                var instance = cache.constructor.invokeBasic((Object)constants);
+                return cache.concatenator.bindTo(instance);
             } catch (Throwable e) {
                 throw new StringConcatException("Exception while spinning the class", e);
             }
