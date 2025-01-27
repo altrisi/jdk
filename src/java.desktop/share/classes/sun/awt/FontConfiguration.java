@@ -823,19 +823,12 @@ public abstract class FontConfiguration {
         }
     }
 
-    private static Vector<String> splitSequence(String sequence) {
-        //String.split would be more convenient, but incurs big performance penalty
-        Vector<String> parts = new Vector<>();
-        int start = 0;
-        int end;
-        while ((end = sequence.indexOf(',', start)) >= 0) {
-            parts.add(sequence.substring(start, end));
-            start = end + 1;
+    private static String[] splitSequence(String sequence) {
+        String[] parts = sequence.split(",", -1);
+        if (parts[parts.length - 1].isEmpty()) {
+            // legacy behaviour: no empty string from a ',' at end
+            parts = Arrays.copyOfRange(parts, 0, parts.length - 1);
         }
-        if (sequence.length() > start) {
-            parts.add(sequence.substring(start));
-        }
-        return parts;
     }
 
     ////////////////////////////////////////////////////////////////////////
@@ -1726,7 +1719,6 @@ public abstract class FontConfiguration {
 
     //utility "empty" objects
     private static final int[] EMPTY_INT_ARRAY = new int[0];
-    private static final String[] EMPTY_STRING_ARRAY = new String[0];
     private static final short[] EMPTY_SHORT_ARRAY = new short[0];
     private static final String UNDEFINED_COMPONENT_FONT = "unknown";
 
@@ -2093,7 +2085,7 @@ public abstract class FontConfiguration {
                 boolean has1252 = false;
 
                 //get the scriptID list
-                String[] ss = splitSequence(value).toArray(EMPTY_STRING_ARRAY);
+                String[] ss = splitSequence(value);
                 short [] sa = new short[ss.length];
                 for (int i = 0; i < ss.length; i++) {
                     if ("alphabetic/default".equals(ss[i])) {
