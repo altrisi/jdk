@@ -1370,8 +1370,8 @@ public final class StringConcatFactory {
                 // TODO this may need some synchronization for publication
                 // Or just put an Object[1] in classdata and fill it with the final frozen obj
                 CACHE.put(concatArgs, new SoftReference<>(cacheEntry));
-                var instance = cache.constructor.invokeBasic((Object)constants);
-                return cache.concatenator.bindTo(instance);
+                var instance = cacheEntry.constructor.invokeBasic((Object)constants);
+                return cacheEntry.concatenator.bindTo(instance);
             } catch (Throwable e) {
                 throw new StringConcatException("Exception while spinning the class", e);
             }
