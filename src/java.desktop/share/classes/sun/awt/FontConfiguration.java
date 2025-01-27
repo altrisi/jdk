@@ -828,6 +828,7 @@ public abstract class FontConfiguration {
             // legacy behaviour: no empty string from a ',' at end
             parts = Arrays.copyOfRange(parts, 0, parts.length - 1);
         }
+        return parts;
     }
 
     ////////////////////////////////////////////////////////////////////////
