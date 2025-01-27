@@ -1148,7 +1148,7 @@ public final class StringConcatFactory {
             // no instantiation
         }
 
-        private class MethodHandlePair {
+        private static class MethodHandlePair {
             @Stable MethodHandle constructor;
             @Stable MethodHandle concatenator;
         }
