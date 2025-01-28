@@ -733,7 +733,7 @@ final class VarHandle$Type$s {
         final int abase;
         final int ashift;
 #if[Object]
-        final Class<{#if[Object]??:$type$[]}> arrayType;
+        final Class<{#if[Object]?? extends Object[]:$type$[]}> arrayType;
         final Class<?> componentType;
 #end[Object]
 
@@ -805,7 +805,7 @@ final class VarHandle$Type$s {
         static $type$ get(VarHandle ob, Object oarray, int index) {
             Array handle = (Array)ob;
 #if[Object]
-            Object[] array = (Object[]) handle.arrayType.cast(oarray);
+            Object[] array = handle.arrayType.cast(oarray);
 #else[Object]
             $type$[] array = ($type$[]) oarray;
 #end[Object]
@@ -816,7 +816,7 @@ final class VarHandle$Type$s {
         static void set(VarHandle ob, Object oarray, int index, $type$ value) {
             Array handle = (Array)ob;
 #if[Object]
-            Object[] array = (Object[]) handle.arrayType.cast(oarray);
+            Object[] array = handle.arrayType.cast(oarray);
 #else[Object]
             $type$[] array = ($type$[]) oarray;
 #end[Object]
@@ -827,7 +827,7 @@ final class VarHandle$Type$s {
         static $type$ getVolatile(VarHandle ob, Object oarray, int index) {
             Array handle = (Array)ob;
 #if[Object]
-            Object[] array = (Object[]) handle.arrayType.cast(oarray);
+            Object[] array = handle.arrayType.cast(oarray);
 #else[Object]
             $type$[] array = ($type$[]) oarray;
 #end[Object]
@@ -839,7 +839,7 @@ final class VarHandle$Type$s {
         static void setVolatile(VarHandle ob, Object oarray, int index, $type$ value) {
             Array handle = (Array)ob;
 #if[Object]
-            Object[] array = (Object[]) handle.arrayType.cast(oarray);
+            Object[] array = handle.arrayType.cast(oarray);
 #else[Object]
             $type$[] array = ($type$[]) oarray;
 #end[Object]
@@ -852,7 +852,7 @@ final class VarHandle$Type$s {
         static $type$ getOpaque(VarHandle ob, Object oarray, int index) {
             Array handle = (Array)ob;
 #if[Object]
-            Object[] array = (Object[]) handle.arrayType.cast(oarray);
+            Object[] array = handle.arrayType.cast(oarray);
 #else[Object]
             $type$[] array = ($type$[]) oarray;
 #end[Object]
@@ -864,7 +864,7 @@ final class VarHandle$Type$s {
         static void setOpaque(VarHandle ob, Object oarray, int index, $type$ value) {
             Array handle = (Array)ob;
 #if[Object]
-            Object[] array = (Object[]) handle.arrayType.cast(oarray);
+            Object[] array = handle.arrayType.cast(oarray);
 #else[Object]
             $type$[] array = ($type$[]) oarray;
 #end[Object]
@@ -877,7 +877,7 @@ final class VarHandle$Type$s {
         static $type$ getAcquire(VarHandle ob, Object oarray, int index) {
             Array handle = (Array)ob;
 #if[Object]
-            Object[] array = (Object[]) handle.arrayType.cast(oarray);
+            Object[] array = handle.arrayType.cast(oarray);
 #else[Object]
             $type$[] array = ($type$[]) oarray;
 #end[Object]
@@ -889,7 +889,7 @@ final class VarHandle$Type$s {
         static void setRelease(VarHandle ob, Object oarray, int index, $type$ value) {
             Array handle = (Array)ob;
 #if[Object]
-            Object[] array = (Object[]) handle.arrayType.cast(oarray);
+            Object[] array = handle.arrayType.cast(oarray);
 #else[Object]
             $type$[] array = ($type$[]) oarray;
 #end[Object]
@@ -903,7 +903,7 @@ final class VarHandle$Type$s {
         static boolean compareAndSet(VarHandle ob, Object oarray, int index, $type$ expected, $type$ value) {
             Array handle = (Array)ob;
 #if[Object]
-            Object[] array = (Object[]) handle.arrayType.cast(oarray);
+            Object[] array = handle.arrayType.cast(oarray);
 #else[Object]
             $type$[] array = ($type$[]) oarray;
 #end[Object]
@@ -917,7 +917,7 @@ final class VarHandle$Type$s {
         static $type$ compareAndExchange(VarHandle ob, Object oarray, int index, $type$ expected, $type$ value) {
             Array handle = (Array)ob;
 #if[Object]
-            Object[] array = (Object[]) handle.arrayType.cast(oarray);
+            Object[] array = handle.arrayType.cast(oarray);
 #else[Object]
             $type$[] array = ($type$[]) oarray;
 #end[Object]
@@ -931,7 +931,7 @@ final class VarHandle$Type$s {
         static $type$ compareAndExchangeAcquire(VarHandle ob, Object oarray, int index, $type$ expected, $type$ value) {
             Array handle = (Array)ob;
 #if[Object]
-            Object[] array = (Object[]) handle.arrayType.cast(oarray);
+            Object[] array = handle.arrayType.cast(oarray);
 #else[Object]
             $type$[] array = ($type$[]) oarray;
 #end[Object]
@@ -945,7 +945,7 @@ final class VarHandle$Type$s {
         static $type$ compareAndExchangeRelease(VarHandle ob, Object oarray, int index, $type$ expected, $type$ value) {
             Array handle = (Array)ob;
 #if[Object]
-            Object[] array = (Object[]) handle.arrayType.cast(oarray);
+            Object[] array = handle.arrayType.cast(oarray);
 #else[Object]
             $type$[] array = ($type$[]) oarray;
 #end[Object]
@@ -959,7 +959,7 @@ final class VarHandle$Type$s {
         static boolean weakCompareAndSetPlain(VarHandle ob, Object oarray, int index, $type$ expected, $type$ value) {
             Array handle = (Array)ob;
 #if[Object]
-            Object[] array = (Object[]) handle.arrayType.cast(oarray);
+            Object[] array = handle.arrayType.cast(oarray);
 #else[Object]
             $type$[] array = ($type$[]) oarray;
 #end[Object]
@@ -973,7 +973,7 @@ final class VarHandle$Type$s {
         static boolean weakCompareAndSet(VarHandle ob, Object oarray, int index, $type$ expected, $type$ value) {
             Array handle = (Array)ob;
 #if[Object]
-            Object[] array = (Object[]) handle.arrayType.cast(oarray);
+            Object[] array = handle.arrayType.cast(oarray);
 #else[Object]
             $type$[] array = ($type$[]) oarray;
 #end[Object]
@@ -987,7 +987,7 @@ final class VarHandle$Type$s {
         static boolean weakCompareAndSetAcquire(VarHandle ob, Object oarray, int index, $type$ expected, $type$ value) {
             Array handle = (Array)ob;
 #if[Object]
-            Object[] array = (Object[]) handle.arrayType.cast(oarray);
+            Object[] array = handle.arrayType.cast(oarray);
 #else[Object]
             $type$[] array = ($type$[]) oarray;
 #end[Object]
@@ -1001,7 +1001,7 @@ final class VarHandle$Type$s {
         static boolean weakCompareAndSetRelease(VarHandle ob, Object oarray, int index, $type$ expected, $type$ value) {
             Array handle = (Array)ob;
 #if[Object]
-            Object[] array = (Object[]) handle.arrayType.cast(oarray);
+            Object[] array = handle.arrayType.cast(oarray);
 #else[Object]
             $type$[] array = ($type$[]) oarray;
 #end[Object]
@@ -1015,7 +1015,7 @@ final class VarHandle$Type$s {
         static $type$ getAndSet(VarHandle ob, Object oarray, int index, $type$ value) {
             Array handle = (Array)ob;
 #if[Object]
-            Object[] array = (Object[]) handle.arrayType.cast(oarray);
+            Object[] array = handle.arrayType.cast(oarray);
 #else[Object]
             $type$[] array = ($type$[]) oarray;
 #end[Object]
@@ -1028,7 +1028,7 @@ final class VarHandle$Type$s {
         static $type$ getAndSetAcquire(VarHandle ob, Object oarray, int index, $type$ value) {
             Array handle = (Array)ob;
 #if[Object]
-            Object[] array = (Object[]) handle.arrayType.cast(oarray);
+            Object[] array = handle.arrayType.cast(oarray);
 #else[Object]
             $type$[] array = ($type$[]) oarray;
 #end[Object]
@@ -1041,7 +1041,7 @@ final class VarHandle$Type$s {
         static $type$ getAndSetRelease(VarHandle ob, Object oarray, int index, $type$ value) {
             Array handle = (Array)ob;
 #if[Object]
-            Object[] array = (Object[]) handle.arrayType.cast(oarray);
+            Object[] array = handle.arrayType.cast(oarray);
 #else[Object]
             $type$[] array = ($type$[]) oarray;
 #end[Object]
