@@ -741,7 +741,7 @@ final class VarHandle$Type$s {
             this(abase, ashift{#if[Object]?, arrayType}, false);
         }
 
-        private Array(int abase, int ashift{#if[Object]?, Class<?> arrayType}, boolean exact) {
+        private Array(int abase, int ashift{#if[Object]?, Class<? extends Object[]> arrayType}, boolean exact) {
             super(Array.FORM, exact);
             this.abase = abase;
             this.ashift = ashift;
