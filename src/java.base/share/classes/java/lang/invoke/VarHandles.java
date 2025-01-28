@@ -201,7 +201,10 @@ final class VarHandles {
         int ashift = 31 - Integer.numberOfLeadingZeros(ascale);
 
         if (!componentType.isPrimitive()) {
-            return maybeAdapt(new VarHandleReferences.Array(aoffset, ashift, arrayClass));
+            @SuppressWarnings("unchecked")
+            var objArrayClass = (Class<? extends Object[]>) arrayClass;
+            
+            return maybeAdapt(new VarHandleReferences.Array(aoffset, ashift, objArrayClass));
         }
         else if (componentType == boolean.class) {
             return maybeAdapt(new VarHandleBooleans.Array(aoffset, ashift));
