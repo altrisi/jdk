@@ -737,7 +737,7 @@ final class VarHandle$Type$s {
         final Class<?> componentType;
 #end[Object]
 
-        Array(int abase, int ashift{#if[Object]?, Class<?> arrayType}) {
+        Array(int abase, int ashift{#if[Object]?, Class<? extends Object[]> arrayType}) {
             this(abase, ashift{#if[Object]?, arrayType}, false);
         }
 
