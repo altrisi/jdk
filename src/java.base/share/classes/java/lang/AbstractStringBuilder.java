@@ -1012,7 +1012,7 @@ abstract sealed class AbstractStringBuilder implements Appendable, CharSequence
         shift(end, newCount - count);
         this.count = newCount;
         putStringAt(start, str);
-        maybeLatin1 = true;
+        maybeLatin1 = str.isLatin1();
         return this;
     }
 
