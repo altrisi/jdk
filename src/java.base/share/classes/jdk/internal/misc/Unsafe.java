@@ -1402,7 +1402,9 @@ public final class Unsafe {
     }
 
     /** Throws the exception without telling the verifier. */
-    public native void throwException(Throwable ee);
+    public <E extends Throwable> void throwException(Throwable ee) throws E {
+        throw (E)ee;
+    }
 
     /**
      * Atomically updates Java variable to {@code x} if it is currently
