@@ -569,7 +569,7 @@ public abstract class ForkJoinTask<V> implements Future<V>, Serializable {
      */
     private void reportException(boolean asExecutionException) {
         Throwable t = getException(asExecutionException);
-        if (t == null) {
+        if (t == null)
             t = new CancellationException();
         U.throwException(t);
     }
