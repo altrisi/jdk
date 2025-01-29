@@ -1814,7 +1814,7 @@ public class ForkJoinPool extends AbstractExecutorService {
             w.cancelTasks();               // clean queue
         }
         if (ex != null)
-            ForkJoinTask.rethrow(ex);
+            U.throwException(ex);
     }
 
     /**
