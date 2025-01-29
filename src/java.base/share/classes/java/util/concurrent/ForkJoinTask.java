@@ -568,7 +568,10 @@ public abstract class ForkJoinTask<V> implements Future<V>, Serializable {
      * recorded.
      */
     private void reportException(boolean asExecutionException) {
-        U.throwException(getException(asExecutionException));
+        Throwable t = getException(asExecutionException);
+        if (t == null) {
+            t = new CancellationException();
+        U.throwException(t);
     }
 
     // Utilities shared among ForkJoinTask, ForkJoinPool
