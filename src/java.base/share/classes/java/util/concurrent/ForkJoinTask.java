@@ -251,10 +251,8 @@ public abstract class ForkJoinTask<V> implements Future<V>, Serializable {
         final boolean casNext(Aux c, Aux v) { // used only in cancellation
             return U.compareAndSetReference(this, NEXT, c, v);
         }
-        private static final Unsafe U;
         private static final long NEXT;
         static {
-            U = Unsafe.getUnsafe();
             NEXT = U.objectFieldOffset(Aux.class, "next");
         }
     }
@@ -570,29 +568,7 @@ public abstract class ForkJoinTask<V> implements Future<V>, Serializable {
      * recorded.
      */
     private void reportException(boolean asExecutionException) {
-        ForkJoinTask.<RuntimeException>
-            uncheckedThrow(getException(asExecutionException));
-    }
-
-    /**
-     * A version of "sneaky throw" to relay exceptions in other
-     * contexts.
-     */
-    static void rethrow(Throwable ex) {
-        ForkJoinTask.<RuntimeException>uncheckedThrow(ex);
-    }
-
-    /**
-     * The sneaky part of sneaky throw, relying on generics
-     * limitations to evade compiler complaints about rethrowing
-     * unchecked exceptions. If argument null, throws
-     * CancellationException.
-     */
-    @SuppressWarnings("unchecked") static <T extends Throwable>
-    void uncheckedThrow(Throwable t) throws T {
-        if (t == null)
-            t = new CancellationException();
-        throw (T)t; // rely on vacuous cast
+        U.throwException(getException(asExecutionException));
     }
 
     // Utilities shared among ForkJoinTask, ForkJoinPool
@@ -760,7 +736,7 @@ public abstract class ForkJoinTask<V> implements Future<V>, Serializable {
                 if ((t = tasks[i]) != null)
                     t.cancel(false);
             }
-            rethrow(ex);
+            U.throwException(ex);
         }
     }
 
@@ -823,7 +799,7 @@ public abstract class ForkJoinTask<V> implements Future<V>, Serializable {
                 if ((t = ts.get(i)) != null)
                     t.cancel(false);
             }
-            rethrow(ex);
+            U.throwException(ex);
         }
         return tasks;
     }
