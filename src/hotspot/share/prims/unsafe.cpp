@@ -711,12 +711,6 @@ UNSAFE_ENTRY(jclass, Unsafe_DefineClass0(JNIEnv *env, jobject unsafe, jstring na
   return Unsafe_DefineClass_impl(env, name, data, offset, length, loader, pd);
 } UNSAFE_END
 
-
-UNSAFE_ENTRY(void, Unsafe_ThrowException(JNIEnv *env, jobject unsafe, jthrowable thr)) {
-  ThreadToNativeFromVM ttnfv(thread);
-  env->Throw(thr);
-} UNSAFE_END
-
 // JSR166 ------------------------------------------------------------------
 
 UNSAFE_ENTRY(jobject, Unsafe_CompareAndExchangeReference(JNIEnv *env, jobject unsafe, jobject obj, jlong offset, jobject e_h, jobject x_h)) {
@@ -891,7 +885,6 @@ static JNINativeMethod jdk_internal_misc_Unsafe_methods[] = {
 
     {CC "defineClass0",       CC "(" DC_Args ")" CLS,    FN_PTR(Unsafe_DefineClass0)},
     {CC "allocateInstance",   CC "(" CLS ")" OBJ,        FN_PTR(Unsafe_AllocateInstance)},
-    {CC "throwException",     CC "(" THR ")V",           FN_PTR(Unsafe_ThrowException)},
     {CC "compareAndSetReference",CC "(" OBJ "J" OBJ "" OBJ ")Z", FN_PTR(Unsafe_CompareAndSetReference)},
     {CC "compareAndSetInt",   CC "(" OBJ "J""I""I"")Z",  FN_PTR(Unsafe_CompareAndSetInt)},
     {CC "compareAndSetLong",  CC "(" OBJ "J""J""J"")Z",  FN_PTR(Unsafe_CompareAndSetLong)},
