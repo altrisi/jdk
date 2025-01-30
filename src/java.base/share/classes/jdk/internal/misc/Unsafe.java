@@ -1402,6 +1402,7 @@ public final class Unsafe {
     }
 
     /** Throws the exception without telling the verifier. */
+    @SuppressWarnings("unchecked")
     public <E extends Throwable> void throwException(Throwable ee) throws E {
         throw (E)ee;
     }
