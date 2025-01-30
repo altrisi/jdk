@@ -112,8 +112,7 @@ public class ZipFile implements ZipConstants, Closeable {
      * Flag to specify whether the Extra ZIP64 validation should be
      * disabled.
      */
-    private static final boolean DISABLE_ZIP64_EXTRA_VALIDATION =
-            getDisableZip64ExtraFieldValidation();
+    private static final boolean DISABLE_ZIP64_EXTRA_VALIDATION;
 
     /**
      * Opens a ZIP file for reading.
@@ -1044,22 +1043,16 @@ public class ZipFile implements ZipConstants, Closeable {
 
     private static final BitSet EMPTY_VERSIONS = new BitSet();
 
-    /**
-     * Returns the value of the System property which indicates whether the
-     * Extra ZIP64 validation should be disabled.
-     */
-    static boolean getDisableZip64ExtraFieldValidation() {
-        boolean result;
-        String value = System.getProperty("jdk.util.zip.disableZip64ExtraFieldValidation");
-        if (value == null) {
-            result = false;
-        } else {
-            result = value.isEmpty() || value.equalsIgnoreCase("true");
-        }
-        return result;
-    }
-
     static {
+        // Read the System property which indicates whether the
+        // Extra ZIP64 validation should be disabled.
+        String disableValidation = System.getProperty("jdk.util.zip.disableZip64ExtraFieldValidation");
+        if (disableValidation == null) {
+            DISABLE_ZIP64_EXTRA_VALIDATION = false;
+        } else {
+            DISABLE_ZIP64_EXTRA_VALIDATION = disableValidation.isEmpty()
+                || disableValidation.equalsIgnoreCase("true");
+        }
         SharedSecrets.setJavaUtilZipFileAccess(
             new JavaUtilZipFileAccess() {
                 @Override
