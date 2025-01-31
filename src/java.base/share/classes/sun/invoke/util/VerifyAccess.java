@@ -116,7 +116,7 @@ public class VerifyAccess {
         case PROTECTED:
             assert !defc.isInterface(); // protected members aren't allowed in interfaces
             if ((allowedModes & PROTECTED_OR_PACKAGE_ALLOWED) != 0 &&
-                isSamePackage(defc, lookupClass))
+                Reflection.inSamePackage(defc, lookupClass))
                 return true;
             if ((allowedModes & PROTECTED) == 0)
                 return false;
@@ -133,7 +133,7 @@ public class VerifyAccess {
         case PACKAGE_ONLY:  // That is, zero.  Unmarked member is package-only access.
             assert !defc.isInterface(); // package-private members aren't allowed in interfaces
             return ((allowedModes & PACKAGE_ALLOWED) != 0 &&
-                    isSamePackage(defc, lookupClass));
+                    Reflection.inSamePackage(defc, lookupClass));
         case PRIVATE:
             // Rules for privates follows access rules for nestmates.
             boolean canAccess = ((allowedModes & PRIVATE) != 0 &&
@@ -192,7 +192,7 @@ public class VerifyAccess {
         assert((allowedModes & ~(ALL_ACCESS_MODES|PACKAGE_ALLOWED|MODULE_ALLOWED|UNCONDITIONAL_ALLOWED|ORIGINAL_ALLOWED)) == 0);
 
         if ((allowedModes & PACKAGE_ALLOWED) != 0 &&
-            isSamePackage(lookupClass, refc))
+            Reflection.inSamePackage(lookupClass, refc))
             return true;
 
         int mods = getClassModifiers(refc);
@@ -356,16 +356,6 @@ public class VerifyAccess {
     }
 
     /**
-     * Test if two classes have the same class loader and package qualifier.
-     * @param class1 a class
-     * @param class2 another class
-     * @return whether they are in the same package
-     */
-    public static boolean isSamePackage(Class<?> class1, Class<?> class2) {
-        return Reflection.inSamePackage(class1, class2);
-    }
-
-    /**
      * Test if two classes are defined as part of the same package member (top-level class).
      * If this is true, they can share private access with each other.
      * @param class1 a class
@@ -375,7 +365,7 @@ public class VerifyAccess {
     public static boolean isSamePackageMember(Class<?> class1, Class<?> class2) {
         if (class1 == class2)
             return true;
-        if (!isSamePackage(class1, class2))
+        if (!Reflection.inSamePackage(class1, class2))
             return false;
         if (getOutermostEnclosingClass(class1) != getOutermostEnclosingClass(class2))
             return false;
