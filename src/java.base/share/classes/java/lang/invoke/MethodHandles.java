@@ -1633,7 +1633,7 @@ public final class MethodHandles {
                 plc = this.lookupClass;
             }
             if ((newModes & PACKAGE) != 0
-                && !VerifyAccess.isSamePackage(this.lookupClass, requestedLookupClass)) {
+                && !Reflection.isSamePackage(this.lookupClass, requestedLookupClass)) {
                 newModes &= ~(PACKAGE|PRIVATE|PROTECTED);
             }
             // Allow nestmate lookups to be created without special privilege:
@@ -3760,7 +3760,7 @@ return mh1;
             } else {
                 // Protected members can also be checked as if they were package-private.
                 if ((requestedModes & PROTECTED) != 0 && (allowedModes & PACKAGE) != 0
-                        && VerifyAccess.isSamePackage(m.getDeclaringClass(), lookupClass()))
+                        && Reflection.isSamePackage(m.getDeclaringClass(), lookupClass()))
                     return;
             }
             throw m.makeAccessException(accessFailedMessage(refc, m), this);
@@ -3807,7 +3807,7 @@ return mh1;
             if (!method.isProtected() || method.isStatic()
                 || allowedModes == TRUSTED
                 || method.getDeclaringClass() == lookupClass()
-                || VerifyAccess.isSamePackage(method.getDeclaringClass(), lookupClass()))
+                || Reflection.isSamePackage(method.getDeclaringClass(), lookupClass()))
                 return false;
             return true;
         }
