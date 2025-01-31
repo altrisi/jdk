@@ -26,10 +26,10 @@
 package java.lang.invoke;
 
 import jdk.internal.misc.Unsafe;
+import jdk.internal.reflect.Reflection;
 import jdk.internal.vm.annotation.ForceInline;
 import jdk.internal.vm.annotation.Stable;
 import sun.invoke.util.ValueConversions;
-import sun.invoke.util.VerifyAccess;
 import sun.invoke.util.Wrapper;
 
 import java.util.Arrays;
@@ -320,7 +320,7 @@ sealed class DirectMethodHandle extends MethodHandle {
     }
 
     private static void maybeCompile(LambdaForm lform, MemberName m) {
-        if (lform.vmentry == null && VerifyAccess.isSamePackage(m.getDeclaringClass(), MethodHandle.class))
+        if (lform.vmentry == null && Reflection.inSamePackage(m.getDeclaringClass(), MethodHandle.class))
             // Help along bootstrapping...
             lform.compileToBytecode();
     }
@@ -362,8 +362,8 @@ sealed class DirectMethodHandle extends MethodHandle {
             // the MHs will not be used until the system is booted.
             return false;
         }
-        if (VerifyAccess.isSamePackage(MethodHandle.class, cls) ||
-            VerifyAccess.isSamePackage(ValueConversions.class, cls)) {
+        if (Reflection.inSamePackage(MethodHandle.class, cls) ||
+            Reflection.inSamePackage(ValueConversions.class, cls)) {
             // It is a system class.  It is probably in the process of
             // being initialized, but we will help it along just to be safe.
             UNSAFE.ensureClassInitialized(cls);
