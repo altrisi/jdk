@@ -526,7 +526,7 @@ public class BufferedInputStream extends FilterInputStream {
                     input.close();
                 return;
             }
-            // Else retry in case a new buf was CASed in fill()
+            // Else retry in case a new buf was CASed elsewhere
         }
     }
 
@@ -536,14 +536,17 @@ public class BufferedInputStream extends FilterInputStream {
         if (getClass() == BufferedInputStream.class && markpos == -1) {
             int avail = count - pos;
             if (avail > 0) {
-                if (isTrusted(out)) {
-                    out.write(getBufIfOpen(), pos, avail);
-                } else {
-                    // Prevent poisoning and leaking of buf
-                    byte[] buffer = Arrays.copyOfRange(getBufIfOpen(), pos, count);
-                    out.write(buffer);
+                // Prevent poisoning and leaking of buf:
+                // Given transferTo should read to EOF, we expect
+                // to not be read again, so we reset our buffer
+                // instead of making a copy for the outputstream
+                byte[] buf = getBufIfOpen();
+                out.write(buf, pos, avail);
+                // Need to CAS to not replace async close
+                if (U.compareAndSetReference(this, BUF_OFFSET, buf, EMPTY)) {
+                    pos = 0;
+                    count = 0;
                 }
-                pos = count;
             }
             try {
                 return Math.addExact(avail, getInIfOpen().transferTo(out));
@@ -554,23 +557,4 @@ public class BufferedInputStream extends FilterInputStream {
             return super.transferTo(out);
         }
     }
-
-    /**
-     * Returns true if this class satisfies the following conditions:
-     * <ul>
-     * <li>does not retain a reference to the {@code byte[]}</li>
-     * <li>does not leak a reference to the {@code byte[]} to non-trusted classes</li>
-     * <li>does not modify the contents of the {@code byte[]}</li>
-     * <li>{@code write()} method does not read the contents outside of the offset/length bounds</li>
-     * </ul>
-     *
-     * @return true if this class is trusted
-     */
-    private static boolean isTrusted(OutputStream os) {
-        var clazz = os.getClass();
-        return clazz == ByteArrayOutputStream.class
-                || clazz == FileOutputStream.class
-                || clazz == PipedOutputStream.class;
-    }
-
 }
