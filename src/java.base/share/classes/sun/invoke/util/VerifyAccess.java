@@ -362,11 +362,7 @@ public class VerifyAccess {
      * @return whether they are in the same package
      */
     public static boolean isSamePackage(Class<?> class1, Class<?> class2) {
-        if (class1 == class2)
-            return true;
-        if (class1.getClassLoader() != class2.getClassLoader())
-            return false;
-        return class1.getPackageName() == class2.getPackageName();
+        return Reflection.inSamePackage(class1, class2);
     }
 
     /**
