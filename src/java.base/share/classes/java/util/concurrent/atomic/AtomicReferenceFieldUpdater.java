@@ -351,7 +351,7 @@ public abstract class AtomicReferenceFieldUpdater<T,V> {
             // narrowed to the type of the accessing class.
             this.cclass = (Modifier.isProtected(modifiers) &&
                            tclass.isAssignableFrom(caller) &&
-                           !isSamePackage(tclass, caller))
+                           !Reflection.inSamePackage(tclass, caller))
                           ? caller : tclass;
             this.tclass = tclass;
             this.vclass = vclass;
@@ -372,15 +372,6 @@ public abstract class AtomicReferenceFieldUpdater<T,V> {
                 }
             } while (acl != null);
             return false;
-        }
-
-        /**
-         * Returns true if the two classes have the same class loader and
-         * package qualifier
-         */
-        private static boolean isSamePackage(Class<?> class1, Class<?> class2) {
-            return class1.getClassLoader() == class2.getClassLoader()
-                   && class1.getPackageName() == class2.getPackageName();
         }
 
         /**
