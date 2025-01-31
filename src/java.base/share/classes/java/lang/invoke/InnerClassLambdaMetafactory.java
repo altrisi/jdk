@@ -27,8 +27,8 @@ package java.lang.invoke;
 
 import jdk.internal.constant.ClassOrInterfaceDescImpl;
 import jdk.internal.misc.CDS;
+import jdk.internal.reflect.Reflection;
 import jdk.internal.util.ClassFileDumper;
-import sun.invoke.util.VerifyAccess;
 
 import java.io.Serializable;
 import java.lang.classfile.ClassBuilder;
@@ -161,7 +161,7 @@ import sun.invoke.util.Wrapper;
         // the proxy class to invoke directly. (javac prefers to avoid this
         // situation by generating bridges in the target class)
         useImplMethodHandle = (Modifier.isProtected(implInfo.getModifiers()) &&
-                               !VerifyAccess.isSamePackage(targetClass, implInfo.getDeclaringClass())) ||
+                               !Reflection.inSamePackage(targetClass, implInfo.getDeclaringClass())) ||
                                implKind == MethodHandleInfo.REF_invokeSpecial ||
                                implKind == MethodHandleInfo.REF_invokeStatic && implClass.isHidden();
         int parameterCount = factoryType.parameterCount();
