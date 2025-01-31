@@ -157,7 +157,7 @@ public class Reflection {
         boolean isSameClassPackage = false;
 
         if (!Modifier.isPublic(getClassAccessFlags(memberClass))) {
-            isSameClassPackage = isSameClassPackage(currentClass, memberClass);
+            isSameClassPackage = inSamePackage(currentClass, memberClass);
             gotIsSameClassPackage = true;
             if (!isSameClassPackage) {
                 return false;
@@ -190,7 +190,7 @@ public class Reflection {
 
         if (!successSoFar && !Modifier.isPrivate(modifiers)) {
             if (!gotIsSameClassPackage) {
-                isSameClassPackage = isSameClassPackage(currentClass,
+                isSameClassPackage = inSamePackage(currentClass,
                                                         memberClass);
                 gotIsSameClassPackage = true;
             }
@@ -210,7 +210,7 @@ public class Reflection {
             targetClass != currentClass)
         {
             if (!gotIsSameClassPackage) {
-                isSameClassPackage = isSameClassPackage(currentClass, memberClass);
+                isSameClassPackage = inSamePackage(currentClass, memberClass);
                 gotIsSameClassPackage = true;
             }
             if (!isSameClassPackage) {
@@ -257,12 +257,15 @@ public class Reflection {
     }
 
     /**
-     * Returns true if two classes in the same package.
+     * Returns true if both classes are in the same package.
      */
-    private static boolean isSameClassPackage(Class<?> c1, Class<?> c2) {
+    public static boolean inSamePackage(Class<?> c1, Class<?> c2) {
+        if (c1 == c2)
+            return true;
         if (c1.getClassLoader() != c2.getClassLoader())
             return false;
-        return Objects.equals(c1.getPackageName(), c2.getPackageName());
+        // getPackageName() returns an interned string
+        return c1.getPackageName() == c2.getPackageName();
     }
 
     static boolean isSubclassOf(Class<?> queryClass,
