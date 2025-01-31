@@ -27,7 +27,7 @@ package java.lang.invoke;
 
 import jdk.internal.constant.ClassOrInterfaceDescImpl;
 import jdk.internal.constant.ConstantUtils;
-import sun.invoke.util.VerifyAccess;
+import jdk.internal.reflect.Reflection;
 import sun.invoke.util.VerifyType;
 import sun.invoke.util.Wrapper;
 
@@ -765,7 +765,7 @@ class InvokerBytecodeGenerator {
             return false;
         if (!isStaticallyInvocableType(member.getMethodOrFieldType()))
             return false;
-        if (!member.isPrivate() && VerifyAccess.isSamePackage(MethodHandle.class, cls))
+        if (!member.isPrivate() && Reflection.inSamePackage(MethodHandle.class, cls))
             return true;   // in java.lang.invoke package
         if (member.isPublic() && isStaticallyNameable(cls))
             return true;
@@ -797,12 +797,12 @@ class InvokerBytecodeGenerator {
         // could use VerifyAccess.isClassAccessible but the following is a safe approximation
         if (cls.getClassLoader() != Object.class.getClassLoader())
             return false;
-        if (VerifyAccess.isSamePackage(MethodHandle.class, cls))
+        if (Reflection.inSamePackage(MethodHandle.class, cls))
             return true;
         if (!Modifier.isPublic(cls.getModifiers()))
             return false;
         for (Class<?> pkgcls : STATICALLY_INVOCABLE_PACKAGES) {
-            if (VerifyAccess.isSamePackage(pkgcls, cls))
+            if (Reflection.inSamePackage(pkgcls, cls))
                 return true;
         }
         return false;
