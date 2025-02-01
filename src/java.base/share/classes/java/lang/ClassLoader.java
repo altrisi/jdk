@@ -251,7 +251,7 @@ public abstract class ClassLoader {
         private static final Set<Class<? extends ClassLoader>> loaderTypes =
             Collections.newSetFromMap(new WeakHashMap<>());
         static {
-            synchronized (loaderTypes) { loaderTypes.add(ClassLoader.class); }
+            loaderTypes.add(ClassLoader.class);
         }
 
         /**
@@ -259,19 +259,17 @@ public abstract class ClassLoader {
          * Returns {@code true} is successfully registered; {@code false} if
          * loader's super class is not registered.
          */
-        static boolean register(Class<? extends ClassLoader> c) {
-            synchronized (loaderTypes) {
-                if (loaderTypes.contains(c.getSuperclass())) {
-                    // register the class loader as parallel capable
-                    // if and only if all of its super classes are.
-                    // Note: given current classloading sequence, if
-                    // the immediate super class is parallel capable,
-                    // all the super classes higher up must be too.
-                    loaderTypes.add(c);
-                    return true;
-                } else {
-                    return false;
-                }
+        static synchronized boolean register(Class<? extends ClassLoader> c) {
+            if (loaderTypes.contains(c.getSuperclass())) {
+                // register the class loader as parallel capable
+                // if and only if all of its super classes are.
+                // Note: given current classloading sequence, if
+                // the immediate super class is parallel capable,
+                // all the super classes higher up must be too.
+                loaderTypes.add(c);
+                return true;
+            } else {
+                return false;
             }
         }
 
@@ -279,10 +277,8 @@ public abstract class ClassLoader {
          * Returns {@code true} if the given class loader type is
          * registered as parallel capable.
          */
-        static boolean isRegistered(Class<? extends ClassLoader> c) {
-            synchronized (loaderTypes) {
-                return loaderTypes.contains(c);
-            }
+        static synchronized boolean isRegistered(Class<? extends ClassLoader> c) {
+            return loaderTypes.contains(c);
         }
     }
 
