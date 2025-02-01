@@ -92,7 +92,7 @@ public final class StringBuilder
     extends AbstractStringBuilder
     implements Appendable, java.io.Serializable, Comparable<StringBuilder>, CharSequence
 {
-    private final Thread owner;
+    private transient final Thread owner;
 
     private void ensureThread() {
         if (owner != Thread.currentThread()) throw new IllegalCallerException();
