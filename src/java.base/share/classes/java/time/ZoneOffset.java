@@ -138,7 +138,7 @@ public final class ZoneOffset
 
     /** Cache of time-zone offset by offset in quarters. */
     private static final int SECONDS_PER_QUARTER = 15 * SECONDS_PER_MINUTE;
-    private static final AtomicReferenceArray<ZoneOffset> QUARTER_CACHE = new AtomicReferenceArray<>(256);
+    private static final AtomicReferenceArray<ZoneOffset> QUARTER_CACHE = new AtomicReferenceArray<>(145);
 
     /** Cache of time-zone offset by ID. */
     private static final ConcurrentMap<String, ZoneOffset> ID_CACHE = new ConcurrentHashMap<>(16, 0.75f, 4);
@@ -429,8 +429,8 @@ public final class ZoneOffset
         }
         int quarters = totalSeconds / SECONDS_PER_QUARTER;
         if (totalSeconds - quarters * SECONDS_PER_QUARTER == 0) {
-            // quarters range from -72 to 72, & 0xff maps them to 0-72 and 184-255.
-            int key = quarters & 0xff;
+            // quarters range from -72 to 72
+            int key = quarters + 72;
             ZoneOffset result = QUARTER_CACHE.getOpaque(key);
             if (result == null) {
                 result = new ZoneOffset(totalSeconds);
