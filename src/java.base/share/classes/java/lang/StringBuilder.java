@@ -92,6 +92,11 @@ public final class StringBuilder
     extends AbstractStringBuilder
     implements Appendable, java.io.Serializable, Comparable<StringBuilder>, CharSequence
 {
+    private final Thread owner;
+
+    private void ensureThread() {
+        if (owner != Thread.currentThread()) throw new IllegalCallerException();
+    }
 
     /** use serialVersionUID for interoperability */
     @Serial
@@ -104,6 +109,7 @@ public final class StringBuilder
     @IntrinsicCandidate
     public StringBuilder() {
         super(16);
+        this.owner = Thread.currentThread();
     }
 
     /**
@@ -117,6 +123,7 @@ public final class StringBuilder
     @IntrinsicCandidate
     public StringBuilder(int capacity) {
         super(capacity);
+        this.owner = Thread.currentThread();
     }
 
     /**
@@ -129,6 +136,7 @@ public final class StringBuilder
     @IntrinsicCandidate
     public StringBuilder(String str) {
         super(str);
+        this.owner = Thread.currentThread();
     }
 
     /**
@@ -141,6 +149,7 @@ public final class StringBuilder
      */
     public StringBuilder(CharSequence seq) {
         super(seq);
+        this.owner = Thread.currentThread();
     }
 
     /**
@@ -170,12 +179,14 @@ public final class StringBuilder
 
     @Override
     public StringBuilder append(Object obj) {
+        ensureThread();
         return append(String.valueOf(obj));
     }
 
     @Override
     @IntrinsicCandidate
     public StringBuilder append(String str) {
+        ensureThread();
         super.append(str);
         return this;
     }
@@ -200,12 +211,14 @@ public final class StringBuilder
      * @return  a reference to this object.
      */
     public StringBuilder append(StringBuffer sb) {
+        ensureThread();
         super.append(sb);
         return this;
     }
 
     @Override
     public StringBuilder append(CharSequence s) {
+        ensureThread();
         super.append(s);
         return this;
     }
@@ -215,12 +228,14 @@ public final class StringBuilder
      */
     @Override
     public StringBuilder append(CharSequence s, int start, int end) {
+        ensureThread();
         super.append(s, start, end);
         return this;
     }
 
     @Override
     public StringBuilder append(char[] str) {
+        ensureThread();
         super.append(str);
         return this;
     }
@@ -230,12 +245,14 @@ public final class StringBuilder
      */
     @Override
     public StringBuilder append(char[] str, int offset, int len) {
+        ensureThread();
         super.append(str, offset, len);
         return this;
     }
 
     @Override
     public StringBuilder append(boolean b) {
+        ensureThread();
         super.append(b);
         return this;
     }
@@ -243,6 +260,7 @@ public final class StringBuilder
     @Override
     @IntrinsicCandidate
     public StringBuilder append(char c) {
+        ensureThread();
         super.append(c);
         return this;
     }
@@ -250,24 +268,28 @@ public final class StringBuilder
     @Override
     @IntrinsicCandidate
     public StringBuilder append(int i) {
+        ensureThread();
         super.append(i);
         return this;
     }
 
     @Override
     public StringBuilder append(long lng) {
+        ensureThread();
         super.append(lng);
         return this;
     }
 
     @Override
     public StringBuilder append(float f) {
+        ensureThread();
         super.append(f);
         return this;
     }
 
     @Override
     public StringBuilder append(double d) {
+        ensureThread();
         super.append(d);
         return this;
     }
@@ -277,6 +299,7 @@ public final class StringBuilder
      */
     @Override
     public StringBuilder appendCodePoint(int codePoint) {
+        ensureThread();
         super.appendCodePoint(codePoint);
         return this;
     }
@@ -286,6 +309,7 @@ public final class StringBuilder
      */
     @Override
     public StringBuilder delete(int start, int end) {
+        ensureThread();
         super.delete(start, end);
         return this;
     }
@@ -295,6 +319,7 @@ public final class StringBuilder
      */
     @Override
     public StringBuilder deleteCharAt(int index) {
+        ensureThread();
         super.deleteCharAt(index);
         return this;
     }
@@ -304,6 +329,7 @@ public final class StringBuilder
      */
     @Override
     public StringBuilder replace(int start, int end, String str) {
+        ensureThread();
         super.replace(start, end, str);
         return this;
     }
@@ -315,6 +341,7 @@ public final class StringBuilder
     public StringBuilder insert(int index, char[] str, int offset,
                                 int len)
     {
+        ensureThread();
         super.insert(index, str, offset, len);
         return this;
     }
@@ -324,6 +351,7 @@ public final class StringBuilder
      */
     @Override
     public StringBuilder insert(int offset, Object obj) {
+            ensureThread();
             super.insert(offset, obj);
             return this;
     }
@@ -333,6 +361,7 @@ public final class StringBuilder
      */
     @Override
     public StringBuilder insert(int offset, String str) {
+        ensureThread();
         super.insert(offset, str);
         return this;
     }
@@ -342,6 +371,7 @@ public final class StringBuilder
      */
     @Override
     public StringBuilder insert(int offset, char[] str) {
+        ensureThread();
         super.insert(offset, str);
         return this;
     }
@@ -351,6 +381,7 @@ public final class StringBuilder
      */
     @Override
     public StringBuilder insert(int dstOffset, CharSequence s) {
+            ensureThread();
             super.insert(dstOffset, s);
             return this;
     }
@@ -362,6 +393,7 @@ public final class StringBuilder
     public StringBuilder insert(int dstOffset, CharSequence s,
                                 int start, int end)
     {
+        ensureThread();
         super.insert(dstOffset, s, start, end);
         return this;
     }
@@ -371,6 +403,7 @@ public final class StringBuilder
      */
     @Override
     public StringBuilder insert(int offset, boolean b) {
+        ensureThread();
         super.insert(offset, b);
         return this;
     }
@@ -380,6 +413,7 @@ public final class StringBuilder
      */
     @Override
     public StringBuilder insert(int offset, char c) {
+        ensureThread();
         super.insert(offset, c);
         return this;
     }
@@ -389,6 +423,7 @@ public final class StringBuilder
      */
     @Override
     public StringBuilder insert(int offset, int i) {
+        ensureThread();
         super.insert(offset, i);
         return this;
     }
@@ -398,6 +433,7 @@ public final class StringBuilder
      */
     @Override
     public StringBuilder insert(int offset, long l) {
+        ensureThread();
         super.insert(offset, l);
         return this;
     }
@@ -407,6 +443,7 @@ public final class StringBuilder
      */
     @Override
     public StringBuilder insert(int offset, float f) {
+        ensureThread();
         super.insert(offset, f);
         return this;
     }
@@ -416,32 +453,38 @@ public final class StringBuilder
      */
     @Override
     public StringBuilder insert(int offset, double d) {
+        ensureThread();
         super.insert(offset, d);
         return this;
     }
 
     @Override
     public int indexOf(String str) {
+        ensureThread();
         return super.indexOf(str);
     }
 
     @Override
     public int indexOf(String str, int fromIndex) {
+        ensureThread();
         return super.indexOf(str, fromIndex);
     }
 
     @Override
     public int lastIndexOf(String str) {
+        ensureThread();
         return super.lastIndexOf(str);
     }
 
     @Override
     public int lastIndexOf(String str, int fromIndex) {
+        ensureThread();
         return super.lastIndexOf(str, fromIndex);
     }
 
     @Override
     public StringBuilder reverse() {
+        ensureThread();
         super.reverse();
         return this;
     }
@@ -453,6 +496,7 @@ public final class StringBuilder
      */
     @Override
     public StringBuilder repeat(int codePoint, int count) {
+        ensureThread();
         super.repeat(codePoint, count);
         return this;
     }
@@ -464,6 +508,7 @@ public final class StringBuilder
      */
     @Override
     public StringBuilder repeat(CharSequence cs, int count) {
+        ensureThread();
         super.repeat(cs, count);
         return this;
     }
@@ -471,6 +516,7 @@ public final class StringBuilder
     @Override
     @IntrinsicCandidate
     public String toString() {
+        ensureThread();
         if (length() == 0) {
             return "";
         }
