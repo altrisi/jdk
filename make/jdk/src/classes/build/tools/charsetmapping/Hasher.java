@@ -90,7 +90,7 @@ public class Hasher {
         this.md = 0;
         for (int i = 0; i < n; i++) {
             int d = 1;
-            for (Object[] a = (Object[])ht[i];
+            for (Object[] a = ht[i];
                  a != null && a.length > 2;
                  a = (Object[])a[2], d++);
             this.md = Math.max(md, d);
@@ -127,7 +127,7 @@ public class Hasher {
     //
     String get(String k) {
         int h = hash(k);
-        Object[] a = (Object[])ht[h];
+        Object[] a = ht[h];
         for (;;) {
             if (a[0].equals(k))
                 return (String)a[1];
@@ -218,7 +218,7 @@ public class Hasher {
         for (int i = 0; i < ht.length; i++) {
             if (ht[i] == null)
                 continue;
-            Object[] a = (Object[])ht[i];
+            Object[] a = ht[i];
             out.print(ind + "        ht[" + i + "] = ");
             genEntry(a, 0, out);
             out.println(";");
