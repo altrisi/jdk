@@ -56,7 +56,7 @@ public class Hasher {
     boolean inner = false;                      // Generating an inner class?
     boolean empty = false;                      // Generating an empty table?
 
-    Object[] ht;                                // Hash table itself
+    Object[][] ht;                                // Hash table itself
     int nb;                                     // Number of bits (lg table size)
     int md;                                     // Maximum chain depth
     int mask;                                   // Hash-code mask
@@ -74,7 +74,7 @@ public class Hasher {
         this.shift = s;
         int n = 1 << nb;
         this.mask = n - 1;
-        ht = new Object[n];
+        ht = new Object[n][];
         int nw = keys.size();
 
         for (int i = 0; i < nw; i++) {
@@ -214,7 +214,7 @@ public class Hasher {
         out.println(ind + "    }");
         out.println();
 
-        out.println(ind + "    protected void init(Object[] ht) {");
+        out.println(ind + "    protected void init(Object[][] ht) {");
         for (int i = 0; i < ht.length; i++) {
             if (ht[i] == null)
                 continue;
