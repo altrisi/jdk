@@ -88,7 +88,7 @@ public abstract class PreHashedMap<V>
     private final int size;
     private final int shift;
     private final int mask;
-    private final Object[] ht;
+    private final Object[][] ht;
 
     /**
      * Creates a new map.
