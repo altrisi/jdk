@@ -85,7 +85,6 @@ public abstract class PreHashedMap<V>
     extends AbstractMap<String,V>
 {
 
-    private final int rows;
     private final int size;
     private final int shift;
     private final int mask;
@@ -107,11 +106,10 @@ public abstract class PreHashedMap<V>
      *        The value with which hash codes are masked after being shifted
      */
     protected PreHashedMap(int rows, int size, int shift, int mask) {
-        this.rows = rows;
         this.size = size;
         this.shift = shift;
         this.mask = mask;
-        this.ht = new Object[rows];
+        this.ht = new Object[rows][];
         init(ht);
     }
 
@@ -123,7 +121,7 @@ public abstract class PreHashedMap<V>
      *
      * @param ht The row array to be initialized
      */
-    protected abstract void init(Object[] ht);
+    protected abstract void init(Object[][] ht);
 
     @SuppressWarnings("unchecked")
     private V toV(Object x) {
@@ -132,7 +130,7 @@ public abstract class PreHashedMap<V>
 
     public V get(Object k) {
         int h = (k.hashCode() >> shift) & mask;
-        Object[] a = (Object[])ht[h];
+        Object[] a = ht[h];
         if (a == null) return null;
         for (;;) {
             if (a[0].equals(k))
@@ -149,7 +147,7 @@ public abstract class PreHashedMap<V>
      */
     public V put(String k, V v) {
         int h = (k.hashCode() >> shift) & mask;
-        Object[] a = (Object[])ht[h];
+        Object[] a = ht[h];
         if (a == null)
             throw new UnsupportedOperationException(k);
         for (;;) {
@@ -188,7 +186,7 @@ public abstract class PreHashedMap<V>
                             a = null;
                         }
                         cur = null;
-                        if (i >= rows)
+                        if (i >= ht.length)
                             return false;
                         if (i < 0 || ht[i] == null) {
                             do {
@@ -196,7 +194,7 @@ public abstract class PreHashedMap<V>
                                     return false;
                             } while (ht[i] == null);
                         }
-                        a = (Object[])ht[i];
+                        a = ht[i];
                         cur = (String)a[0];
                         return true;
                     }
