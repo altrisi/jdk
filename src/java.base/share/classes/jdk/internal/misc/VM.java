@@ -49,6 +49,7 @@ public class VM {
 
     // 0, 1, 2, ...
     private static volatile int initLevel;
+    private static @Stable boolean booted; // true if initLevel >= SYSTEM_BOOTED
     private static final Object lock = new Object();
 
     /**
@@ -63,6 +64,7 @@ public class VM {
             if (value <= initLevel || value > SYSTEM_SHUTDOWN)
                 throw new InternalError("Bad level: " + value);
             initLevel = value;
+            if (value == SYSTEM_BOOTED) booted = true;
             lock.notifyAll();
         }
     }
@@ -90,7 +92,7 @@ public class VM {
      * @see java.lang.System#initPhase2
      */
     public static boolean isModuleSystemInited() {
-        return initLevel >= MODULE_SYSTEM_INITED;
+        return booted || initLevel >= MODULE_SYSTEM_INITED;
     }
 
     private static @Stable boolean javaLangInvokeInited;
@@ -109,7 +111,7 @@ public class VM {
      * Returns {@code true} if the VM is fully initialized.
      */
     public static boolean isBooted() {
-        return initLevel >= SYSTEM_BOOTED;
+        return booted || initLevel >= SYSTEM_BOOTED;
     }
 
     /**
