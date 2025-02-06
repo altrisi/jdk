@@ -193,14 +193,11 @@ public enum AccessFlag {
      * 0x0020}.
      * @see java.lang.module.ModuleDescriptor#isOpen
      */
-        OPEN(0x0000_0020, false, Location.SET_MODULE,
-             new Function<ClassFileFormatVersion, Set<Location>>() {
-                 @Override
-                 public Set<Location> apply(ClassFileFormatVersion cffv) {
-                     return (cffv.compareTo(ClassFileFormatVersion.RELEASE_9) >= 0 ) ?
-                         Location.SET_MODULE:
-                         Location.EMPTY_SET;}
-             }),
+    OPEN(0x0000_0020, false, Location.SET_MODULE,
+         new TernaryFunction(ClassFileFormatVersion.RELEASE_9,
+                             Location.SET_MODULE,
+                             Location.EMPTY_SET)
+         ),
 
     /**
      * The module requires flag {@code ACC_TRANSITIVE} with a mask
@@ -208,13 +205,10 @@ public enum AccessFlag {
      * @see java.lang.module.ModuleDescriptor.Requires.Modifier#TRANSITIVE
      */
     TRANSITIVE(0x0000_0020, false, Location.SET_MODULE_REQUIRES,
-               new Function<ClassFileFormatVersion, Set<Location>>() {
-                   @Override
-                   public Set<Location> apply(ClassFileFormatVersion cffv) {
-                       return (cffv.compareTo(ClassFileFormatVersion.RELEASE_9) >= 0 ) ?
-                           Location.SET_MODULE_REQUIRES:
-                           Location.EMPTY_SET;}
-               }),
+               new TernaryFunction(ClassFileFormatVersion.RELEASE_9,
+                           Location.SET_MODULE_REQUIRES,
+                           Location.EMPTY_SET)
+               ),
 
     /**
      * The access flag {@code ACC_SYNCHRONIZED}, corresponding to the
@@ -229,13 +223,10 @@ public enum AccessFlag {
      * @see java.lang.module.ModuleDescriptor.Requires.Modifier#STATIC
      */
     STATIC_PHASE(0x0000_0040, false, Location.SET_MODULE_REQUIRES,
-                 new Function<ClassFileFormatVersion, Set<Location>>() {
-                     @Override
-                     public Set<Location> apply(ClassFileFormatVersion cffv) {
-                         return (cffv.compareTo(ClassFileFormatVersion.RELEASE_9) >= 0 ) ?
-                             Location.SET_MODULE_REQUIRES:
-                             Location.EMPTY_SET;}
-                 }),
+                 new TernaryFunction(ClassFileFormatVersion.RELEASE_9,
+                             Location.SET_MODULE_REQUIRES,
+                             Location.EMPTY_SET)
+                 ),
 
    /**
      * The access flag {@code ACC_VOLATILE}, corresponding to the
@@ -250,13 +241,10 @@ public enum AccessFlag {
      * @see Method#isBridge()
      */
     BRIDGE(Modifier.BRIDGE, false, Location.SET_METHOD,
-           new Function<ClassFileFormatVersion, Set<Location>>() {
-               @Override
-               public Set<Location> apply(ClassFileFormatVersion cffv) {
-                   return (cffv.compareTo(ClassFileFormatVersion.RELEASE_5) >= 0 ) ?
-                       Location.SET_METHOD:
-                       Location.EMPTY_SET;}
-           }),
+           new TernaryFunction(ClassFileFormatVersion.RELEASE_5,
+                       Location.SET_METHOD,
+                       Location.EMPTY_SET)
+           ),
 
     /**
      * The access flag {@code ACC_TRANSIENT}, corresponding to the
@@ -271,13 +259,10 @@ public enum AccessFlag {
      * @see Executable#isVarArgs()
      */
     VARARGS(Modifier.VARARGS, false, Location.SET_METHOD,
-            new Function<ClassFileFormatVersion, Set<Location>>() {
-                @Override
-                public Set<Location> apply(ClassFileFormatVersion cffv) {
-                    return (cffv.compareTo(ClassFileFormatVersion.RELEASE_5) >= 0 ) ?
-                        Location.SET_METHOD:
-                        Location.EMPTY_SET;}
-            }),
+            new TernaryFunction(ClassFileFormatVersion.RELEASE_5,
+                        Location.SET_METHOD,
+                        Location.EMPTY_SET)
+            ),
 
     /**
      * The access flag {@code ACC_NATIVE}, corresponding to the source
@@ -292,13 +277,10 @@ public enum AccessFlag {
      * @see Class#isInterface()
      */
     INTERFACE(Modifier.INTERFACE, false, Location.SET_CLASS_INNER_CLASS,
-              new Function<ClassFileFormatVersion, Set<Location>>() {
-                  @Override
-                  public Set<Location> apply(ClassFileFormatVersion cffv) {
-                      return (cffv.compareTo(ClassFileFormatVersion.RELEASE_0) == 0 ) ?
-                          Location.SET_CLASS:
-                          Location.SET_CLASS_INNER_CLASS;}
-              }),
+              new TernaryFunction(ClassFileFormatVersion.RELEASE_0,
+                          Location.SET_CLASS,
+                          Location.SET_CLASS_INNER_CLASS)
+              ),
 
     /**
      * The access flag {@code ACC_ABSTRACT}, corresponding to the
@@ -365,13 +347,10 @@ public enum AccessFlag {
      * @see Class#isAnnotation()
      */
     ANNOTATION(Modifier.ANNOTATION, false, Location.SET_CLASS_INNER_CLASS,
-               new Function<ClassFileFormatVersion, Set<Location>>() {
-                   @Override
-                   public Set<Location> apply(ClassFileFormatVersion cffv) {
-                       return (cffv.compareTo(ClassFileFormatVersion.RELEASE_5) >= 0 ) ?
-                           Location.SET_CLASS_INNER_CLASS:
-                           Location.EMPTY_SET;}
-               }),
+               new TernaryFunction(ClassFileFormatVersion.RELEASE_5,
+                           Location.SET_CLASS_INNER_CLASS,
+                           Location.EMPTY_SET)
+               ),
 
     /**
      * The access flag {@code ACC_ENUM} with a mask value of
@@ -379,13 +358,10 @@ public enum AccessFlag {
      * @see Class#isEnum()
      */
     ENUM(Modifier.ENUM, false, Location.SET_CLASS_FIELD_INNER_CLASS,
-         new Function<ClassFileFormatVersion, Set<Location>>() {
-             @Override
-             public Set<Location> apply(ClassFileFormatVersion cffv) {
-                 return (cffv.compareTo(ClassFileFormatVersion.RELEASE_5) >= 0 ) ?
-                     Location.SET_CLASS_FIELD_INNER_CLASS:
-                     Location.EMPTY_SET;}
-         }),
+         new TernaryFunction(ClassFileFormatVersion.RELEASE_5,
+                     Location.SET_CLASS_FIELD_INNER_CLASS,
+                     Location.EMPTY_SET)
+         ),
 
     /**
      * The access flag {@code ACC_MANDATED} with a mask value of
@@ -410,13 +386,10 @@ public enum AccessFlag {
      * 0x8000}.
      */
     MODULE(0x0000_8000, false, Location.SET_CLASS,
-           new Function<ClassFileFormatVersion, Set<Location>>() {
-               @Override
-               public Set<Location> apply(ClassFileFormatVersion cffv) {
-                   return (cffv.compareTo(ClassFileFormatVersion.RELEASE_9) >= 0 ) ?
-                       Location.SET_CLASS:
-                       Location.EMPTY_SET;}
-           })
+           new TreeFunction(ClassFileFormatVersion.RELEASE_9,
+                       Location.SET_CLASS,
+                       Location.EMPTY_SET)
+           )
     ;
 
     // May want to override toString for a different enum constant ->
@@ -650,5 +623,23 @@ public enum AccessFlag {
                                 Set.of(SYNTHETIC, MANDATED)),
                           entry(Location.MODULE_OPENS,
                                 Set.of(SYNTHETIC, MANDATED)));
+    }
+
+    private static class TernaryFunction implements Function<ClassFileFormatVersion, Set<Location>> {
+        private final ClassFileFormatVersion cond;
+        private final Set<Location> ifTrue, ifFalse;
+        
+        TernaryFunction(ClassFileFormatVersion cond, Set<Location> ifTrue, Set<Location> ifFalse) {
+            this.cond = cond;
+            this.ifTrue = ifTrue;
+            this.ifFalse = ifFalse;
+        }
+        
+        @Override
+        public Set<Location> apply(ClassFileFormatVersion cffv) {
+            return (cffv.compareTo(cond) >= 0) ?
+                ? ifTrue
+                : ifFalse;
+        }
     }
 }
