@@ -1185,22 +1185,39 @@ class ImmutableCollections {
             size = input.length >> 1;
 
             int len = EXPAND_FACTOR * input.length;
-            len = (len + 1) & ~1; // ensure table is even length
             table = new Object[len];
 
             for (int i = 0; i < input.length; i += 2) {
                 @SuppressWarnings("unchecked")
-                    K k = Objects.requireNonNull((K)input[i]);
+                    K k = (K)input[i]; // nullchecked in putInitial
                 @SuppressWarnings("unchecked")
                     V v = Objects.requireNonNull((V)input[i+1]);
-                int idx = probe(k);
-                if (idx >= 0) {
-                    throw new IllegalArgumentException("duplicate key: " + k);
-                } else {
-                    int dest = -(idx + 1);
-                    table[dest] = k;
-                    table[dest+1] = v;
-                }
+                putInitial(k, v);
+            }
+        }
+
+        MapN(Entry<? extends K, ? extends V>[] entries) {
+            // entries is untrusted, so must not rely on elements staying the same
+            size = input.length; // implicit nullcheck
+            int len = EXPAND_FACTOR * input.length * 2;
+            table = new Object[len];
+
+            for (Entry<K,V> entry : entries) {
+                K k = entry.getKey(); // nullchecked in putInitial
+                V v = Objects.requireNonNull(entry.getValue());
+                putInitial(k, v);
+            }
+        }
+
+        // checks null for k, but not v
+        private void putInitial(K k, V v) {
+            int idx = probe(k);
+            if (idx >= 0) {
+                throw new IllegalArgumentException("duplicate key: " + k);
+            } else {
+                int dest = -(idx + 1);
+                table[dest] = k;
+                table[dest+1] = v;
             }
         }
 
