@@ -363,7 +363,7 @@ public enum AccessFlag {
      * 0x8000}.
      */
     MODULE(0x0000_8000, false, Location.SET_CLASS,
-           new TreeFunction(ClassFileFormatVersion.RELEASE_9,
+           new CutoverLocations(ClassFileFormatVersion.RELEASE_9,
                        Location.SET_CLASS,
                        Location.EMPTY_SET)
            )
@@ -619,7 +619,7 @@ public enum AccessFlag {
                 : setBefore;
         }
         
-        static CutoverLocation differentInVersionZero(Set<Location> onZero, Set<Location> afterZero) {
+        static CutoverLocations differentInVersionZero(Set<Location> onZero, Set<Location> afterZero) {
             assert ClassFileFormatVersion.RELEASE_0.ordinal() + 1 == ClassFileFormatVersion.RELEASE_1.ordinal();
             return new CutoverLocations(ClassFileFormatVersion.RELEASE_1, afterZero, onZero);
         }
