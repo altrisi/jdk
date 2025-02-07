@@ -1198,8 +1198,8 @@ class ImmutableCollections {
 
         MapN(Entry<? extends K, ? extends V>[] entries) {
             // entries is untrusted, so must not rely on elements staying the same
-            size = input.length; // implicit nullcheck
-            int len = EXPAND_FACTOR * input.length * 2;
+            size = entries.length; // implicit nullcheck
+            int len = EXPAND_FACTOR * entries.length * 2;
             table = new Object[len];
 
             for (Entry<K,V> entry : entries) {
