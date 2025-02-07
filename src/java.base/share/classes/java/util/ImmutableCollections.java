@@ -1202,7 +1202,7 @@ class ImmutableCollections {
             int len = EXPAND_FACTOR * entries.length * 2;
             table = new Object[len];
 
-            for (Entry<K,V> entry : entries) {
+            for (var entry : entries) {
                 K k = entry.getKey(); // nullchecked in putInitial
                 V v = Objects.requireNonNull(entry.getValue());
                 putInitial(k, v);
