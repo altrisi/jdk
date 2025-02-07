@@ -258,9 +258,8 @@ public enum AccessFlag {
      * @see Class#isInterface()
      */
     INTERFACE(Modifier.INTERFACE, false, Location.SET_CLASS_INNER_CLASS,
-              new CutoverLocations(ClassFileFormatVersion.RELEASE_0,
-                          Location.SET_CLASS,
-                          Location.SET_CLASS_INNER_CLASS)
+              CutoverLocations.differentInVersionZero(Location.SET_CLASS,
+                                                      Location.SET_CLASS_INNER_CLASS)
               ),
 
     /**
