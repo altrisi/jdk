@@ -48,7 +48,6 @@ import sun.invoke.util.BytecodeDescriptor;
 import sun.invoke.util.VerifyType;
 import sun.invoke.util.Wrapper;
 
-import static java.lang.invoke.MethodHandleStatics.UNSAFE;
 import static java.lang.invoke.MethodHandleStatics.newIllegalArgumentException;
 
 /**
@@ -1357,10 +1356,6 @@ s.writeObject(this.parameterArray());
      */
     @java.io.Serial
     private void readObject(java.io.ObjectInputStream s) throws java.io.IOException, ClassNotFoundException {
-        // Assign defaults in case this object escapes
-        UNSAFE.putReference(this, OffsetHolder.rtypeOffset, void.class);
-        UNSAFE.putReference(this, OffsetHolder.ptypesOffset, NO_PTYPES);
-
         s.defaultReadObject();  // requires serialPersistentFields to be an empty array
 
         Class<?>   returnType     = (Class<?>)   s.readObject();
@@ -1369,16 +1364,6 @@ s.writeObject(this.parameterArray());
         // Verify all operands, and make sure ptypes is unshared
         // Cache the new MethodType for readResolve
         wrapAlt = new MethodType[]{MethodType.methodType(returnType, parameterArray)};
-    }
-
-    // Support for resetting final fields while deserializing. Implement Holder
-    // pattern to make the rarely needed offset calculation lazy.
-    private static class OffsetHolder {
-        static final long rtypeOffset
-                = UNSAFE.objectFieldOffset(MethodType.class, "rtype");
-
-        static final long ptypesOffset
-                = UNSAFE.objectFieldOffset(MethodType.class, "ptypes");
     }
 
     /**
