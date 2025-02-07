@@ -571,7 +571,7 @@ public enum AccessFlag {
 
         // Repeated sets of locations used by AccessFlag constants
         private static final Set<Location> EMPTY_SET = 
-            Collections.unmodisiableSet(EnumSet.noneOf(Location.class));
+            Collections.unmodifiableSet(EnumSet.noneOf(Location.class));
         private static final Set<Location> SET_MODULE = set(MODULE);
         private static final Set<Location> SET_CLASS_METHOD_INNER_CLASS =
             set(CLASS, METHOD, INNER_CLASS);
@@ -655,6 +655,7 @@ public enum AccessFlag {
     }
 
     // makes an unmodifiable set from the passed enum values
+    @SafeVarargs
     private static <E extends Enum<E>> Set<E> set(E first, E... rest) {
         EnumSet<E> set = EnumSet.of(first, rest);
         return Collections.unmodifiableSet(set);
