@@ -105,8 +105,8 @@ public enum AccessFlag {
      */
     PUBLIC(Modifier.PUBLIC, true,
            Location.SET_PUBLIC_1,
-           CutoverLocations.differentInVersionZero(SET_CLASS_FIELD_METHOD,
-                                                   SET_PUBLIC_1)
+           CutoverLocations.differentInVersionZero(Location.SET_CLASS_FIELD_METHOD,
+                                                   Location.SET_PUBLIC_1)
           ),
 
     /**
@@ -621,7 +621,7 @@ public enum AccessFlag {
         
         static CutoverLocation differentInVersionZero(Set<Location> onZero, Set<Location> afterZero) {
             assert ClassFileFormatVersion.RELEASE_0.ordinal() + 1 == ClassFileFormatVersion.RELEASE_1.ordinal();
-            return new CutoverLocation(ClassFileFormatVersion.RELEASE_1, afterZero, onZero);
+            return new CutoverLocations(ClassFileFormatVersion.RELEASE_1, afterZero, onZero);
         }
     }
 }
