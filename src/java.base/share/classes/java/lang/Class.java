@@ -3450,7 +3450,7 @@ public final class Class<T> implements java.io.Serializable,
           values.setAccessible(true);
           @SuppressWarnings("unchecked")
           T[] temporaryConstants = (T[])values.invoke(null);
-          u.storeFence(); // is it needed? or enough even?
+          Unsafe.getUnsafe().storeFence(); // is it needed? or enough even?
           enumConstants = temporaryConstants;
           return temporaryConstants;
       }
