@@ -406,7 +406,7 @@ public abstract sealed class EnumSet<E extends Enum<E>> extends AbstractSet<E>
     }
 
     E[] universe() {
-        return universe(elementType);
+        return getUniverse(elementType);
     }
 
     /**
