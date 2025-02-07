@@ -1669,14 +1669,7 @@ public interface Map<K, V> {
             return new ImmutableCollections.Map1<>(entries[0].getKey(),
                     entries[0].getValue());
         } else {
-            Object[] kva = new Object[entries.length << 1];
-            int a = 0;
-            for (Entry<? extends K, ? extends V> entry : entries) {
-                // implicit null checks of each array slot
-                kva[a++] = entry.getKey();
-                kva[a++] = entry.getValue();
-            }
-            return new ImmutableCollections.MapN<>(kva);
+            return new ImmutableCollections.MapN<>(entries);
         }
     }
 
