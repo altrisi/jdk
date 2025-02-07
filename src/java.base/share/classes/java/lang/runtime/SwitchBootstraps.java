@@ -704,7 +704,7 @@ public final class SwitchBootstraps {
 
         byte[] classBytes = ClassFile.of().build(ConstantUtils.binaryNameToDesc(typeSwitchClassName(caller.lookupClass())),
                 clb -> {
-                    clb.withFlags(AccessFlag.FINAL, AccessFlag.SUPER, AccessFlag.SYNTHETIC)
+                    clb.withFlags(Modifier.FINAL | Modifier.SUPER | 0x00001000) // synthetic
                        .withMethodBody("typeSwitch",
                                        addExtraInfo ? MTD_TYPE_SWITCH_EXTRA : MTD_TYPE_SWITCH,
                                        ClassFile.ACC_FINAL | ClassFile.ACC_PUBLIC | ClassFile.ACC_STATIC,
