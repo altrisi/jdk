@@ -26,6 +26,7 @@
 package java.util;
 
 import jdk.internal.access.SharedSecrets;
+import jdk.internal.vm.annotation.Stable;
 
 /**
  * A specialized {@link Set} implementation for use with enum types.  All of
@@ -88,16 +89,10 @@ public abstract sealed class EnumSet<E extends Enum<E>> extends AbstractSet<E>
     /**
      * The class of all the elements of this set.
      */
-    final transient Class<E> elementType;
+    final transient @Stable Class<E> elementType;
 
-    /**
-     * All of the values comprising E.  (Cached for performance.)
-     */
-    final transient Enum<?>[] universe;
-
-    EnumSet(Class<E>elementType, Enum<?>[] universe) {
+    EnumSet(Class<E>elementType) {
         this.elementType = elementType;
-        this.universe    = universe;
     }
 
     /**
@@ -115,9 +110,9 @@ public abstract sealed class EnumSet<E extends Enum<E>> extends AbstractSet<E>
             throw new ClassCastException(elementType + " not an enum");
 
         if (universe.length <= 64)
-            return new RegularEnumSet<>(elementType, universe);
+            return new RegularEnumSet<>(elementType);
         else
-            return new JumboEnumSet<>(elementType, universe);
+            return new JumboEnumSet<>(elementType);
     }
 
     /**
@@ -408,6 +403,10 @@ public abstract sealed class EnumSet<E extends Enum<E>> extends AbstractSet<E>
     private static <E extends Enum<E>> E[] getUniverse(Class<E> elementType) {
         return SharedSecrets.getJavaLangAccess()
                                         .getEnumConstantsShared(elementType);
+    }
+
+    E[] universe() {
+        return universe(elementType);
     }
 
     /**
