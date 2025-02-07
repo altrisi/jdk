@@ -105,14 +105,9 @@ public enum AccessFlag {
      */
     PUBLIC(Modifier.PUBLIC, true,
            Location.SET_PUBLIC_1,
-           new Function<ClassFileFormatVersion, Set<Location>>() {
-               @Override
-               public Set<Location> apply(ClassFileFormatVersion cffv) {
-                   return (cffv == ClassFileFormatVersion.RELEASE_0) ?
-                       Location.SET_CLASS_FIELD_METHOD:
-                       Location.SET_PUBLIC_1;
-               }
-           }),
+           CutoverLocations.differentInVersionZero(SET_CLASS_FIELD_METHOD,
+                                                   SET_PUBLIC_1)
+          ),
 
     /**
      * The access flag {@code ACC_PRIVATE}, corresponding to the
@@ -120,14 +115,9 @@ public enum AccessFlag {
      * value of <code>{@value "0x%04x" Modifier#PRIVATE}</code>.
      */
     PRIVATE(Modifier.PRIVATE, true, Location.SET_FIELD_METHOD_INNER_CLASS,
-            new Function<ClassFileFormatVersion, Set<Location>>() {
-                @Override
-                    public Set<Location> apply(ClassFileFormatVersion cffv) {
-                    return (cffv == ClassFileFormatVersion.RELEASE_0) ?
-                        Location.SET_FIELD_METHOD:
-                        Location.SET_FIELD_METHOD_INNER_CLASS;
-                }
-            }),
+            CutoverLocations.differentInVersionZero(Location.SET_FIELD_METHOD,
+                                                    Location.SET_FIELD_METHOD_INNER_CLASS)
+           ),
 
     /**
      * The access flag {@code ACC_PROTECTED}, corresponding to the
@@ -135,14 +125,9 @@ public enum AccessFlag {
      * value of <code>{@value "0x%04x" Modifier#PROTECTED}</code>.
      */
     PROTECTED(Modifier.PROTECTED, true, Location.SET_FIELD_METHOD_INNER_CLASS,
-              new Function<ClassFileFormatVersion, Set<Location>>() {
-                  @Override
-                  public Set<Location> apply(ClassFileFormatVersion cffv) {
-                  return (cffv == ClassFileFormatVersion.RELEASE_0) ?
-                      Location.SET_FIELD_METHOD:
-                      Location.SET_FIELD_METHOD_INNER_CLASS;
-                  }
-              }),
+              CutoverLocations.differentInVersionZero(Location.SET_FIELD_METHOD,
+                                                      Location.SET_FIELD_METHOD_INNER_CLASS)
+              ),
 
     /**
      * The access flag {@code ACC_STATIC}, corresponding to the source
@@ -150,13 +135,9 @@ public enum AccessFlag {
      * <code>{@value "0x%04x" Modifier#STATIC}</code>.
      */
     STATIC(Modifier.STATIC, true, Location.SET_FIELD_METHOD_INNER_CLASS,
-           new Function<ClassFileFormatVersion, Set<Location>>() {
-               @Override
-               public Set<Location> apply(ClassFileFormatVersion cffv) {
-                   return (cffv == ClassFileFormatVersion.RELEASE_0) ?
-                       Location.SET_FIELD_METHOD:
-                       Location.SET_FIELD_METHOD_INNER_CLASS;}
-           }),
+           CutoverLocations.differentInVersionZero(Location.SET_FIELD_METHOD,
+                                                   Location.SET_FIELD_METHOD_INNER_CLASS)
+           ),
 
     /**
      * The access flag {@code ACC_FINAL}, corresponding to the source
@@ -194,7 +175,7 @@ public enum AccessFlag {
      * @see java.lang.module.ModuleDescriptor#isOpen
      */
     OPEN(0x0000_0020, false, Location.SET_MODULE,
-         new TernaryFunction(ClassFileFormatVersion.RELEASE_9,
+         new CutoverLocations(ClassFileFormatVersion.RELEASE_9,
                              Location.SET_MODULE,
                              Location.EMPTY_SET)
          ),
@@ -205,7 +186,7 @@ public enum AccessFlag {
      * @see java.lang.module.ModuleDescriptor.Requires.Modifier#TRANSITIVE
      */
     TRANSITIVE(0x0000_0020, false, Location.SET_MODULE_REQUIRES,
-               new TernaryFunction(ClassFileFormatVersion.RELEASE_9,
+               new CutoverLocations(ClassFileFormatVersion.RELEASE_9,
                            Location.SET_MODULE_REQUIRES,
                            Location.EMPTY_SET)
                ),
@@ -223,7 +204,7 @@ public enum AccessFlag {
      * @see java.lang.module.ModuleDescriptor.Requires.Modifier#STATIC
      */
     STATIC_PHASE(0x0000_0040, false, Location.SET_MODULE_REQUIRES,
-                 new TernaryFunction(ClassFileFormatVersion.RELEASE_9,
+                 new CutoverLocations(ClassFileFormatVersion.RELEASE_9,
                              Location.SET_MODULE_REQUIRES,
                              Location.EMPTY_SET)
                  ),
@@ -241,7 +222,7 @@ public enum AccessFlag {
      * @see Method#isBridge()
      */
     BRIDGE(Modifier.BRIDGE, false, Location.SET_METHOD,
-           new TernaryFunction(ClassFileFormatVersion.RELEASE_5,
+           new CutoverLocations(ClassFileFormatVersion.RELEASE_5,
                        Location.SET_METHOD,
                        Location.EMPTY_SET)
            ),
@@ -259,7 +240,7 @@ public enum AccessFlag {
      * @see Executable#isVarArgs()
      */
     VARARGS(Modifier.VARARGS, false, Location.SET_METHOD,
-            new TernaryFunction(ClassFileFormatVersion.RELEASE_5,
+            new CutoverLocations(ClassFileFormatVersion.RELEASE_5,
                         Location.SET_METHOD,
                         Location.EMPTY_SET)
             ),
@@ -277,7 +258,7 @@ public enum AccessFlag {
      * @see Class#isInterface()
      */
     INTERFACE(Modifier.INTERFACE, false, Location.SET_CLASS_INNER_CLASS,
-              new TernaryFunction(ClassFileFormatVersion.RELEASE_0,
+              new CutoverLocations(ClassFileFormatVersion.RELEASE_0,
                           Location.SET_CLASS,
                           Location.SET_CLASS_INNER_CLASS)
               ),
@@ -289,13 +270,9 @@ public enum AccessFlag {
      */
     ABSTRACT(Modifier.ABSTRACT, true,
              Location.SET_CLASS_METHOD_INNER_CLASS,
-             new Function<ClassFileFormatVersion, Set<Location>>() {
-                 @Override
-                 public Set<Location> apply(ClassFileFormatVersion cffv) {
-                     return (cffv.compareTo(ClassFileFormatVersion.RELEASE_0) == 0 ) ?
-                         Location.SET_CLASS_METHOD:
-                         Location.SET_CLASS_METHOD_INNER_CLASS;}
-             }),
+             CutoverLocations.differentInVersionZero(Location.SET_CLASS_METHOD,
+                                                     Location.SET_CLASS_METHOD_INNER_CLASS)
+            ),
 
     /**
      * The access flag {@code ACC_STRICT}, corresponding to the source
@@ -347,7 +324,7 @@ public enum AccessFlag {
      * @see Class#isAnnotation()
      */
     ANNOTATION(Modifier.ANNOTATION, false, Location.SET_CLASS_INNER_CLASS,
-               new TernaryFunction(ClassFileFormatVersion.RELEASE_5,
+               new CutoverLocations(ClassFileFormatVersion.RELEASE_5,
                            Location.SET_CLASS_INNER_CLASS,
                            Location.EMPTY_SET)
                ),
@@ -358,7 +335,7 @@ public enum AccessFlag {
      * @see Class#isEnum()
      */
     ENUM(Modifier.ENUM, false, Location.SET_CLASS_FIELD_INNER_CLASS,
-         new TernaryFunction(ClassFileFormatVersion.RELEASE_5,
+         new CutoverLocations(ClassFileFormatVersion.RELEASE_5,
                      Location.SET_CLASS_FIELD_INNER_CLASS,
                      Location.EMPTY_SET)
          ),
@@ -625,21 +602,26 @@ public enum AccessFlag {
                                 Set.of(SYNTHETIC, MANDATED)));
     }
 
-    private static class TernaryFunction implements Function<ClassFileFormatVersion, Set<Location>> {
-        private final ClassFileFormatVersion cond;
-        private final Set<Location> ifTrue, ifFalse;
+    private static class CutoverLocations implements Function<ClassFileFormatVersion, Set<Location>> {
+        private final ClassFileFormatVersion firstVer;
+        private final Set<Location> setAfter, setBefore;
         
-        TernaryFunction(ClassFileFormatVersion cond, Set<Location> ifTrue, Set<Location> ifFalse) {
-            this.cond = cond;
-            this.ifTrue = ifTrue;
-            this.ifFalse = ifFalse;
+        CutoverLocations(ClassFileFormatVersion firstVer, Set<Location> setAfter, Set<Location> setBefore) {
+            this.firstVer = firstVer;
+            this.setAfter = setAfter;
+            this.setBefore = setBefore;
         }
         
         @Override
         public Set<Location> apply(ClassFileFormatVersion cffv) {
-            return (cffv.compareTo(cond) >= 0) ?
-                ? ifTrue
-                : ifFalse;
+            return cffv.compareTo(firstVer) >= 0
+                ? setAfter
+                : setBefore;
+        }
+        
+        static CutoverLocation differentInVersionZero(Set<Location> onZero, Set<Location> afterZero) {
+            assert ClassFileFormatVersion.RELEASE_0.ordinal() + 1 == ClassFileFormatVersion.RELEASE_1.ordinal();
+            return new CutoverLocation(ClassFileFormatVersion.RELEASE_1, afterZero, onZero);
         }
     }
 }
