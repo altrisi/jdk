@@ -29,6 +29,7 @@ import java.util.Collections;
 import java.util.Objects;
 import java.util.Map;
 import java.util.Set;
+import java.util.EnumSet;
 import java.util.function.Function;
 import static java.util.Map.entry;
 
@@ -489,7 +490,7 @@ public enum AccessFlag {
      * positions not support for the location in question
      */
     public static Set<AccessFlag> maskToAccessFlags(int mask, Location location) {
-        Set<AccessFlag> result = java.util.EnumSet.noneOf(AccessFlag.class);
+        Set<AccessFlag> result = EnumSet.noneOf(AccessFlag.class);
         for (var accessFlag : LocationToFlags.locationToFlags.get(location)) {
             int accessMask = accessFlag.mask();
             if ((mask &  accessMask) != 0) {
@@ -569,52 +570,53 @@ public enum AccessFlag {
         MODULE_OPENS;
 
         // Repeated sets of locations used by AccessFlag constants
-        private static final Set<Location> EMPTY_SET = Set.of();
-        private static final Set<Location> SET_MODULE = Set.of(MODULE);
+        private static final Set<Location> EMPTY_SET = 
+            Collections.unmodisiableSet(EnumSet.noneOf(Location.class));
+        private static final Set<Location> SET_MODULE = set(MODULE);
         private static final Set<Location> SET_CLASS_METHOD_INNER_CLASS =
-            Set.of(CLASS, METHOD, INNER_CLASS);
+            set(CLASS, METHOD, INNER_CLASS);
         private static final Set<Location> SET_CLASS_FIELD_METHOD =
-            Set.of(CLASS, FIELD, METHOD);
+            set(CLASS, FIELD, METHOD);
         private static final Set<Location> SET_CLASS_FIELD_INNER_CLASS =
-            Set.of(CLASS, FIELD, INNER_CLASS);
+            set(CLASS, FIELD, INNER_CLASS);
         private static final Set<Location> SET_CLASS_FIELD_METHOD_INNER_CLASS =
-            Set.of(CLASS, FIELD, METHOD, INNER_CLASS);
+            set(CLASS, FIELD, METHOD, INNER_CLASS);
         private static final Set<Location> SET_CLASS_METHOD =
-            Set.of(CLASS, METHOD);
+            set(CLASS, METHOD);
         private static final Set<Location> SET_FIELD_METHOD =
-            Set.of(FIELD, METHOD);
+            set(FIELD, METHOD);
         private static final Set<Location> SET_FIELD_METHOD_INNER_CLASS =
-            Set.of(FIELD, METHOD, INNER_CLASS);
-        private static final Set<Location> SET_METHOD = Set.of(METHOD);
-        private static final Set<Location> SET_METHOD_PARAM = Set.of(METHOD_PARAMETER);
-        private static final Set<Location> SET_FIELD = Set.of(FIELD);
-        private static final Set<Location> SET_CLASS = Set.of(CLASS);
+            set(FIELD, METHOD, INNER_CLASS);
+        private static final Set<Location> SET_METHOD = set(METHOD);
+        private static final Set<Location> SET_METHOD_PARAM = set(METHOD_PARAMETER);
+        private static final Set<Location> SET_FIELD = set(FIELD);
+        private static final Set<Location> SET_CLASS = set(CLASS);
         private static final Set<Location> SET_CLASS_INNER_CLASS =
-            Set.of(CLASS, INNER_CLASS);
+            set(CLASS, INNER_CLASS);
         private static final Set<Location> SET_MODULE_REQUIRES =
-            Set.of(MODULE_REQUIRES);
+            set(MODULE_REQUIRES);
         private static final Set<Location> SET_PUBLIC_1 =
-            Set.of(CLASS, FIELD, METHOD, INNER_CLASS);
+            set(CLASS, FIELD, METHOD, INNER_CLASS);
         private static final Set<Location> SET_FINAL_8 =
-            Set.of(CLASS, FIELD, METHOD,
+            set(CLASS, FIELD, METHOD,
                    INNER_CLASS,     /* added in 1.1 */
                    METHOD_PARAMETER); /* added in 8 */
         private static final Set<Location> SET_SYNTHETIC_7 =
-              Set.of(CLASS, FIELD, METHOD,
+              set(CLASS, FIELD, METHOD,
                      INNER_CLASS);
         private static final Set<Location> SET_SYNTHETIC_8 =
-              Set.of(CLASS, FIELD, METHOD,
+              set(CLASS, FIELD, METHOD,
                      INNER_CLASS, METHOD_PARAMETER);
         private static final Set<Location> SET_SYNTHETIC_9 =
               // Added as an access flag in 7
-              Set.of(CLASS, FIELD, METHOD,
+              set(CLASS, FIELD, METHOD,
                      INNER_CLASS,
                      METHOD_PARAMETER, // Added in 8
                      // Module-related items added in 9
                      MODULE, MODULE_REQUIRES,
                      MODULE_EXPORTS, MODULE_OPENS);
         private static final Set<Location> SET_MANDATED_9 =
-            Set.of(METHOD_PARAMETER, // From 8
+            set(METHOD_PARAMETER, // From 8
                    // Starting in 9
                    MODULE, MODULE_REQUIRES,
                    MODULE_EXPORTS, MODULE_OPENS);
@@ -623,32 +625,38 @@ public enum AccessFlag {
     private static class LocationToFlags {
         private static Map<Location, Set<AccessFlag>> locationToFlags =
             Map.ofEntries(entry(Location.CLASS,
-                                Set.of(PUBLIC, FINAL, SUPER,
+                                set(PUBLIC, FINAL, SUPER,
                                        INTERFACE, ABSTRACT,
                                        SYNTHETIC, ANNOTATION,
                                        ENUM, AccessFlag.MODULE)),
                           entry(Location.FIELD,
-                                Set.of(PUBLIC, PRIVATE, PROTECTED,
+                                set(PUBLIC, PRIVATE, PROTECTED,
                                        STATIC, FINAL, VOLATILE,
                                        TRANSIENT, SYNTHETIC, ENUM)),
                           entry(Location.METHOD,
-                                Set.of(PUBLIC, PRIVATE, PROTECTED,
+                                set(PUBLIC, PRIVATE, PROTECTED,
                                        STATIC, FINAL, SYNCHRONIZED,
                                        BRIDGE, VARARGS, NATIVE,
                                        ABSTRACT, STRICT, SYNTHETIC)),
                           entry(Location.INNER_CLASS,
-                                Set.of(PUBLIC, PRIVATE, PROTECTED,
+                                set(PUBLIC, PRIVATE, PROTECTED,
                                        STATIC, FINAL, INTERFACE, ABSTRACT,
                                        SYNTHETIC, ANNOTATION, ENUM)),
                           entry(Location.METHOD_PARAMETER,
-                                Set.of(FINAL, SYNTHETIC, MANDATED)),
+                                set(FINAL, SYNTHETIC, MANDATED)),
                           entry(Location.MODULE,
-                                Set.of(OPEN, SYNTHETIC, MANDATED)),
+                                set(OPEN, SYNTHETIC, MANDATED)),
                           entry(Location.MODULE_REQUIRES,
-                                Set.of(TRANSITIVE, STATIC_PHASE, SYNTHETIC, MANDATED)),
+                                set(TRANSITIVE, STATIC_PHASE, SYNTHETIC, MANDATED)),
                           entry(Location.MODULE_EXPORTS,
-                                Set.of(SYNTHETIC, MANDATED)),
+                                set(SYNTHETIC, MANDATED)),
                           entry(Location.MODULE_OPENS,
-                                Set.of(SYNTHETIC, MANDATED)));
+                                set(SYNTHETIC, MANDATED)));
+    }
+
+    // makes an unmodifiable set from the passed enum values
+    private static <E extends Enum<E>> Set<E> set(E first, E... rest) {
+        EnumSet<E> set = EnumSet.of(first, rest);
+        return Collections.unmodifiableSet(set);
     }
 }
