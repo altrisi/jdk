@@ -219,7 +219,7 @@ class MethodType
     }
     static void checkSlotCount(int count) {
         if ((count & MAX_JVM_ARITY) != count)
-            throw newIllegalArgumentException("bad parameter count "+count);
+            throw newIllegalArgumentException("bad parameter count", count);
     }
     private static IndexOutOfBoundsException newIndexOutOfBoundsException(Object num) {
         if (num instanceof Integer)  num = "bad index: "+num;
@@ -1212,7 +1212,7 @@ class MethodType
         if (!descriptor.startsWith("(") ||  // also generates NPE if needed
             descriptor.indexOf(')') < 0 ||
             descriptor.indexOf('.') >= 0)
-            throw newIllegalArgumentException("not a method descriptor: "+descriptor);
+            throw newIllegalArgumentException("not a method descriptor", descriptor);
         List<Class<?>> types = BytecodeDescriptor.parseMethod(descriptor, loader);
         Class<?> rtype = types.remove(types.size() - 1);
         Class<?>[] ptypes = listToArray(types);
