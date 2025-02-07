@@ -394,17 +394,17 @@ public final class Modifier {
      * @jls 8.1.1 Class Modifiers
      */
     private static final int CLASS_MODIFIERS =
-        Modifier.PUBLIC         | Modifier.PROTECTED    | Modifier.PRIVATE |
-        Modifier.ABSTRACT       | Modifier.STATIC       | Modifier.FINAL   |
-        Modifier.STRICT;
+        PUBLIC         | PROTECTED    | PRIVATE |
+        ABSTRACT       | STATIC       | FINAL   |
+        STRICT;
 
     /**
      * The Java source modifiers that can be applied to an interface.
      * @jls 9.1.1 Interface Modifiers
      */
     private static final int INTERFACE_MODIFIERS =
-        Modifier.PUBLIC         | Modifier.PROTECTED    | Modifier.PRIVATE |
-        Modifier.ABSTRACT       | Modifier.STATIC       | Modifier.STRICT;
+        PUBLIC         | PROTECTED    | PRIVATE |
+        ABSTRACT       | STATIC       | STRICT;
 
 
     /**
@@ -412,35 +412,35 @@ public final class Modifier {
      * @jls 8.8.3 Constructor Modifiers
      */
     private static final int CONSTRUCTOR_MODIFIERS =
-        Modifier.PUBLIC         | Modifier.PROTECTED    | Modifier.PRIVATE;
+        PUBLIC         | PROTECTED    | PRIVATE;
 
     /**
      * The Java source modifiers that can be applied to a method.
      * @jls 8.4.3  Method Modifiers
      */
     private static final int METHOD_MODIFIERS =
-        Modifier.PUBLIC         | Modifier.PROTECTED    | Modifier.PRIVATE |
-        Modifier.ABSTRACT       | Modifier.STATIC       | Modifier.FINAL   |
-        Modifier.SYNCHRONIZED   | Modifier.NATIVE       | Modifier.STRICT;
+        PUBLIC         | PROTECTED    | PRIVATE |
+        ABSTRACT       | STATIC       | FINAL   |
+        SYNCHRONIZED   | NATIVE       | STRICT;
 
     /**
      * The Java source modifiers that can be applied to a field.
      * @jls 8.3.1 Field Modifiers
      */
     private static final int FIELD_MODIFIERS =
-        Modifier.PUBLIC         | Modifier.PROTECTED    | Modifier.PRIVATE |
-        Modifier.STATIC         | Modifier.FINAL        | Modifier.TRANSIENT |
-        Modifier.VOLATILE;
+        PUBLIC         | PROTECTED    | PRIVATE |
+        STATIC         | FINAL        | TRANSIENT |
+        VOLATILE;
 
     /**
      * The Java source modifiers that can be applied to a method or constructor parameter.
      * @jls 8.4.1 Formal Parameters
      */
     private static final int PARAMETER_MODIFIERS =
-        Modifier.FINAL;
+        FINAL;
 
     static final int ACCESS_MODIFIERS =
-        Modifier.PUBLIC | Modifier.PROTECTED | Modifier.PRIVATE;
+        PUBLIC | PROTECTED | PRIVATE;
 
     /**
      * Return an {@code int} value OR-ing together the source language
