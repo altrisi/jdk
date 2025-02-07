@@ -42,8 +42,8 @@ final class RegularEnumSet<E extends Enum<E>> extends EnumSet<E> {
      */
     private long elements = 0L;
 
-    RegularEnumSet(Class<E>elementType, Enum<?>[] universe) {
-        super(elementType, universe);
+    RegularEnumSet(Class<E>elementType) {
+        super(elementType);
     }
 
     void addRange(E from, E to) {
@@ -51,14 +51,14 @@ final class RegularEnumSet<E extends Enum<E>> extends EnumSet<E> {
     }
 
     void addAll() {
-        if (universe.length != 0)
-            elements = -1L >>> -universe.length;
+        if (universe().length != 0)
+            elements = -1L >>> -universe().length;
     }
 
     void complement() {
-        if (universe.length != 0) {
+        if (universe().length != 0) {
             elements = ~elements;
-            elements &= -1L >>> -universe.length;  // Mask unused bits
+            elements &= -1L >>> -universe().length;  // Mask unused bits
         }
     }
 
@@ -103,7 +103,7 @@ final class RegularEnumSet<E extends Enum<E>> extends EnumSet<E> {
                 throw new NoSuchElementException();
             lastReturned = unseen & -unseen;
             unseen -= lastReturned;
-            return (E) universe[Long.numberOfTrailingZeros(lastReturned)];
+            return (E) universe()[Long.numberOfTrailingZeros(lastReturned)];
         }
 
         public void remove() {
