@@ -657,6 +657,7 @@ public enum AccessFlag {
     // makes an unmodifiable set from the passed enum values
     @SafeVarargs
     private static <E extends Enum<E>> Set<E> set(E first, E... rest) {
+        @SuppressWarnings("varargs") // ???
         EnumSet<E> set = EnumSet.of(first, rest);
         return Collections.unmodifiableSet(set);
     }
