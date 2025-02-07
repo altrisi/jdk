@@ -3437,23 +3437,29 @@ public final class Class<T> implements java.io.Serializable,
     T[] getEnumConstantsShared() {
         T[] constants = enumConstants;
         if (constants == null) {
-            if (!isEnum()) return null;
-            try {
-                final Method values = getMethod("values");
-                values.setAccessible(true);
-                @SuppressWarnings("unchecked")
-                T[] temporaryConstants = (T[])values.invoke(null);
-                enumConstants = constants = temporaryConstants;
-            }
-            // These can happen when users concoct enum-like classes
-            // that don't comply with the enum spec.
-            catch (InvocationTargetException | NoSuchMethodException |
-                   IllegalAccessException | NullPointerException |
-                   ClassCastException ex) { return null; }
+            constants = computeEnumConstants();
         }
         return constants;
     }
-    private transient volatile T[] enumConstants;
+    private transient @Stable T[] enumConstants;
+
+    private T[] computeEnumConstants() {
+      if (!isEnum()) return null;
+      try {
+          final Method values = getMethod("values");
+          values.setAccessible(true);
+          @SuppressWarnings("unchecked")
+          T[] temporaryConstants = (T[])values.invoke(null);
+          u.storeFence(); // is it needed? or enough even?
+          enumConstants = temporaryConstants;
+          return temporaryConstants;
+      }
+      // These can happen when users concoct enum-like classes
+      // that don't comply with the enum spec.
+      catch (InvocationTargetException | NoSuchMethodException |
+             IllegalAccessException | NullPointerException |
+             ClassCastException ex) { return null; }
+    }
 
     /**
      * Returns a map from simple name to enum constant.  This package-private
