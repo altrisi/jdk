@@ -47,9 +47,9 @@ final class JumboEnumSet<E extends Enum<E>> extends EnumSet<E> {
     // Redundant - maintained for performance
     private int size = 0;
 
-    JumboEnumSet(Class<E>elementType, Enum<?>[] universe) {
-        super(elementType, universe);
-        elements = new long[(universe.length + 63) >>> 6];
+    JumboEnumSet(Class<E>elementType) {
+        super(elementType);
+        elements = new long[(universe().length + 63) >>> 6];
     }
 
     void addRange(E from, E to) {
@@ -71,15 +71,15 @@ final class JumboEnumSet<E extends Enum<E>> extends EnumSet<E> {
     void addAll() {
         for (int i = 0; i < elements.length; i++)
             elements[i] = -1;
-        elements[elements.length - 1] >>>= -universe.length;
-        size = universe.length;
+        elements[elements.length - 1] >>>= -universe().length;
+        size = universe().length;
     }
 
     void complement() {
         for (int i = 0; i < elements.length; i++)
             elements[i] = ~elements[i];
-        elements[elements.length - 1] &= (-1L >>> -universe.length);
-        size = universe.length - size;
+        elements[elements.length - 1] &= (-1L >>> -universe().length);
+        size = universe().length - size;
     }
 
     /**
@@ -137,7 +137,7 @@ final class JumboEnumSet<E extends Enum<E>> extends EnumSet<E> {
             lastReturned = unseen & -unseen;
             lastReturnedIndex = unseenIndex;
             unseen -= lastReturned;
-            return (E) universe[(lastReturnedIndex << 6)
+            return (E) universe()[(lastReturnedIndex << 6)
                                 + Long.numberOfTrailingZeros(lastReturned)];
         }
 
