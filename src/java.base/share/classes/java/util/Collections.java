@@ -4773,7 +4773,7 @@ public final class Collections {
      * @see #emptyList()
      */
     @SuppressWarnings("rawtypes")
-    public static final List EMPTY_LIST = new EmptyList<>();
+    public static final List EMPTY_LIST = ImmutableCollections.EMPTY_LIST_NULLS;
 
     /**
      * Returns an empty list (immutable).  This list is serializable.
@@ -4803,7 +4803,7 @@ public final class Collections {
     /**
      * @serial include
      */
-    private static class EmptyList<E>
+    private static class EmptyList<E> // here for serialization purposes
         extends AbstractList<E>
         implements RandomAccess, Serializable {
         @java.io.Serial
