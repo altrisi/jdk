@@ -240,7 +240,7 @@ public class ReflectionFactory {
         Class<?> superCl = cl.getSuperclass();
         assert Serializable.class.isAssignableFrom(cl);
         assert superCl != null;
-        if (packageEquals(cl, superCl)) {
+        if (Reflection.inSamePackage(cl, superCl)) {
             // accessible if any non-private constructor is found
             for (Constructor<?> ctor : superCl.getDeclaredConstructors()) {
                 if ((ctor.getModifiers() & Modifier.PRIVATE) == 0) {
@@ -293,7 +293,7 @@ public class ReflectionFactory {
             int mods = constructorToCall.getModifiers();
             if ((mods & Modifier.PRIVATE) != 0 ||
                     ((mods & (Modifier.PUBLIC | Modifier.PROTECTED)) == 0 &&
-                            !packageEquals(cl, initCl))) {
+                            !Reflection.inSamePackage(cl, initCl))) {
                 return null;
             }
         } catch (NoSuchMethodException ex) {
@@ -439,7 +439,7 @@ public class ReflectionFactory {
                     // fall through
                 } else if (Modifier.isPrivate(mods) && (cl != defCl)) {
                     return null;
-                } else if (!packageEquals(cl, defCl)) {
+                } else if (!Reflection.inSamePackage(cl, defCl)) {
                     return null;
                 }
                 try {
@@ -587,23 +587,5 @@ public class ReflectionFactory {
             "true".equals(System.getProperty("jdk.disableSerialConstructorChecks"));
 
         return new Config(useNativeAccessorOnly, disableSerialConstructorChecks);
-    }
-
-    /**
-     * Returns true if classes are defined in the classloader and same package, false
-     * otherwise.
-     * @param cl1 a class
-     * @param cl2 another class
-     * @return true if the two classes are in the same classloader and package
-     */
-    private static boolean packageEquals(Class<?> cl1, Class<?> cl2) {
-        assert !cl1.isArray() && !cl2.isArray();
-
-        if (cl1 == cl2) {
-            return true;
-        }
-
-        return cl1.getClassLoader() == cl2.getClassLoader() &&
-                cl1.getPackageName() == cl2.getPackageName();
     }
 }
