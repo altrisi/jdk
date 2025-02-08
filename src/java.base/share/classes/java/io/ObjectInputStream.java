@@ -255,15 +255,6 @@ public class ObjectInputStream
     private static final Object unsharedMarker = new Object();
 
     private static class Caches {
-        /** cache of subclass security audit results */
-        static final ClassValue<Boolean> subclassAudits =
-            new ClassValue<>() {
-                @Override
-                protected Boolean computeValue(Class<?> type) {
-                    return auditSubclass(type);
-                }
-            };
-
         /**
          * Property to permit setting a filter after objects
          * have been read.
