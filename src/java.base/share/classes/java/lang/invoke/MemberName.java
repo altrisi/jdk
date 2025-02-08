@@ -778,7 +778,7 @@ final class MemberName implements Member, Cloneable {
                 !CONSTRUCTOR_NAME.equals(name))
                 throw newIllegalArgumentException("not a constructor type or name");
         } else {
-            throw newIllegalArgumentException("bad reference kind "+refKind);
+            throw newIllegalArgumentException("bad reference kind", refKind);
         }
         init(defClass, name, type, flagsMods(kindFlags, 0, refKind));
         initResolved(false);
