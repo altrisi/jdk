@@ -2414,7 +2414,7 @@ public final class MethodHandles {
         private static void checkUnprivilegedlookupClass(Class<?> lookupClass) {
             String name = lookupClass.getName();
             if (name.startsWith("java.lang.invoke."))
-                throw newIllegalArgumentException("illegal lookupClass: "+lookupClass);
+                throw newIllegalArgumentException("illegal lookupClass", lookupClass);
         }
 
         /**
@@ -4047,7 +4047,7 @@ return mh1;
                 return getDirectConstructor(defc, member);
             }
             // oops
-            throw newIllegalArgumentException("bad MethodHandle constant #"+member);
+            throw newIllegalArgumentException("bad MethodHandle constant", member);
         }
 
         static ConcurrentHashMap<MemberName, DirectMethodHandle> LOOKASIDE_TABLE = new ConcurrentHashMap<>();
@@ -4072,7 +4072,7 @@ return mh1;
      */
     public static MethodHandle arrayConstructor(Class<?> arrayClass) throws IllegalArgumentException {
         if (!arrayClass.isArray()) {
-            throw newIllegalArgumentException("not an array class: " + arrayClass.getName());
+            throw newIllegalArgumentException("not an array class", arrayClass.getName());
         }
         MethodHandle ani = MethodHandleImpl.getConstantHandle(MethodHandleImpl.MH_Array_newInstance).
                 bindTo(arrayClass.getComponentType());
@@ -6045,7 +6045,7 @@ assertEquals("boojum", (String) catTrace.invokeExact("boo", "jum"));
         if (!ttype.equals(ftype))
             throw misMatchedTypes("target and fallback types", ttype, ftype);
         if (gtype.returnType() != boolean.class)
-            throw newIllegalArgumentException("guard type is not a predicate "+gtype);
+            throw newIllegalArgumentException("guard type is not a predicate", gtype);
 
         test = dropArgumentsToMatch(test, 0, ttype.ptypes(), 0, true);
         if (test == null) {
@@ -6117,7 +6117,7 @@ assertEquals("boojum", (String) catTrace.invokeExact("boo", "jum"));
             throw new ClassCastException(exType.getName());
         if (htype.parameterCount() < 1 ||
             !htype.parameterType(0).isAssignableFrom(exType))
-            throw newIllegalArgumentException("handler does not accept exception type "+exType);
+            throw newIllegalArgumentException("handler does not accept exception type", exType);
         if (htype.returnType() != ttype.returnType())
             throw misMatchedTypes("target and handler return types", ttype, htype);
         handler = dropArgumentsToMatch(handler, 1, ttype.ptypes(), 0, true);
@@ -7425,7 +7425,7 @@ assertEquals("boojum", (String) catTrace.invokeExact("boo", "jum"));
                 iterableType = externalParamList.get(0);
                 if (!Iterable.class.isAssignableFrom(iterableType)) {
                     throw newIllegalArgumentException(
-                            "inferred first loop argument must inherit from Iterable: " + iterableType);
+                            "inferred first loop argument must inherit from Iterable", iterableType);
                 }
             }
         }
