@@ -1379,7 +1379,7 @@ public final class ObjectStreamClass implements Serializable {
         } else if ((mods & Modifier.PRIVATE) != 0) {
             return (cl == defCl) ? meth : null;
         } else {
-            return packageEquals(cl, defCl) ? meth : null;
+            return Reflection.inSamePackage(cl, defCl) ? meth : null;
         }
     }
 
@@ -1402,15 +1402,6 @@ public final class ObjectStreamClass implements Serializable {
         } catch (NoSuchMethodException ex) {
             return null;
         }
-    }
-
-    /**
-     * Returns true if classes are defined in the same runtime package, false
-     * otherwise.
-     */
-    private static boolean packageEquals(Class<?> cl1, Class<?> cl2) {
-        return cl1.getClassLoader() == cl2.getClassLoader() &&
-                cl1.getPackageName() == cl2.getPackageName();
     }
 
     /**
