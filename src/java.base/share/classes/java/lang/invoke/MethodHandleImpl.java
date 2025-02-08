@@ -82,7 +82,7 @@ abstract class MethodHandleImpl {
             return ArrayAccess.objectAccessor(access);
         }
         if (!arrayClass.isArray())
-            throw newIllegalArgumentException("not an array: "+arrayClass);
+            throw newIllegalArgumentException("not an array", arrayClass);
         MethodHandle[] cache = ArrayAccessor.TYPED_ACCESSORS.get(arrayClass);
         int cacheIndex = ArrayAccess.cacheIndex(access);
         MethodHandle mh = cache[cacheIndex];
@@ -590,7 +590,7 @@ abstract class MethodHandleImpl {
             if (len == n)  return;
         }
         // fall through to error:
-        throw newIllegalArgumentException("array is not of length "+n);
+        throw newIllegalArgumentException("array is not of length", n);
     }
 
     @Hidden
