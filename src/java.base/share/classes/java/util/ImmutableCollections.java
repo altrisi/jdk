@@ -1180,7 +1180,7 @@ class ImmutableCollections {
 
         MapN(Object... input) {
             if ((input.length & 1) != 0) { // implicit nullcheck of input
-                throw new InternalError("length is odd");
+                throw new IllegalArgumentException("length is odd");
             }
             size = input.length >> 1;
 
