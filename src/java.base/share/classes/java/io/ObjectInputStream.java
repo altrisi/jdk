@@ -1536,31 +1536,6 @@ public class ObjectInputStream
     }
 
     /**
-     * Performs reflective checks on given subclass to verify that it doesn't
-     * override security-sensitive non-final methods.  Returns TRUE if subclass
-     * is "safe", FALSE otherwise.
-     */
-    private static Boolean auditSubclass(Class<?> subcl) {
-        for (Class<?> cl = subcl;
-             cl != ObjectInputStream.class;
-             cl = cl.getSuperclass())
-        {
-            try {
-                cl.getDeclaredMethod(
-                    "readUnshared", (Class[]) null);
-                return Boolean.FALSE;
-            } catch (NoSuchMethodException ex) {
-            }
-            try {
-                cl.getDeclaredMethod("readFields", (Class[]) null);
-                return Boolean.FALSE;
-            } catch (NoSuchMethodException ex) {
-            }
-        }
-        return Boolean.TRUE;
-    }
-
-    /**
      * Clears internal data structures.
      */
     private void clear() {
