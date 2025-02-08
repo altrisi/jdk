@@ -174,17 +174,6 @@ public class ObjectOutputStream
 {
     private static final JavaLangAccess JLA = SharedSecrets.getJavaLangAccess();
 
-    private static class Caches {
-        /** cache of subclass security audit results */
-        static final ClassValue<Boolean> subclassAudits =
-            new ClassValue<>() {
-                @Override
-                protected Boolean computeValue(Class<?> type) {
-                    return auditSubclass(type);
-                }
-            };
-    }
-
     /** filter stream for handling block data conversion */
     private final BlockDataOutputStream bout;
     /** obj -> wire handle map */
@@ -1001,31 +990,6 @@ public class ObjectOutputStream
         } else {
             writeString(str, false);
         }
-    }
-
-    /**
-     * Performs reflective checks on given subclass to verify that it doesn't
-     * override security-sensitive non-final methods.  Returns TRUE if subclass
-     * is "safe", FALSE otherwise.
-     */
-    private static Boolean auditSubclass(Class<?> subcl) {
-        for (Class<?> cl = subcl;
-             cl != ObjectOutputStream.class;
-             cl = cl.getSuperclass())
-        {
-            try {
-                cl.getDeclaredMethod(
-                    "writeUnshared", new Class<?>[] { Object.class });
-                return Boolean.FALSE;
-            } catch (NoSuchMethodException ex) {
-            }
-            try {
-                cl.getDeclaredMethod("putFields", (Class<?>[]) null);
-                return Boolean.FALSE;
-            } catch (NoSuchMethodException ex) {
-            }
-        }
-        return Boolean.TRUE;
     }
 
     /**
