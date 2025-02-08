@@ -49,6 +49,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import jdk.internal.event.SerializationMisdeclarationEvent;
 import jdk.internal.misc.Unsafe;
+import jdk.internal.reflect.Reflection;
 import jdk.internal.reflect.ReflectionFactory;
 import jdk.internal.util.ByteArray;
 
