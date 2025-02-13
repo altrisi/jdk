@@ -332,7 +332,7 @@ class Array {
      * the length of the specified array
      * @see Array#set
      */
-    public static native void setBoolean(Object array, int index, boolean z)
+    public static void setBoolean(Object array, int index, boolean z)
         throws IllegalArgumentException, ArrayIndexOutOfBoundsException {
         if (array.getClass() != boolean[].class)
             throw newIllegalArg(array);
@@ -437,7 +437,7 @@ class Array {
      * the length of the specified array
      * @see Array#set
      */
-    public static native void setLong(Object array, int index, long l)
+    public static void setLong(Object array, int index, long l)
         throws IllegalArgumentException, ArrayIndexOutOfBoundsException {
         if (array.getClass() != long[].class)
             throw newIllegalArg(array);
