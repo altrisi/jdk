@@ -333,7 +333,12 @@ class Array {
      * @see Array#set
      */
     public static native void setBoolean(Object array, int index, boolean z)
-        throws IllegalArgumentException, ArrayIndexOutOfBoundsException;
+        throws IllegalArgumentException, ArrayIndexOutOfBoundsException {
+        if (array.getClass() != boolean[].class)
+            throw newIllegalArg(array);
+        boolean[] arr = (boolean[])array;
+        arr[index] = z;
+    }
 
     /**
      * Sets the value of the indexed component of the specified array
@@ -433,7 +438,12 @@ class Array {
      * @see Array#set
      */
     public static native void setLong(Object array, int index, long l)
-        throws IllegalArgumentException, ArrayIndexOutOfBoundsException;
+        throws IllegalArgumentException, ArrayIndexOutOfBoundsException {
+        if (array.getClass() != long[].class)
+            throw newIllegalArg(array);
+        long[] arr = (long[])array;
+        arr[index] = l;
+    }
 
     /**
      * Sets the value of the indexed component of the specified array
@@ -472,8 +482,18 @@ class Array {
      * the length of the specified array
      * @see Array#set
      */
-    public static native void setDouble(Object array, int index, double d)
-        throws IllegalArgumentException, ArrayIndexOutOfBoundsException;
+    public static void setDouble(Object array, int index, double d)
+        throws IllegalArgumentException, ArrayIndexOutOfBoundsException {
+        if (array.getClass() != double[].class)
+            throw newIllegalArg(array);
+        double[] arr = (double[])array;
+        arr[index] = d;
+    }
+
+    private static IllegalArgumentException newIllegalArg(Object array) {
+        boolean prim = array.getClass().componentType().isPrimitive();
+        throw new IllegalArgumentException(prim ? "argument type mismatch" : "Argument is not an array of primitive");
+    }
 
     /*
      * Private
