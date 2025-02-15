@@ -78,7 +78,9 @@ public class InferenceContext {
     /** list of inference vars in this context */
     List<Type> inferencevars;
 
-    Map<FreeTypeListener, List<Type>> freeTypeListeners = new LinkedHashMap<>();
+    record TypeListenerToTypes(FreeTypeListener listener, List<Type> types) {}
+
+    List<TypeListenerToTypes> freeTypeListeners = List.nil();
 
     Types types;
     Infer infer;
@@ -258,7 +260,7 @@ public class InferenceContext {
      * Add custom hook for performing post-inference action
      */
     void addFreeTypeListener(List<Type> types, FreeTypeListener ftl) {
-        freeTypeListeners.put(ftl, freeVarsIn(types));
+        freeTypeListeners = freeTypeListeners.append(new TypeListenerToTypes(ftl, freeVarsIn(types)));
     }
 
     /**
@@ -271,12 +273,11 @@ public class InferenceContext {
 
     void notifyChange(List<Type> inferredVars) {
         InferenceException thrownEx = null;
-        for (Map.Entry<FreeTypeListener, List<Type>> entry :
-                new LinkedHashMap<>(freeTypeListeners).entrySet()) {
-            if (!Type.containsAny(entry.getValue(), inferencevars.diff(inferredVars))) {
+        for (TypeListenerToTypes entry : freeTypeListeners) {
+            if (!Type.containsAny(entry.types(), inferencevars.diff(inferredVars))) {
                 try {
-                    entry.getKey().typesInferred(this);
-                    freeTypeListeners.remove(entry.getKey());
+                    entry.listener().typesInferred(this);
+                    freeTypeListeners = freeTypeListeners.filter(entry);
                 } catch (InferenceException ex) {
                     if (thrownEx == null) {
                         thrownEx = ex;
@@ -342,7 +343,7 @@ public class InferenceContext {
         //set up listeners to notify original inference contexts as
         //propagated vars are inferred in new context
         for (Type t : inferencevars) {
-            that.freeTypeListeners.put(inferenceContext -> InferenceContext.this.notifyChange(), List.of(t));
+            that.freeTypeListeners = that.freeTypeListeners.append(new TypeListenerToTypes(inferenceContext -> InferenceContext.this.notifyChange(), List.of(t)));
         }
     }
 
