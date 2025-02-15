@@ -1719,8 +1719,7 @@ public class Attr extends JCTree.Visitor {
             } else {
                 patternSwitch = cases.stream()
                                      .flatMap(c -> c.labels.stream())
-                                     .anyMatch(l -> l.hasTag(PATTERNCASELABEL) ||
-                                                    TreeInfo.isNullCaseLabel(l));
+                                     .anyMatch(l -> l.hasTag(PATTERNCASELABEL));
             }
 
             // Attribute all cases and
