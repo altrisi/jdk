@@ -2348,7 +2348,7 @@ public final class MethodHandles {
             Class<?> defineClass(boolean initialize, Object classData) {
                 Class<?> lookupClass = lookup.lookupClass();
                 ClassLoader loader = lookupClass.getClassLoader();
-                ProtectionDomain pd = (loader != null) ? lookup.lookupClassProtectionDomain() : null;
+                ProtectionDomain pd = (loader != null) ? lookupClass.getProtectionDomain() : null;
                 Class<?> c = null;
                 try {
                     c = SharedSecrets.getJavaLangAccess()
@@ -2387,17 +2387,6 @@ public final class MethodHandles {
                 return (classFlags & NESTMATE_CLASS) != 0;
             }
         }
-
-        private ProtectionDomain lookupClassProtectionDomain() {
-            ProtectionDomain pd = cachedProtectionDomain;
-            if (pd == null) {
-                cachedProtectionDomain = pd = SharedSecrets.getJavaLangAccess().protectionDomain(lookupClass);
-            }
-            return pd;
-        }
-
-        // cached protection domain
-        private volatile ProtectionDomain cachedProtectionDomain;
 
         // Make sure outer class is initialized first.
         static { IMPL_NAMES.getClass(); }
