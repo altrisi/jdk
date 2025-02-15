@@ -277,7 +277,7 @@ public class InferenceContext {
             if (!Type.containsAny(entry.types(), inferencevars.diff(inferredVars))) {
                 try {
                     entry.listener().typesInferred(this);
-                    freeTypeListeners = freeTypeListeners.filter(entry);
+                    freeTypeListeners = List.filter(freeTypeListeners, entry);
                 } catch (InferenceException ex) {
                     if (thrownEx == null) {
                         thrownEx = ex;
