@@ -2147,10 +2147,6 @@ public final class System {
                 t.setCause(cause);
             }
 
-            public ProtectionDomain protectionDomain(Class<?> c) {
-                return c.getProtectionDomain();
-            }
-
             public MethodHandle stringConcatHelper(String name, MethodType methodType) {
                 return StringConcatHelper.lookupStatic(name, methodType);
             }
