@@ -38,7 +38,7 @@ import java.util.NoSuchElementException;
  *  This code and its internal interfaces are subject to change or
  *  deletion without notice.</b>
  */
-public class ListBuffer<A> extends AbstractQueue<A> {
+public class ListBuffer<A> {
 
     public static <T> ListBuffer<T> of(T x) {
         ListBuffer<T> lb = new ListBuffer<>();
@@ -169,21 +169,6 @@ public class ListBuffer<A> extends AbstractQueue<A> {
         return elems;
     }
 
-    /** Does the list contain the specified element?
-     */
-    public boolean contains(Object x) {
-        return elems.contains(x);
-    }
-
-    /** Convert buffer to an array
-     */
-    public <T> T[] toArray(T[] vec) {
-        return elems.toArray(vec);
-    }
-    public Object[] toArray() {
-        return toArray(new Object[size()]);
-    }
-
     /** The first element in this buffer.
      */
     public A first() {
@@ -200,71 +185,6 @@ public class ListBuffer<A> extends AbstractQueue<A> {
             count--;
         }
         return x;
-    }
-
-    /** An enumeration of all elements in this buffer.
-     */
-    public Iterator<A> iterator() {
-        return new Iterator<A>() {
-            List<A> elems = ListBuffer.this.elems;
-            public boolean hasNext() {
-                return !elems.isEmpty();
-            }
-            public A next() {
-                if (elems.isEmpty())
-                    throw new NoSuchElementException();
-                A elem = elems.head;
-                elems = elems.tail;
-                return elem;
-            }
-            public void remove() {
-                throw new UnsupportedOperationException();
-            }
-        };
-    }
-
-    public boolean add(A a) {
-        append(a);
-        return true;
-    }
-
-    public boolean remove(Object o) {
-        throw new UnsupportedOperationException();
-    }
-
-    public boolean containsAll(Collection<?> c) {
-        for (Object x: c) {
-            if (!contains(x))
-                return false;
-        }
-        return true;
-    }
-
-    public boolean addAll(Collection<? extends A> c) {
-        for (A a: c)
-            append(a);
-        return true;
-    }
-
-    public boolean removeAll(Collection<?> c) {
-        throw new UnsupportedOperationException();
-    }
-
-    public boolean retainAll(Collection<?> c) {
-        throw new UnsupportedOperationException();
-    }
-
-    public boolean offer(A a) {
-        append(a);
-        return true;
-    }
-
-    public A poll() {
-        return next();
-    }
-
-    public A peek() {
-        return first();
     }
 
     public A last() {
