@@ -418,11 +418,6 @@ public interface JavaLangAccess {
     void setCause(Throwable t, Throwable cause);
 
     /**
-     * Get protection domain of the given Class
-     */
-    ProtectionDomain protectionDomain(Class<?> c);
-
-    /**
      * Get a method handle of string concat helper method
      */
     MethodHandle stringConcatHelper(String name, MethodType methodType);
