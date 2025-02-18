@@ -66,50 +66,10 @@ import jdk.internal.reflect.Reflection;
 
 public final class Unsafe {
 
-    static {
-        Reflection.registerMethodsToFilter(Unsafe.class, Set.of("getUnsafe"));
-    }
-
     private Unsafe() {}
 
     private static final Unsafe theUnsafe = new Unsafe();
     private static final jdk.internal.misc.Unsafe theInternalUnsafe = jdk.internal.misc.Unsafe.getUnsafe();
-
-    /**
-     * Provides the caller with the capability of performing unsafe
-     * operations.
-     *
-     * <p>The returned {@code Unsafe} object should be carefully guarded
-     * by the caller, since it can be used to read and write data at arbitrary
-     * memory addresses.  It must never be passed to untrusted code.
-     *
-     * <p>Most methods in this class are very low-level, and correspond to a
-     * small number of hardware instructions (on typical machines).  Compilers
-     * are encouraged to optimize these methods accordingly.
-     *
-     * <p>Here is a suggested idiom for using unsafe operations:
-     *
-     * <pre> {@code
-     * class MyTrustedClass {
-     *   private static final Unsafe unsafe = Unsafe.getUnsafe();
-     *   ...
-     *   private long myCountAddress = ...;
-     *   public int getCount() { return unsafe.getByte(myCountAddress); }
-     * }}</pre>
-     *
-     * (It may assist compilers to make the local variable {@code final}.)
-     *
-     * @throws  SecurityException if the class loader of the caller
-     *          class is not in the system domain in which all permissions
-     *          are granted.
-     */
-    @CallerSensitive
-    public static Unsafe getUnsafe() {
-        Class<?> caller = Reflection.getCallerClass();
-        if (!VM.isSystemDomainLoader(caller.getClassLoader()))
-            throw new SecurityException("Unsafe");
-        return theUnsafe;
-    }
 
     //| peek and poke operations
     //| (compilers should optimize these to memory ops)
