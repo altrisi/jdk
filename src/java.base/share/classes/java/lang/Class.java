@@ -91,6 +91,8 @@ import sun.reflect.generics.repository.ConstructorRepository;
 import sun.reflect.generics.scope.ClassScope;
 import sun.reflect.annotation.*;
 
+import static jdk.internal.reflect.ReflectionFactory.getReflectionFactory;
+
 /**
  * Instances of the class {@code Class} represent classes and
  * interfaces in a running Java application. An enum class and a record
@@ -3384,25 +3386,6 @@ public final class Class<T> implements java.io.Serializable,
         return getSuperclass() == java.lang.Record.class &&
                 (this.getModifiers() & Modifier.FINAL) != 0 &&
                 isRecord0();
-    }
-
-    // Fetches the factory for reflective objects
-    private static ReflectionFactory getReflectionFactory() {
-        var factory = reflectionFactory;
-        if (factory != null) {
-            return factory;
-        }
-        return reflectionFactory = ReflectionFactory.getReflectionFactory();
-    }
-    private static ReflectionFactory reflectionFactory;
-
-    /**
-     * When CDS is enabled, the Class class may be aot-initialized. However,
-     * we can't archive reflectionFactory, so we reset it to null, so it
-     * will be allocated again at runtime.
-     */
-    private static void resetArchivedStates() {
-        reflectionFactory = null;
     }
 
     /**
