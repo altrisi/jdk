@@ -68,11 +68,9 @@ public class ReflectionFactory {
     /* Method for static class initializer <clinit>, or null */
     private static volatile Method hasStaticInitializerMethod;
 
-    private final JavaLangReflectAccess langReflectAccess;
+    private static final JavaLangReflectAccess langReflectAccess = SharedSecrets.getJavaLangReflectAccess();
 
-    private ReflectionFactory() {
-        this.langReflectAccess = SharedSecrets.getJavaLangReflectAccess();
-    }
+    private ReflectionFactory() {}
 
     /**
      * Provides the caller with the capability to instantiate reflective
