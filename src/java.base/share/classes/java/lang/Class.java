@@ -990,7 +990,7 @@ public final class Class<T> implements java.io.Serializable,
      * @since 9
      */
     public Module getModule() {
-        assert module != null : "Called too early";
+        if (module != null) throw new IllegalStateException("Called too early");
         return module;
     }
 
