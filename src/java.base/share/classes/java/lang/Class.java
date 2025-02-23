@@ -236,13 +236,15 @@ public final class Class<T> implements java.io.Serializable,
      * This constructor is not used and prevents the default constructor being
      * generated.
      */
-    private Class(ClassLoader loader, Class<?> arrayComponentType, int mods, ProtectionDomain pd) {
+    private Class(ClassLoader loader, Module mod, Class<?> arrayComponentType, int mods, ProtectionDomain pd, Object cData) {
         // Initialize final field for classLoader.  The initialization value of non-null
         // prevents future JIT optimizations from assuming this final field is null.
         classLoader = loader;
+        module = mod;
         componentType = arrayComponentType;
         modifiers = mods;
         protectionDomain = pd;
+        classData = cData;
     }
 
     /**
@@ -988,19 +990,19 @@ public final class Class<T> implements java.io.Serializable,
      * @since 9
      */
     public Module getModule() {
+        assert module != null : "Called too early";
         return module;
     }
 
     // set by VM
-    @Stable
-    private transient Module module;
+    private final transient Module module;
 
     // Initialized in JVM not by private constructor
     // This field is filtered from reflection access, i.e. getDeclaredField
     // will throw NoSuchFieldException
     private final ClassLoader classLoader;
 
-    private transient Object classData; // Set by VM
+    private final transient Object classData; // Set by VM
     private transient Object[] signers; // Read by VM, mutable
     private final transient int modifiers;  // Set by the VM
 
