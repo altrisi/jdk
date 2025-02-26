@@ -463,32 +463,30 @@ public final class StackTraceElement implements java.io.Serializable {
      * If the loader is one of the built-in loaders (`boot`, `platform`, or `app`)
      * then set BUILTIN_CLASS_LOADER to omit the first element (`<loader>/`).
      */
-    private synchronized void computeFormat() {
-        try {
-            Class<?> cls = declaringClassObject;
-            ClassLoader loader = cls.getClassLoader0();
-            Module m = cls.getModule();
-            byte bits = 0;
+    private void computeFormat() {
+        Class<?> cls = declaringClassObject;
+        // Class reference no longer needed, clear it, now in case there's exceptions
+        declaringClassObject = null;
 
-            // First element - class loader name
-            // Call package-private ClassLoader::name method
+        ClassLoader loader = cls.getClassLoader0();
+        Module m = cls.getModule();
+        byte bits = 0;
 
-            if (loader instanceof BuiltinClassLoader) {
-                bits |= BUILTIN_CLASS_LOADER;
-            }
+        // First element - class loader name
+        // Call package-private ClassLoader::name method
 
-            // Second element - module name and version
-
-            // Omit if is a JDK non-upgradeable module (recorded in the hashes
-            // in java.base)
-            if (isHashedInJavaBase(m)) {
-                bits |= JDK_NON_UPGRADEABLE_MODULE;
-            }
-            format = bits;
-        } finally {
-            // Class reference no longer needed, clear it
-            declaringClassObject = null;
+        if (loader instanceof BuiltinClassLoader) {
+            bits |= BUILTIN_CLASS_LOADER;
         }
+
+        // Second element - module name and version
+
+        // Omit if is a JDK non-upgradeable module (recorded in the hashes
+        // in java.base)
+        if (isHashedInJavaBase(m)) {
+            bits |= JDK_NON_UPGRADEABLE_MODULE;
+        }
+        format = bits;
     }
 
     private static final byte BUILTIN_CLASS_LOADER       = 0x1;
@@ -523,24 +521,24 @@ public final class StackTraceElement implements java.io.Serializable {
      * included in the hashes in java.base.
      */
     private static class HashedModules {
-        static Set<String> HASHED_MODULES = hashedModules();
+        static final Set<String> HASHED_MODULES;
 
-        static Set<String> hashedModules() {
-
-            Optional<ResolvedModule> resolvedModule = ModuleLayer.boot()
+        static {
+            ModuleReference mref = ModuleLayer.boot()
                     .configuration()
                     .findModule("java.base");
-            assert resolvedModule.isPresent();
-            ModuleReference mref = resolvedModule.get().reference();
+                    .orElseThrow()
+                    .reference();
             assert mref instanceof ModuleReferenceImpl;
             ModuleHashes hashes = ((ModuleReferenceImpl)mref).recordedHashes();
             if (hashes != null) {
                 Set<String> names = new HashSet<>(hashes.names());
                 names.add("java.base");
-                return names;
+                
+                HASHED_MODULES = Set.copyOf(names);
+            } else {
+                HASHED_MODULES = Set.of();
             }
-
-            return Set.of();
         }
 
         static boolean contains(Module m) {
