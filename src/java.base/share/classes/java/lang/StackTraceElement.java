@@ -526,7 +526,7 @@ public final class StackTraceElement implements java.io.Serializable {
         static {
             ModuleReference mref = ModuleLayer.boot()
                     .configuration()
-                    .findModule("java.base");
+                    .findModule("java.base")
                     .orElseThrow()
                     .reference();
             assert mref instanceof ModuleReferenceImpl;
