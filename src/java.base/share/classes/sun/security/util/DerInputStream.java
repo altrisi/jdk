@@ -323,13 +323,17 @@ public class DerInputStream {
         }
     }
 
+    private interface BytePredicate {
+        boolean test(byte b);
+    }
+
     /**
      * Checks if the tag of the next DerValue matches the rule.
      *
      * @param rule the rule to check for the tag.
      * @return true if matches, false if not or stream is at end.
      */
-    private boolean checkNextTag(Predicate<Byte> rule) {
+    private boolean checkNextTag(BytePredicate rule) {
         return available() > 0 && rule.test(data[pos]);
     }
 
