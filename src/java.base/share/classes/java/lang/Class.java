@@ -989,8 +989,16 @@ public final class Class<T> implements java.io.Serializable,
      *
      * @since 9
      */
+    @CallerSensitive
     public Module getModule() {
-        if (module == null) throw new IllegalStateException("Called too early");
+        if (module == null) {
+          var caller = Reflection.getCallerClass();
+          if (caller == StackTraceElement.class) // printing stack trace, let it through
+              return null;
+          var e = new IllegalStateException("Called too early");
+          e.printStackTrace(System.out);
+          throw e;
+        }
         return module;
     }
 
