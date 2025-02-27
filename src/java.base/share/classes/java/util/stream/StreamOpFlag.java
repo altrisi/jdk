@@ -27,6 +27,7 @@ package java.util.stream;
 import java.util.EnumMap;
 import java.util.Map;
 import java.util.Spliterator;
+import jdk.internal.vm.annotation.Stable;
 
 /**
  * Flags corresponding to characteristics of streams and operations. Flags are
@@ -393,18 +394,18 @@ enum StreamOpFlag {
     private static final int PRESERVE_BITS = 0b11;
 
     private static MaskBuilder set(Type t) {
-        return new MaskBuilder(new EnumMap<>(Type.class)).set(t);
+        return new MaskBuilder().set(t);
     }
 
     private static class MaskBuilder {
-        final Map<Type, Integer> map;
+        final int[] map;
 
-        MaskBuilder(Map<Type, Integer> map) {
-            this.map = map;
+        MaskBuilder() {
+            this.map = new int[Type.values().length];
         }
 
-        MaskBuilder mask(Type t, Integer i) {
-            map.put(t, i);
+        MaskBuilder mask(Type t, int i) {
+            map[t.values()] = i;
             return this;
         }
 
@@ -420,10 +421,7 @@ enum StreamOpFlag {
             return mask(t, PRESERVE_BITS);
         }
 
-        Map<Type, Integer> build() {
-            for (Type t : Type.values()) {
-                map.putIfAbsent(t, 0b00);
-            }
+        int[] build() {
             return map;
         }
     }
@@ -431,8 +429,9 @@ enum StreamOpFlag {
     /**
      * The mask table for a flag, this is used to determine if a flag
      * corresponds to a certain flag type and for creating mask constants.
+     * Keyed by ordinal.
      */
-    private final Map<Type, Integer> maskTable;
+    private final @Stable int[] maskTable;
 
     /**
      * The bit position in the bit mask.
@@ -488,7 +487,7 @@ enum StreamOpFlag {
      * @return true if a stream-based flag, otherwise false.
      */
     boolean isStreamFlag() {
-        return maskTable.get(Type.STREAM) > 0;
+        return maskTable[Type.STREAM.ordinal()] > 0;
     }
 
     /**
@@ -531,7 +530,7 @@ enum StreamOpFlag {
      * @return true if this flag can be set for the flag type, otherwise false.
      */
     boolean canSet(Type t) {
-        return (maskTable.get(t) & SET_BITS) > 0;
+        return (maskTable[t.ordinal()] & SET_BITS) > 0;
     }
 
     /**
@@ -562,7 +561,7 @@ enum StreamOpFlag {
     private static int createMask(Type t) {
         int mask = 0;
         for (StreamOpFlag flag : StreamOpFlag.values()) {
-            mask |= flag.maskTable.get(t) << flag.bitPosition;
+            mask |= flag.maskTable[t.ordinal()] << flag.bitPosition;
         }
         return mask;
     }
