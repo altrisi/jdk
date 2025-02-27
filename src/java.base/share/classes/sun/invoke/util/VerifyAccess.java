@@ -197,16 +197,14 @@ public class VerifyAccess {
 
         int mods = getClassModifiers(refc);
         if (isPublic(mods)) {
+            if (!jdk.internal.misc.VM.isModuleSystemInited()) {
+                // early VM startup case, java.base not defined or
+                // module system is not fully initialized and exports are not set up
+                return true;
+            }
 
             Module lookupModule = lookupClass.getModule();
             Module refModule = refc.getModule();
-
-            // early VM startup case, java.base not defined or
-            // module system is not fully initialized and exports are not set up
-            if (lookupModule == null || !jdk.internal.misc.VM.isModuleSystemInited()) {
-                assert lookupModule == refModule;
-                return true;
-            }
 
             // allow access to public types in all unconditionally exported packages
             if ((allowedModes & UNCONDITIONAL_ALLOWED) != 0) {
