@@ -405,7 +405,7 @@ enum StreamOpFlag {
         }
 
         MaskBuilder mask(Type t, int i) {
-            map[t.values()] = i;
+            map[t.ordinal()] = i;
             return this;
         }
 
