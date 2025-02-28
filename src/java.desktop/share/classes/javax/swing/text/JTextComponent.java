@@ -24,8 +24,6 @@
  */
 package javax.swing.text;
 
-import com.sun.beans.util.Cache;
-
 import java.beans.JavaBean;
 import java.beans.BeanProperty;
 import java.beans.Transient;
@@ -3950,14 +3948,13 @@ public abstract class JTextComponent extends JComponent implements Scrollable, A
      * Maps from class name to Boolean indicating if
      * <code>processInputMethodEvent</code> has been overridden.
      */
-    private static Cache<Class<?>,Boolean> METHOD_OVERRIDDEN
-            = new Cache<Class<?>,Boolean>(Cache.Kind.WEAK, Cache.Kind.STRONG) {
+    private static final ClassValue<Boolean> METHOD_OVERRIDDEN = new ClassValue<Boolean>() {
         /**
          * Returns {@code true} if the specified {@code type} extends {@link JTextComponent}
          * and the {@link JTextComponent#processInputMethodEvent} method is overridden.
          */
         @Override
-        public Boolean create(final Class<?> type) {
+        protected Boolean computeValue(final Class<?> type) {
             if (JTextComponent.class == type) {
                 return Boolean.FALSE;
             }
