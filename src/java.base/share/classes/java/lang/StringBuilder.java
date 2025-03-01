@@ -95,7 +95,10 @@ public final class StringBuilder
     private transient final Thread owner;
 
     private void ensureThread() {
-        if (owner != Thread.currentThread()) throw new IllegalCallerException();
+        if (owner != Thread.currentThread()) {
+            Thread.dumpStack();
+            throw new IllegalCallerException();
+        }
     }
 
     /** use serialVersionUID for interoperability */
