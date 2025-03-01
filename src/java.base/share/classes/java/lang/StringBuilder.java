@@ -95,7 +95,7 @@ public final class StringBuilder
     private transient final Thread owner;
 
     private void ensureThread() {
-        if (owner != Thread.currentThread()) {
+        if (owner != null && owner != Thread.currentThread()) {
             Thread.dumpStack();
             throw new IllegalCallerException();
         }
