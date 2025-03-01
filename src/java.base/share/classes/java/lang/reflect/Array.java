@@ -178,8 +178,13 @@ class Array {
      * length of the specified array
      * @see Array#get
      */
-    public static native byte getByte(Object array, int index)
-        throws IllegalArgumentException, ArrayIndexOutOfBoundsException;
+    public static byte getByte(Object array, int index)
+        throws IllegalArgumentException, ArrayIndexOutOfBoundsException {
+        if (array.getClass() != byte[].class)
+            throw newIllegalArg(array);
+        byte[] arr = (byte[])array;
+        return arr[index];
+    }
 
     /**
      * Returns the value of the indexed component in the specified
