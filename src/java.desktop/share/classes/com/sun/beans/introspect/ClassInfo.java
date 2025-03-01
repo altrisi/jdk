@@ -29,34 +29,38 @@ import java.lang.reflect.Method;
 import java.util.List;
 import java.util.Map;
 
-import com.sun.beans.util.Cache;
-
 public final class ClassInfo {
     private static final ClassInfo DEFAULT = new ClassInfo(null);
-    private static final Cache<Class<?>,ClassInfo> CACHE
-            = new Cache<Class<?>,ClassInfo>(Cache.Kind.SOFT, Cache.Kind.SOFT) {
+    private static final ClassValue<ClassInfo> CACHE = new ClassValue<>() {
         @Override
-        public ClassInfo create(Class<?> type) {
+        protected ClassInfo computeValue(Class<?> type) {
             return new ClassInfo(type);
         }
     };
+    private static volatile Object currentValidity = new Object();
 
     public static ClassInfo get(Class<?> type) {
         if (type == null) {
             return DEFAULT;
         }
-        return CACHE.get(type);
+        ClassInfo ret = CACHE.get(type);
+        if (ret.validity != currentValidity) {
+            // cache was cleared, recompute
+            CACHE.remove(type);
+            ret = CACHE.get(type);
+        }
+        return ret;
     }
 
     public static void clear() {
-        CACHE.clear();
+        currentValidity = new Object();
     }
 
     public static void remove(Class<?> clz) {
         CACHE.remove(clz);
     }
 
-    private final Object mutex = new Object();
+    private final Object validity = currentValidity;
     private final Class<?> type;
     private volatile List<Method> methods;
     private volatile Map<String,PropertyInfo> properties;
@@ -69,7 +73,7 @@ public final class ClassInfo {
     public List<Method> getMethods() {
         List<Method> methods = this.methods;
         if (methods == null) {
-            synchronized (this.mutex) {
+            synchronized (this) {
                 methods = this.methods;
                 if (methods == null) {
                     methods = MethodInfo.get(this.type);
@@ -83,7 +87,7 @@ public final class ClassInfo {
     public Map<String,PropertyInfo> getProperties() {
         Map<String, PropertyInfo> properties = this.properties;
         if (properties == null) {
-            synchronized (this.mutex) {
+            synchronized (this) {
                 properties = this.properties;
                 if (properties == null) {
                     properties = PropertyInfo.get(this.type);
@@ -97,7 +101,7 @@ public final class ClassInfo {
     public Map<String,EventSetInfo> getEventSets() {
         Map<String, EventSetInfo> eventSets = this.eventSets;
         if (eventSets == null) {
-            synchronized (this.mutex) {
+            synchronized (this) {
                 eventSets = this.eventSets;
                 if (eventSets == null) {
                     eventSets = EventSetInfo.get(this.type);
