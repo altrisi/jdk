@@ -202,8 +202,13 @@ class Array {
      * length of the specified array
      * @see Array#get
      */
-    public static native char getChar(Object array, int index)
-        throws IllegalArgumentException, ArrayIndexOutOfBoundsException;
+    public static char getChar(Object array, int index)
+        throws IllegalArgumentException, ArrayIndexOutOfBoundsException {
+        if (array.getClass() != char[].class)
+                throw newIllegalArg(array);
+        char[] arr = (char[])array;
+        return arr[index];
+    }
 
     /**
      * Returns the value of the indexed component in the specified
@@ -444,7 +449,7 @@ class Array {
      */
     public static void setLong(Object array, int index, long l)
         throws IllegalArgumentException, ArrayIndexOutOfBoundsException {
-        if (array.getClass() != long[].class)
+        if (array.getClass() != long[].class) // TODO or float/double
             throw newIllegalArg(array);
         long[] arr = (long[])array;
         arr[index] = l;
