@@ -26,6 +26,7 @@
 package java.lang.runtime;
 
 import java.lang.Enum.EnumDesc;
+import java.lang.classfile.ClassFile;
 import java.lang.classfile.CodeBuilder;
 import java.lang.constant.ClassDesc;
 import java.lang.constant.ConstantDesc;
@@ -35,7 +36,6 @@ import java.lang.invoke.ConstantCallSite;
 import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
 import java.lang.invoke.MethodType;
-import java.lang.reflect.AccessFlag;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -704,7 +704,7 @@ public final class SwitchBootstraps {
 
         byte[] classBytes = ClassFile.of().build(ConstantUtils.binaryNameToDesc(typeSwitchClassName(caller.lookupClass())),
                 clb -> {
-                    clb.withFlags(AccessFlag.FINAL, AccessFlag.SUPER, AccessFlag.SYNTHETIC)
+                    clb.withFlags(ClassFile.ACC_FINAL | ClassFile.ACC_SUPER | ClassFile.ACC_SYNTHETIC)
                        .withMethodBody("typeSwitch",
                                        addExtraInfo ? MTD_TYPE_SWITCH_EXTRA : MTD_TYPE_SWITCH,
                                        ClassFile.ACC_FINAL | ClassFile.ACC_PUBLIC | ClassFile.ACC_STATIC,
