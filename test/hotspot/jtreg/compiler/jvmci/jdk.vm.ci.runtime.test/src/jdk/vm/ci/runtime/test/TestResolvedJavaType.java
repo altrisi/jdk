@@ -934,7 +934,7 @@ public class TestResolvedJavaType extends TypeUniverse {
                    name.equals("classData") ||
                    name.equals("modifiers") ||
                    name.equals("protectionDomain") ||
-                   name.equals("primitive");
+                   name.equals("primitiveIndex");
         }
         if (f.getDeclaringClass().equals(metaAccess.lookupJavaType(Lookup.class))) {
             return f.getName().equals("allowedModes") || f.getName().equals("lookupClass");
