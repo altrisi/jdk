@@ -597,6 +597,16 @@ class WindowsFileSystemProvider
     }
 
     @Override
+    public boolean exists(Path path, LinkOption... options) {
+        if (Util.followLinks(options)) {
+            WindowsPath file = WindowsPath.toWindowsPath(path);
+            return new File(file.toString()).exists();
+        } else {
+            return super.exists(path, options);
+        }
+    }
+
+    @Override
     public byte[] getSunPathForSocketFile(Path obj) {
         WindowsPath file = WindowsPath.toWindowsPath(obj);
         String s = file.toString();
