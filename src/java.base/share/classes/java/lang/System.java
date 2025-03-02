@@ -1997,6 +1997,9 @@ public final class System {
             public byte[] getRawClassTypeAnnotations(Class<?> klass) {
                 return klass.getRawTypeAnnotations();
             }
+            public byte getPrimitiveIndex(Class<?> klass) {
+                return klass.primitiveIndex;
+            }
             public byte[] getRawExecutableTypeAnnotations(Executable executable) {
                 return Class.getExecutableTypeAnnotationBytes(executable);
             }
