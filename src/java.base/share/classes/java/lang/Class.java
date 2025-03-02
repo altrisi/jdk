@@ -848,7 +848,7 @@ public final class Class<T> implements java.io.Serializable,
      * @jls 15.8.2 Class Literals
      */
     public boolean isPrimitive() {
-        return primitive;
+        return primitiveIndex < 0;
     }
 
     /**
@@ -1008,7 +1008,11 @@ public final class Class<T> implements java.io.Serializable,
     private transient Object classData; // Set by VM
     private transient Object[] signers; // Read by VM, mutable
     private final transient char modifiers;  // Set by the VM
-    private final transient boolean primitive;  // Set by the VM if the Class is a primitive type.
+    // Set by VM. Also used for fast selection of the sun.invoke.util.Wrapper 
+    // If >= 0, this class is a primitive and this the index for Wrapper.
+    // If < 0, this class is not a primitive,
+    //   but the box of the -primitiveIndex-1 Wrapper, if that's in range
+    final transient byte primitiveIndex;  // Set by the VM
 
     // package-private
     Object getClassData() {
