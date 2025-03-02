@@ -65,7 +65,7 @@ class WindowsPath implements Path {
     private volatile WeakReference<String> pathForWin32Calls;
 
     // offsets into name components (computed lazily)
-    private volatile Integer[] offsets;
+    private volatile int[] offsets;
 
     // computed hash code (computed lazily, no need to be volatile)
     private int hash;
@@ -641,27 +641,35 @@ class WindowsPath implements Path {
     // generate offset array
     private void initOffsets() {
         if (offsets == null) {
-            ArrayList<Integer> list = new ArrayList<>();
+            int[] arr;
             if (isEmpty()) {
                 // empty path considered to have one name element
-                list.add(0);
+                arr = new int[] {0};
             } else {
+                int arrLength = 0;
                 int start = root.length();
-                int off = root.length();
-                while (off < path.length()) {
-                    if (path.charAt(off) != '\\') {
-                        off++;
+                while ((start = path.indexOf('\\', start) + 1) > 0) arrLength++;
+                if (root.length() != path.length() && path.charAt(path.length() - 1) != '\\') arrLength++;
+
+                arr = new int[arrLength];
+                int i = 0;
+                start = root.length();
+                int end = start;
+                while (end < path.length()) {
+                    if (path.charAt(end) != '\\') {
+                        end++;
                     } else {
-                        list.add(start);
-                        start = ++off;
+                        arr[i++] = start;
+                        start = ++end;
                     }
                 }
-                if (start != off)
-                    list.add(start);
+                if (start != end)
+                    arr[i++] = start;
+                assert i == arr.length;
             }
             synchronized (this) {
                 if (offsets == null)
-                    offsets = list.toArray(new Integer[list.size()]);
+                    offsets = arr;
             }
         }
     }
