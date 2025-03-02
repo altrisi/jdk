@@ -868,7 +868,7 @@ int java_lang_Class::_classData_offset;
 int java_lang_Class::_classRedefinedCount_offset;
 int java_lang_Class::_reflectionData_offset;
 int java_lang_Class::_modifiers_offset;
-int java_lang_Class::_is_primitive_offset;
+int java_lang_Class::_primitive_index_offset;
 
 bool java_lang_Class::_offsets_computed = false;
 GrowableArray<Klass*>* java_lang_Class::_fixup_mirror_list = nullptr;
@@ -1351,9 +1351,9 @@ void java_lang_Class::set_source_file(oop java_class, oop source_file) {
   java_class->obj_field_put(_source_file_offset, source_file);
 }
 
-void java_lang_Class::set_is_primitive(oop java_class) {
-  assert(_is_primitive_offset != 0, "must be set");
-  java_class->bool_field_put(_is_primitive_offset, true);
+void java_lang_Class::set_primitive_index(oop java_class, jbyte value) {
+  assert(_primitive_index_offset != 0, "must be set");
+  java_class->byte_field_put(_primitive_index_offset, value);
 }
 
 
@@ -1370,7 +1370,23 @@ oop java_lang_Class::create_basic_type_mirror(const char* basic_type_name, Basic
   assert(static_oop_field_count(java_class) == 0, "should have been zeroed by allocation");
 #endif
   set_modifiers(java_class, JVM_ACC_ABSTRACT | JVM_ACC_FINAL | JVM_ACC_PUBLIC);
-  set_is_primitive(java_class);
+
+  // for sun.invoke.util.Wrapper fast retrieval
+  byte wrapperIndex;
+  switch (type) {
+    case T_BOOLEAN: wrapperIndex = 0; break;
+    case T_BYTE:    wrapperIndex = 1; break;
+    case T_SHORT:   wrapperIndex = 2; break;
+    case T_CHAR:    wrapperIndex = 3; break;
+    case T_INT:     wrapperIndex = 4; break;
+    case T_LONG:    wrapperIndex = 5; break;
+    case T_FLOAT:   wrapperIndex = 6; break;
+    case T_DOUBLE:  wrapperIndex = 7; break;
+    case T_VOID:    wrapperIndex = 9; break;
+    default:        assert(false, "unknown primitive");
+  }
+  
+  set_is_primitive(java_class, wrapperIndex);
   return java_class;
 }
 
@@ -1512,7 +1528,7 @@ oop java_lang_Class::primitive_mirror(BasicType t) {
   macro(_signers_offset,             k, "signers",             object_array_signature, false); \
   macro(_modifiers_offset,           k, vmSymbols::modifiers_name(), char_signature,    false); \
   macro(_protection_domain_offset,   k, "protectionDomain",    java_security_ProtectionDomain_signature,  false); \
-  macro(_is_primitive_offset,        k, "primitive",           bool_signature,         false);
+  macro(_primitive_index_offset,     k, "primitive",           byte_signature,         false);
 
 void java_lang_Class::compute_offsets() {
   if (_offsets_computed) {
