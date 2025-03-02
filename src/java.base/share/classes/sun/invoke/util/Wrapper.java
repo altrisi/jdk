@@ -26,12 +26,16 @@
 package sun.invoke.util;
 
 import static sun.invoke.util.Wrapper.NumericClasses.*;
+import jdk.internal.access.SharedSecrets;
+import jdk.internal.access.JavaLangAccess;
 import jdk.internal.vm.annotation.DontInline;
+import jdk.internal.vm.annotation.Stable;
 
 import java.lang.constant.ClassDesc;
 import java.lang.constant.ConstantDescs;
 
 public enum Wrapper {
+    // order must be synced with java.lang.Class.primitiveIndex, in VM
     //        wrapperType      simple     primitiveType  simple     char  emptyArray     format               numericClass  superClass
     //        basicClassDescriptor    wrapperClassDescriptor
     BOOLEAN(  Boolean.class,   "Boolean", boolean.class, "boolean", 'Z', new boolean[0], Format.unsigned( 1), 0, 0,
@@ -58,6 +62,7 @@ public enum Wrapper {
     VOID   (     Void.class,      "Void",    void.class,    "void", 'V',           null, Format.other(    0), 0, 0,
             ConstantDescs.CD_void, ConstantDescs.CD_Void),
     ;
+    private static final JavaLangAccess JLA = SharedSecrets.getJavaLangAccess();
 
     public static final int COUNT = 10;
 
@@ -201,6 +206,7 @@ public enum Wrapper {
 
     static {
         assert(checkConvertibleFrom());
+        assert(checkPrimitiveIndices());
         assert(COUNT == Wrapper.values().length);
     }
     private static boolean checkConvertibleFrom() {
@@ -254,6 +260,20 @@ public enum Wrapper {
         }
         return true;  // i.e., assert(true)
     }
+    private static boolean checkPrimitiveIndices() {
+        for (Wrapper x : values()) {
+            if (x != OBJECT) {
+                assert(JLA.getPrimitiveIndex(x.primitiveType) == x.ordinal());
+            } else {
+                assert(JLA.getPrimitiveIndex(x.primitiveType) != x.ordinal());
+            }
+            assert(-JLA.getPrimitiveIndex(x.wrapperType) - 1) == x.ordinal();
+        }
+        // check that others aren't in range, for example String
+        var strIndex = JLA.getPrimitiveIndex(String.class);
+        assert(strIndex < 0 && -strIndex - 1 >= values().length);
+        return true;
+    }
 
     /** Produce a zero value for the given wrapper type.
      *  This will be a numeric zero for a number or character,
@@ -286,22 +306,19 @@ public enum Wrapper {
      */
     public <T> T zero(Class<T> type) { return convert(zero(), type); }
 
+    private static final @Stable Wrapper[] VALUES = values();
+
     /** Return the wrapper that wraps values of the given type.
      *  The type may be {@code Object}, meaning the {@code OBJECT} wrapper.
      *  Otherwise, the type must be a primitive.
      *  @throws IllegalArgumentException for unexpected types
      */
     public static Wrapper forPrimitiveType(Class<?> type) {
-        if (type == int.class)     return INT;
-        if (type == long.class)    return LONG;
-        if (type == boolean.class) return BOOLEAN;
-        if (type == short.class)   return SHORT;
-        if (type == byte.class)    return BYTE;
-        if (type == char.class)    return CHAR;
-        if (type == float.class)   return FLOAT;
-        if (type == double.class)  return DOUBLE;
-        if (type == void.class)    return VOID;
-        throw newIllegalArgumentException("not primitive: " + type);
+        if (!type.isPrimitive()) {
+            throw newIllegalArgumentException("not primitive: ", type);
+        } else {
+            return VALUES[JLA.getPrimitiveIndex(type)];
+        }
     }
 
     /** Return the wrapper that wraps values into the given wrapper type.
@@ -319,25 +336,20 @@ public enum Wrapper {
     }
 
     static Wrapper findWrapperType(Class<?> type) {
-        if (type == Object.class)    return OBJECT;
-        if (type == Integer.class)   return INT;
-        if (type == Long.class)      return LONG;
-        if (type == Boolean.class)   return BOOLEAN;
-        if (type == Short.class)     return SHORT;
-        if (type == Byte.class)      return BYTE;
-        if (type == Character.class) return CHAR;
-        if (type == Float.class)     return FLOAT;
-        if (type == Double.class)    return DOUBLE;
-        if (type == Void.class)      return VOID;
-        return null;
+        var index = -JLA.getPrimitiveIndex(type) - 1;
+        if (index < 0 || index >= VALUES.length) {
+            return null;
+        } else {
+            return VALUES[index];
+        }
     }
 
     @DontInline
     private static RuntimeException wrapperTypeError(Class<?> type) {
-        for (Wrapper x : values())
+        for (Wrapper x : VALUES)
             if (x.wrapperType == type)
                 throw new InternalError(); // missing wrapper type
-        return newIllegalArgumentException("not wrapper: " + type);
+        return newIllegalArgumentException("not wrapper: ", type);
     }
 
     /** Return the wrapper that corresponds to the given bytecode
@@ -354,36 +366,28 @@ public enum Wrapper {
 
     @DontInline
     private static RuntimeException basicTypeError(char type) {
-        for (Wrapper x : values()) {
+        for (Wrapper x : VALUES) {
             if (x.basicTypeChar == type) {
                 throw new InternalError(); // redo hash function
             }
         }
-        return newIllegalArgumentException("not basic type char: " + type);
+        return newIllegalArgumentException("not basic type char: ", type);
     }
 
     /** Return the wrapper for the given type, if it is
      *  a primitive type, else return {@code OBJECT}.
      */
     public static Wrapper forBasicType(Class<?> type) {
-        if (type == int.class)      return INT;
-        if (type == long.class)     return LONG;
-        if (type == boolean.class)  return BOOLEAN;
-        if (type == void.class)     return VOID;
-        if (type == byte.class)     return BYTE;
-        if (type == char.class)     return CHAR;
-        if (type == float.class)    return FLOAT;
-        if (type == double.class)   return DOUBLE;
-        if (type == short.class)    return SHORT;
+        if (type.isPrimitive()) return forPrimitiveType(type);
         return OBJECT;  // any reference, including wrappers or arrays
     }
 
     // Note on perfect hashes:
     //   for signature chars c, do (c + (c >> 1)) & 0xf
-    private static final Wrapper[] FROM_CHAR = new Wrapper[16];
+    private static final @Stable Wrapper[] FROM_CHAR = new Wrapper[16];
 
     static {
-        for (Wrapper w : values()) {
+        for (Wrapper w : VALUES) {
             FROM_CHAR[(w.basicTypeChar + (w.basicTypeChar >> 1)) & 0xf] = w;
         }
     }
