@@ -108,6 +108,11 @@ public interface JavaLangAccess {
     byte[] getRawClassTypeAnnotations(Class<?> klass);
 
     /**
+     * Gets the byte stored as primitive info in the Class, for use by sun.invoke.util.Wrapper
+     */
+    byte getPrimitiveIndex(Class<?> klass);
+
+    /**
      * Get the array of bytes that is the class-file representation
      * of this Executable's type annotations.
      */
