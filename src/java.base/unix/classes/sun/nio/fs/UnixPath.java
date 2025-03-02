@@ -52,8 +52,7 @@ import static sun.nio.fs.UnixNativeDispatcher.*;
 class UnixPath implements Path {
 
     private static final JavaLangAccess JLA = SharedSecrets.getJavaLangAccess();
-
-    private final UnixFileSystem fs;
+    private static final UnixFileSystem FS = DefaultFileSystemProvider.theFileSystem();
 
     // internal representation
     private final byte[] path;
@@ -68,13 +67,13 @@ class UnixPath implements Path {
     private volatile int[] offsets;
 
     UnixPath(UnixFileSystem fs, byte[] path) {
-        this.fs = fs;
+        assert fs == FS;
         this.path = path;
     }
 
     UnixPath(UnixFileSystem fs, String input) {
         // removes redundant slashes and checks for invalid characters
-        this(fs, encode(fs, normalizeAndCheck(input)));
+        this(fs, encode(normalizeAndCheck(input)));
     }
 
     // package-private
@@ -123,8 +122,8 @@ class UnixPath implements Path {
     }
 
     // encodes the given path-string into a sequence of bytes
-    private static byte[] encode(UnixFileSystem fs, String input) {
-        input = fs.normalizeNativePath(input);
+    private static byte[] encode(String input) {
+        input = FS.normalizeNativePath(input);
         try {
             return JLA.getBytesNoRepl(input, Util.jnuEncoding());
         } catch (CharacterCodingException cce) {
@@ -248,7 +247,7 @@ class UnixPath implements Path {
 
     @Override
     public UnixFileSystem getFileSystem() {
-        return fs;
+        return FS;
     }
 
     @Override
@@ -814,7 +813,7 @@ class UnixPath implements Path {
         // OK if two or more threads create a String
         String stringValue = this.stringValue;
         if (stringValue == null) {
-            this.stringValue = stringValue = fs.normalizeJavaPath(Util.toString(path));     // platform encoding
+            this.stringValue = stringValue = FS.normalizeJavaPath(Util.toString(path));     // platform encoding
         }
         return stringValue;
     }
@@ -865,7 +864,7 @@ class UnixPath implements Path {
         // then if a preceding ".." were eliminated, then the result
         // would be "<root>/link/file" instead of the correct
         // "<root>/link/../../file".
-        UnixPath result = fs.rootDirectory();
+        UnixPath result = FS.rootDirectory();
         boolean parentIsDotDot = false;
         for (int i = 0; i < absolute.getNameCount(); i++) {
             UnixPath element = absolute.getName(i);
@@ -889,7 +888,7 @@ class UnixPath implements Path {
                 if (!attrs.isSymbolicLink() && !parentIsDotDot) {
                     result = result.getParent();
                     if (result == null) {
-                        result = fs.rootDirectory();
+                        result = FS.rootDirectory();
                     }
                     continue;
                 }
@@ -908,10 +907,10 @@ class UnixPath implements Path {
         }
 
         // Return if the file system is not both case insensitive and retentive
-        if (!fs.isCaseInsensitiveAndPreserving())
+        if (!FS.isCaseInsensitiveAndPreserving())
             return result;
 
-        UnixPath path = fs.rootDirectory();
+        UnixPath path = FS.rootDirectory();
 
         // Traverse the result obtained above from the root downward, leaving
         // any '..' elements intact, and replacing other elements with the
