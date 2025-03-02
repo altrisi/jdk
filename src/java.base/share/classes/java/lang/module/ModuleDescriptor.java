@@ -29,6 +29,7 @@ import java.io.InputStream;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.io.UncheckedIOException;
+import java.lang.classfile.ClassFile;
 import java.lang.reflect.AccessFlag;
 import java.nio.ByteBuffer;
 import java.nio.file.Path;
@@ -106,7 +107,7 @@ public final class ModuleDescriptor
          * An open module. An open module does not declare any open packages
          * but the resulting module is treated as if all packages are open.
          */
-        OPEN(AccessFlag.OPEN.mask()),
+        OPEN(ClassFile.ACC_OPEN),
 
         /**
          * An automatic module. An automatic module is treated as if it exports
@@ -120,12 +121,12 @@ public final class ModuleDescriptor
         /**
          * The module was not explicitly or implicitly declared.
          */
-        SYNTHETIC(AccessFlag.SYNTHETIC.mask()),
+        SYNTHETIC(ClassFile.ACC_SYNTHETIC),
 
         /**
          * The module was implicitly declared.
          */
-        MANDATED(AccessFlag.MANDATED.mask());
+        MANDATED(ClassFile.ACC_MANDATED);
 
         private final int mask;
         private Modifier(int mask) {
@@ -158,25 +159,25 @@ public final class ModuleDescriptor
              * module</i> to have an implicitly declared dependence on the module
              * named by the {@code Requires}.
              */
-            TRANSITIVE(AccessFlag.TRANSITIVE.mask()),
+            TRANSITIVE(ClassFile.ACC_TRANSITIVE),
 
             /**
              * The dependence is mandatory in the static phase, during compilation,
              * but is optional in the dynamic phase, during execution.
              */
-            STATIC(AccessFlag.STATIC_PHASE.mask()),
+            STATIC(ClassFile.ACC_STATIC_PHASE),
 
             /**
              * The dependence was not explicitly or implicitly declared in the
              * source of the module declaration.
              */
-            SYNTHETIC(AccessFlag.SYNTHETIC.mask()),
+            SYNTHETIC(ClassFile.ACC_SYNTHETIC),
 
             /**
              * The dependence was implicitly declared in the source of the module
              * declaration.
              */
-            MANDATED(AccessFlag.MANDATED.mask());
+            MANDATED(ClassFile.ACC_MANDATED);
             private final int mask;
             private Modifier(int mask) {
                 this.mask = mask;
@@ -402,13 +403,13 @@ public final class ModuleDescriptor
              * The export was not explicitly or implicitly declared in the
              * source of the module declaration.
              */
-            SYNTHETIC(AccessFlag.SYNTHETIC.mask()),
+            SYNTHETIC(ClassFile.ACC_SYNTHETIC),
 
             /**
              * The export was implicitly declared in the source of the module
              * declaration.
              */
-            MANDATED(AccessFlag.MANDATED.mask());
+            MANDATED(ClassFile.ACC_MANDATED);
 
             private final int mask;
             private Modifier(int mask) {
@@ -627,13 +628,13 @@ public final class ModuleDescriptor
              * The open package was not explicitly or implicitly declared in
              * the source of the module declaration.
              */
-            SYNTHETIC(AccessFlag.SYNTHETIC.mask()),
+            SYNTHETIC(ClassFile.ACC_SYNTHETIC),
 
             /**
              * The open package was implicitly declared in the source of the
              * module declaration.
              */
-            MANDATED(AccessFlag.MANDATED.mask());
+            MANDATED(ClassFile.ACC_MANDATED);
             private final int mask;
             private Modifier(int mask) {
                 this.mask = mask;
