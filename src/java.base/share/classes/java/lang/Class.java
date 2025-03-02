@@ -687,38 +687,31 @@ public final class Class<T> implements java.io.Serializable,
         throws InstantiationException, IllegalAccessException
     {
         // Constructor lookup
-        Constructor<T> tmpConstructor = cachedConstructor;
-        if (tmpConstructor == null) {
-            if (this == Class.class) {
-                throw new IllegalAccessException(
-                    "Can not call newInstance() on the Class for java.lang.Class"
-                );
-            }
-            try {
-                Class<?>[] empty = {};
-                final Constructor<T> c = getReflectionFactory().copyConstructor(
-                    getConstructor0(empty, Member.DECLARED));
-                // Disable accessibility checks on the constructor
-                // access check is done with the true caller
-                c.setAccessible(true);
-                cachedConstructor = tmpConstructor = c;
-            } catch (NoSuchMethodException e) {
-                throw (InstantiationException)
-                    new InstantiationException(getName()).initCause(e);
-            }
+        Constructor<T> c;
+        if (this == Class.class) {
+            throw new IllegalAccessException(
+                "Can not call newInstance() on the Class for java.lang.Class"
+            );
+        }
+        try {
+            c = getDeclaredConstructor(EMPTY_CLASS_ARRAY);
+            // Disable accessibility checks on the constructor.
+            // Access check is done with the true caller
+            c.setAccessible(true);
+        } catch (NoSuchMethodException e) {
+            throw (InstantiationException)
+                new InstantiationException(getName()).initCause(e);
         }
 
         try {
             Class<?> caller = Reflection.getCallerClass();
-            return getReflectionFactory().newInstance(tmpConstructor, null, caller);
+            return getReflectionFactory().newInstance(c, null, caller);
         } catch (InvocationTargetException e) {
             Unsafe.getUnsafe().throwException(e.getTargetException());
             // Not reached
             return null;
         }
     }
-
-    private transient volatile Constructor<T> cachedConstructor;
 
     /**
      * Determines if the specified {@code Object} is assignment-compatible
