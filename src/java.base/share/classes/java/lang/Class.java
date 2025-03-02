@@ -236,7 +236,7 @@ public final class Class<T> implements java.io.Serializable,
      * This constructor is not used and prevents the default constructor being
      * generated.
      */
-    private Class(ClassLoader loader, Class<?> arrayComponentType, char mods, ProtectionDomain pd, boolean isPrim) {
+    private Class(ClassLoader loader, Class<?> arrayComponentType, char mods, ProtectionDomain pd, byte primIndex) {
         // Initialize final field for classLoader.  The initialization value of non-null
         // prevents future JIT optimizations from assuming this final field is null.
         // The following assignments are done directly by the VM without calling this constructor.
@@ -244,7 +244,7 @@ public final class Class<T> implements java.io.Serializable,
         componentType = arrayComponentType;
         modifiers = mods;
         protectionDomain = pd;
-        primitive = isPrim;
+        primitiveIndex = primIndex;
     }
 
     /**
@@ -848,7 +848,7 @@ public final class Class<T> implements java.io.Serializable,
      * @jls 15.8.2 Class Literals
      */
     public boolean isPrimitive() {
-        return primitiveIndex < 0;
+        return primitiveIndex >= 0;
     }
 
     /**
