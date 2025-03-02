@@ -50,9 +50,6 @@ class WindowsPath implements Path {
     // Maximum extended-length path
     private static final int MAX_LONG_PATH = 32000;
 
-    // FIXME - eliminate this reference to reduce space
-    private final WindowsFileSystem fs;
-
     // path type
     private final WindowsPathType type;
     // root component (may be empty)
@@ -79,7 +76,7 @@ class WindowsPath implements Path {
                         String root,
                         String path)
     {
-        this.fs = fs;
+        assert fs == DefaultFileSystemProvider.theFileSystem();
         this.type = type;
         this.root = root;
         this.path = path;
@@ -304,7 +301,7 @@ class WindowsPath implements Path {
 
     @Override
     public WindowsFileSystem getFileSystem() {
-        return fs;
+        return DefaultFileSystemProvider.theFileSystem();
     }
 
     // -- Path operations --
