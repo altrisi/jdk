@@ -57,7 +57,7 @@ public class Filtering {
             { Class.class, "classData" },
             { Class.class, "modifiers" },
             { Class.class, "protectionDomain" },
-            { Class.class, "primitive" },
+            { Class.class, "primitiveIndex" },
             { ClassLoader.class, "parent" },
             { Field.class, "clazz" },
             { Field.class, "modifiers" },
