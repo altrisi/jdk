@@ -3634,7 +3634,7 @@ public final class Class<T> implements java.io.Serializable,
     }
 
     private AnnotationData annotationData() {
-        ReflectionData rd = reflectionData();
+        ReflectionData<T> rd = reflectionData();
         AnnotationData annotationData = rd.annotationData;
         if (annotationData != null) {
             return annotationData;
