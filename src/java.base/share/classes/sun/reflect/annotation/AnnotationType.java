@@ -44,7 +44,8 @@ public class AnnotationType {
         protected AnnotationType computeValue(Class<?> type) {
             return new AnnotationType(type);
         }
-    }
+    };
+
     /**
      * Member name -> type mapping. Note that primitive types
      * are represented by the class objects for the corresponding wrapper
