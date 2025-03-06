@@ -2766,9 +2766,6 @@ public final class Class<T> implements java.io.Serializable,
         // offset of Class.reflectionData instance field
         private static final long reflectionDataOffset
                 = unsafe.objectFieldOffset(Class.class, "reflectionData");
-        // offset of Class.annotationType instance field
-        private static final long annotationTypeOffset
-                = unsafe.objectFieldOffset(Class.class, "annotationType");
         // offset of Class.annotationData instance field
         private static final long annotationDataOffset
                 = unsafe.objectFieldOffset(Class.class, "annotationData");
@@ -2777,12 +2774,6 @@ public final class Class<T> implements java.io.Serializable,
                                              SoftReference<ReflectionData<T>> oldData,
                                              SoftReference<ReflectionData<T>> newData) {
             return unsafe.compareAndSetReference(clazz, reflectionDataOffset, oldData, newData);
-        }
-
-        static boolean casAnnotationType(Class<?> clazz,
-                                         AnnotationType oldType,
-                                         AnnotationType newType) {
-            return unsafe.compareAndSetReference(clazz, annotationTypeOffset, oldType, newType);
         }
 
         static boolean casAnnotationData(Class<?> clazz,
@@ -3698,19 +3689,6 @@ public final class Class<T> implements java.io.Serializable,
             annotations.putAll(declaredAnnotations);
         }
         return new AnnotationData(annotations, declaredAnnotations, classRedefinedCount);
-    }
-
-    // Annotation interfaces cache their internal (AnnotationType) form
-
-    @SuppressWarnings("UnusedDeclaration")
-    private transient volatile AnnotationType annotationType;
-
-    boolean casAnnotationType(AnnotationType oldType, AnnotationType newType) {
-        return Atomic.casAnnotationType(this, oldType, newType);
-    }
-
-    AnnotationType getAnnotationType() {
-        return annotationType;
     }
 
     Map<Class<? extends Annotation>, Annotation> getDeclaredAnnotationMap() {
