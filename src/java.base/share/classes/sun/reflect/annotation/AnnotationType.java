@@ -41,8 +41,9 @@ import jdk.internal.access.JavaLangAccess;
  */
 public class AnnotationType {
     private static final ClassValue<AnnotationType> MAP = new ClassValue<>() {
+        @SuppressWarnings("unchecked")
         protected AnnotationType computeValue(Class<?> type) {
-            return new AnnotationType(type);
+            return new AnnotationType((Class<? extends Annotation>)type);
         }
     };
 
