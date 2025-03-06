@@ -2769,9 +2769,6 @@ public final class Class<T> implements java.io.Serializable,
         // offset of Class.annotationType instance field
         private static final long annotationTypeOffset
                 = unsafe.objectFieldOffset(Class.class, "annotationType");
-        // offset of Class.annotationData instance field
-        private static final long annotationDataOffset
-                = unsafe.objectFieldOffset(Class.class, "annotationData");
 
         static <T> boolean casReflectionData(Class<?> clazz,
                                              SoftReference<ReflectionData<T>> oldData,
@@ -2783,12 +2780,6 @@ public final class Class<T> implements java.io.Serializable,
                                          AnnotationType oldType,
                                          AnnotationType newType) {
             return unsafe.compareAndSetReference(clazz, annotationTypeOffset, oldType, newType);
-        }
-
-        static boolean casAnnotationData(Class<?> clazz,
-                                         AnnotationData oldData,
-                                         AnnotationData newData) {
-            return unsafe.compareAndSetReference(clazz, annotationDataOffset, oldData, newData);
         }
     }
 
@@ -2809,6 +2800,8 @@ public final class Class<T> implements java.io.Serializable,
         volatile Field[] declaredPublicFields;
         volatile Method[] declaredPublicMethods;
         volatile Class<?>[] interfaces;
+
+        volatile AnnotationData annotationData;
 
         // Cached names
         String simpleName;
@@ -3567,8 +3560,7 @@ public final class Class<T> implements java.io.Serializable,
     public <A extends Annotation> A[] getAnnotationsByType(Class<A> annotationClass) {
         Objects.requireNonNull(annotationClass);
 
-        AnnotationData annotationData = annotationData();
-        return AnnotationSupport.getAssociatedAnnotations(annotationData.declaredAnnotations,
+        return AnnotationSupport.getAssociatedAnnotations(annotationData().declaredAnnotations,
                                                           this,
                                                           annotationClass);
     }
@@ -3629,46 +3621,30 @@ public final class Class<T> implements java.io.Serializable,
         return AnnotationParser.toArray(annotationData().declaredAnnotations);
     }
 
-    // annotation data that might get invalidated when JVM TI RedefineClasses() is called
+    // annotation data that might get invalidated when JVM TI RedefineClasses() is called, saved in ReflectionData
     private static class AnnotationData {
         final Map<Class<? extends Annotation>, Annotation> annotations;
         final Map<Class<? extends Annotation>, Annotation> declaredAnnotations;
 
-        // Value of classRedefinedCount when we created this AnnotationData instance
-        final int redefinedCount;
-
         AnnotationData(Map<Class<? extends Annotation>, Annotation> annotations,
-                       Map<Class<? extends Annotation>, Annotation> declaredAnnotations,
-                       int redefinedCount) {
+                       Map<Class<? extends Annotation>, Annotation> declaredAnnotations) {
             this.annotations = annotations;
             this.declaredAnnotations = declaredAnnotations;
-            this.redefinedCount = redefinedCount;
         }
     }
-
-    // Annotations cache
-    @SuppressWarnings("UnusedDeclaration")
-    private transient volatile AnnotationData annotationData;
 
     private AnnotationData annotationData() {
-        while (true) { // retry loop
-            AnnotationData annotationData = this.annotationData;
-            int classRedefinedCount = this.classRedefinedCount;
-            if (annotationData != null &&
-                annotationData.redefinedCount == classRedefinedCount) {
-                return annotationData;
-            }
-            // null or stale annotationData -> optimistically create new instance
-            AnnotationData newAnnotationData = createAnnotationData(classRedefinedCount);
-            // try to install it
-            if (Atomic.casAnnotationData(this, annotationData, newAnnotationData)) {
-                // successfully installed new AnnotationData
-                return newAnnotationData;
-            }
+        ReflectionData rd = reflectionData();
+        AnnotationData annotationData = rd.annotationData;
+        if (annotationData != null) {
+            return annotationData;
         }
+        annotationData = createAnnotationData();
+        rd.annotationData = annotationData;
+        return annotationData;
     }
 
-    private AnnotationData createAnnotationData(int classRedefinedCount) {
+    private AnnotationData createAnnotationData() {
         Map<Class<? extends Annotation>, Annotation> declaredAnnotations =
             AnnotationParser.parseAnnotations(getRawAnnotations(), getConstantPool(), this);
         Class<?> superClass = getSuperclass();
@@ -3697,7 +3673,7 @@ public final class Class<T> implements java.io.Serializable,
             // at least one inherited annotation -> declared may override inherited
             annotations.putAll(declaredAnnotations);
         }
-        return new AnnotationData(annotations, declaredAnnotations, classRedefinedCount);
+        return new AnnotationData(annotations, declaredAnnotations);
     }
 
     // Annotation interfaces cache their internal (AnnotationType) form
