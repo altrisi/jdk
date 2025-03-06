@@ -40,6 +40,11 @@ import jdk.internal.access.JavaLangAccess;
  * @since   1.5
  */
 public class AnnotationType {
+    private static final ClassValue<AnnotationType> MAP = new ClassValue<>() {
+        protected AnnotationType computeValue(Class<?> type) {
+            return new AnnotationType(type);
+        }
+    }
     /**
      * Member name -> type mapping. Note that primitive types
      * are represented by the class objects for the corresponding wrapper
@@ -78,19 +83,7 @@ public class AnnotationType {
     public static AnnotationType getInstance(
         Class<? extends Annotation> annotationClass)
     {
-        JavaLangAccess jla = SharedSecrets.getJavaLangAccess();
-        AnnotationType result = jla.getAnnotationType(annotationClass); // volatile read
-        if (result == null) {
-            result = new AnnotationType(annotationClass);
-            // try to CAS the AnnotationType: null -> result
-            if (!jla.casAnnotationType(annotationClass, null, result)) {
-                // somebody was quicker -> read it's result
-                result = jla.getAnnotationType(annotationClass);
-                assert result != null;
-            }
-        }
-
-        return result;
+        return MAP.get(annotationClass);
     }
 
     /**
