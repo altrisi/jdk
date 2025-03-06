@@ -79,18 +79,6 @@ public interface JavaLangAccess {
     ConstantPool getConstantPool(Class<?> klass);
 
     /**
-     * Compare-And-Set the AnnotationType instance corresponding to this class.
-     * (This method only applies to annotation types.)
-     */
-    boolean casAnnotationType(Class<?> klass, AnnotationType oldType, AnnotationType newType);
-
-    /**
-     * Get the AnnotationType instance corresponding to this class.
-     * (This method only applies to annotation types.)
-     */
-    AnnotationType getAnnotationType(Class<?> klass);
-
-    /**
      * Get the declared annotations for a given class, indexed by their types.
      */
     Map<Class<? extends Annotation>, Annotation> getDeclaredAnnotationMap(Class<?> klass);
