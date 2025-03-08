@@ -371,25 +371,16 @@ public abstract class ClassValue<T> {
         return initializeMap(type);
     }
 
-    private static final Object CRITICAL_SECTION = new Object();
     private static final Unsafe UNSAFE = Unsafe.getUnsafe();
+    private static final long MAP_OFFSET = UNSAFE.objectFieldOffset(Class.class, "classValueMap");
     private static ClassValueMap initializeMap(Class<?> type) {
-        ClassValueMap map;
-        synchronized (CRITICAL_SECTION) {  // private object to avoid deadlocks
-            // happens about once per type
-            if ((map = type.classValueMap) == null) {
-                map = new ClassValueMap();
-                // Place a Store fence after construction and before publishing to emulate
-                // ClassValueMap containing final fields. This ensures it can be
-                // published safely in the non-volatile field Class.classValueMap,
-                // since stores to the fields of ClassValueMap will not be reordered
-                // to occur after the store to the field type.classValueMap
-                UNSAFE.storeFence();
-
-                type.classValueMap = map;
-            }
+        ClassValueMap map = new ClassValueMap();
+        ClassValueMap witness = UNSAFE.compareAndExchangeReference(type, MAP_OFFSET, null, map);
+        if (witness != null) { // someone else set the map, not us: return that
+            return witness;
+        } else {
+            return map;
         }
-        return map;
     }
 
     static <T> Entry<T> makeEntry(Version<T> explicitVersion, T value) {
