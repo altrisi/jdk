@@ -375,7 +375,7 @@ public abstract class ClassValue<T> {
     private static final long MAP_OFFSET = UNSAFE.objectFieldOffset(Class.class, "classValueMap");
     private static ClassValueMap initializeMap(Class<?> type) {
         ClassValueMap map = new ClassValueMap();
-        ClassValueMap witness = UNSAFE.compareAndExchangeReference(type, MAP_OFFSET, null, map);
+        ClassValueMap witness = (ClassValueMap)UNSAFE.compareAndExchangeReference(type, MAP_OFFSET, null, map);
         if (witness != null) { // someone else set the map, not us: return that
             return witness;
         } else {
