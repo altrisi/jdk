@@ -221,7 +221,7 @@ public class ManagementFactoryHelper {
                     throw new InternalError(x);
                 }
             }
-            return Collections.unmodifiableMap(methodsMap);
+            return Map.copyOf(methodsMap);
         }
 
         private static Object getMXBeanImplementation() {
@@ -247,13 +247,13 @@ public class ManagementFactoryHelper {
         // getObjectName will not be called on the implementation object,
         // so the implementation object does not need to declare such
         // a method.
-        final Object impl = getMXBeanImplementation();
-        final Map<String, Method> methods = initMethodMap(impl);
+        static final Object impl = getMXBeanImplementation();
+        static final Map<String, Method> methods = initMethodMap(impl);
 
-        LoggingMXBeanAccess() {
+        private LoggingMXBeanAccess() {
         }
 
-        <T> T invoke(String methodName, Object... args) {
+        static <T> T invoke(String methodName, Object... args) {
             Method m = methods.get(methodName);
             if (m == null) {
                 throw new UnsupportedOperationException(methodName);
@@ -285,10 +285,7 @@ public class ManagementFactoryHelper {
 
     static final class PlatformLoggingImpl implements PlatformLoggingMXBean {
 
-        private final LoggingMXBeanAccess loggingAccess;
-        private PlatformLoggingImpl(LoggingMXBeanAccess loggingAccess) {
-            this.loggingAccess = loggingAccess;
-        }
+        private PlatformLoggingImpl() {}
 
         private volatile ObjectName objname;  // created lazily
         @Override
@@ -308,41 +305,33 @@ public class ManagementFactoryHelper {
 
         @Override
         public java.util.List<String> getLoggerNames() {
-            return loggingAccess.invoke("getLoggerNames");
+            return LoggingMXBeanAccess.invoke("getLoggerNames");
         }
 
         @Override
         public String getLoggerLevel(String loggerName) {
-            return loggingAccess.invoke("getLoggerLevel", loggerName);
+            return LoggingMXBeanAccess.invoke("getLoggerLevel", loggerName);
         }
 
         @Override
         public void setLoggerLevel(String loggerName, String levelName) {
-            loggingAccess.invoke("setLoggerLevel", loggerName, levelName);
+            LoggingMXBeanAccess.invoke("setLoggerLevel", loggerName, levelName);
         }
 
         @Override
         public String getParentLoggerName(String loggerName) {
-            return loggingAccess.invoke("getParentLoggerName", loggerName);
+            return LoggingMXBeanAccess.invoke("getParentLoggerName", loggerName);
         }
 
-        private static PlatformLoggingImpl getInstance() {
-            return new PlatformLoggingImpl(new LoggingMXBeanAccess());
-         }
-
-        static final PlatformLoggingMXBean MBEAN = getInstance();
+        static final PlatformLoggingMXBean MBEAN = new PlatformLoggingImpl();
     }
 
-    private static volatile List<BufferPoolMXBean> bufferPools;
-    public static List<BufferPoolMXBean> getBufferPoolMXBeans() {
+    private static List<BufferPoolMXBean> bufferPools;
+    public static synchronized List<BufferPoolMXBean> getBufferPoolMXBeans() {
         if (bufferPools == null) {
-            synchronized (ManagementFactoryHelper.class) {
-                if (bufferPools == null) {
-                    bufferPools = VM.getBufferPools().stream()
-                                    .map(ManagementFactoryHelper::createBufferPoolMXBean)
-                                    .collect(Collectors.toList());
-                }
-            }
+            bufferPools = VM.getBufferPools().stream()
+                            .map(ManagementFactoryHelper::createBufferPoolMXBean)
+                            .collect(Collectors.toList());
         }
         return bufferPools;
     }
