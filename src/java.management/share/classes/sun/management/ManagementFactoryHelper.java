@@ -196,7 +196,7 @@ public class ManagementFactoryHelper {
             }
         }
 
-        private Map<String, Method> initMethodMap(Object impl) {
+        private static Map<String, Method> initMethodMap(Object impl) {
             if (impl == null) {
                 return Collections.emptyMap();
             }
