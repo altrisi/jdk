@@ -463,16 +463,11 @@ public class VM {
     }
 
     private static class BufferPoolsHolder {
-        static final List<BufferPool> BUFFER_POOLS;
-
-        static {
-            ArrayList<BufferPool> bufferPools = new ArrayList<>(3);
-            bufferPools.add(SharedSecrets.getJavaNioAccess().getDirectBufferPool());
-            bufferPools.add(FileChannelImpl.getMappedBufferPool());
-            bufferPools.add(FileChannelImpl.getSyncMappedBufferPool());
-
-            BUFFER_POOLS = Collections.unmodifiableList(bufferPools);
-        }
+        static final List<BufferPool> BUFFER_POOLS = List.of(
+                SharedSecrets.getJavaNioAccess().getDirectBufferPool(),
+                FileChannelImpl.getMappedBufferPool(),
+                FileChannelImpl.getSyncMappedBufferPool()
+            );
     }
 
     /**
