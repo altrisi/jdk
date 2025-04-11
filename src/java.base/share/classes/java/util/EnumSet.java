@@ -160,7 +160,8 @@ public abstract sealed class EnumSet<E extends Enum<E>> extends AbstractSet<E>
      * the specified collection is an {@code EnumSet} instance, this static
      * factory method behaves identically to {@link #copyOf(EnumSet)}.
      * Otherwise, the specified collection must contain at least one element
-     * (in order to determine the new enum set's element type).
+     * (in order to determine the new enum set's element type). If you need
+     * to handle empty collections, you should use {@link #copyOf(Class, Collection)}.
      *
      * @param <E> The class of the elements in the collection
      * @param c the collection from which to initialize this enum set
@@ -182,6 +183,27 @@ public abstract sealed class EnumSet<E extends Enum<E>> extends AbstractSet<E>
                 result.add(i.next());
             return result;
         }
+    }
+
+    /**
+     * Creates an enum set initialized from the specified collection, of
+     * the provided elementType.
+     *
+     * @param <E> The class of the elements in the collection
+     * @param elementType the class object of the element type for this enum
+     *     set
+     * @param c the collection from which to initialize this enum set
+     * @return An enum set initialized from the given collection.
+     * @throws NullPointerException if {@code c} is null
+     */
+    public static <E extends Enum<E>> EnumSet<E> copyOf(Class<E> elementType, Collection<E> c) {
+        if (c instanceof EnumSet<E> es && es.elementType == elementType) {
+            return es.clone();
+        }
+        // case of different element type will also fail here
+        EnumSet<E> result = noneOf(elementType);
+        result.addAll(c);
+        return result;
     }
 
     /**
