@@ -42,6 +42,7 @@ import java.nio.file.Path;
 import java.text.Normalizer;
 import jdk.internal.access.JavaNetUriAccess;
 import jdk.internal.access.SharedSecrets;
+import jdk.internal.vm.annotation.Stable;
 import sun.nio.cs.UTF_8;
 
 /**
@@ -526,31 +527,46 @@ public final class URI
     // -- Properties and components of this instance --
 
     // Components of all URIs: [<scheme>:]<scheme-specific-part>[#<fragment>]
+    @Stable
     private transient String scheme;            // null ==> relative URI
+    @Stable
     private transient String fragment;
 
     // Hierarchical URI components: [//<authority>]<path>[?<query>]
+    @Stable
     private transient String authority;         // Registry or server
 
     // Server-based authority: [<userInfo>@]<host>[:<port>]
+    @Stable
     private transient String userInfo;
+    @Stable
     private transient String host;              // null ==> registry-based
     private transient int port = -1;            // -1 ==> undefined
 
     // Remaining components of hierarchical URIs
+    @Stable
     private transient String path;              // null ==> opaque
+    @Stable
     private transient String query;
 
     // The remaining fields may be computed on demand, which is safe even in
     // the face of multiple threads racing to initialize them
+    @Stable
     private transient String schemeSpecificPart;
+    @Stable
     private transient int hash;        // Zero ==> undefined
 
+    @Stable
     private transient String decodedUserInfo;
+    @Stable
     private transient String decodedAuthority;
+    @Stable
     private transient String decodedPath;
+    @Stable
     private transient String decodedQuery;
+    @Stable
     private transient String decodedFragment;
+    @Stable
     private transient String decodedSchemeSpecificPart;
 
     /**
@@ -558,6 +574,7 @@ public final class URI
      *
      * @serial
      */
+    @Stable
     private volatile String string;             // The only serializable field
 
 
