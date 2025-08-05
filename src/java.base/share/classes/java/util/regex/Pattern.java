@@ -46,6 +46,7 @@ import java.util.stream.StreamSupport;
 import jdk.internal.util.ArraysSupport;
 import jdk.internal.util.regex.CaseFolding;
 import jdk.internal.util.regex.Grapheme;
+import jdk.internal.vm.annotation.Stable;
 
 /**
  * A compiled representation of a regular expression.
@@ -994,11 +995,13 @@ public final class Pattern
      * Boolean indicating this Pattern is compiled; this is necessary in order
      * to lazily compile deserialized Patterns.
      */
+    @Stable
     private transient volatile boolean compiled;
 
     /**
      * The normalized pattern string.
      */
+    @Stable
     private transient String normalizedPattern;
 
     /**
@@ -1012,6 +1015,7 @@ public final class Pattern
      * at the beginning.  This may include a find that uses BnM or a First
      * node.
      */
+    @Stable
     transient Node matchRoot;
 
     /**
@@ -1028,6 +1032,7 @@ public final class Pattern
      * Map the "name" of the "named capturing group" to its group id
      * node.
      */
+    // @Stable may be set to a different empty map in a race
     transient volatile Map<String, Integer> namedGroups;
 
     /**
@@ -1045,12 +1050,14 @@ public final class Pattern
      * matchers to allocate storage needed for a IntHashSet to keep the
      * beginning pos {@code i} of all failed match.
      */
+    // @Stable needs a local though
     transient int localTCNCount;
 
     /*
      * Turn off the stop-exponential-backtracking optimization if there
      * is a group ref in the pattern.
      */
+    // @Stable it may be written to true more than once, which is fine, but need to check asserts
     transient boolean hasGroupRef;
 
     /**
@@ -1062,12 +1069,14 @@ public final class Pattern
      * The number of capturing groups in this Pattern. Used by matchers to
      * allocate storage needed to perform a match.
      */
+    // @Stable needs more work
     transient int capturingGroupCount;
 
     /**
      * The local variable count used by parsing tree. Used by matchers to
      * allocate storage needed to perform a match.
      */
+    // @Stable needs more work
     transient int localCount;
 
     /**
