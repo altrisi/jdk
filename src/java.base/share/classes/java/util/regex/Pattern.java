@@ -1582,6 +1582,7 @@ public final class Pattern
         } else {
             root = new Start(lastAccept);
             matchRoot = lastAccept;
+            compiled = true;
         }
     }
 
