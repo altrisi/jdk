@@ -1007,7 +1007,24 @@ public abstract class SurfaceData
      * which is true when all palette entries in the color
      * model are gray and opaque.
      */
-    protected static native boolean isOpaqueGray(IndexColorModel icm);
+    protected static boolean isOpaqueGray(IndexColorModel icm) {
+        if (icm == null) {
+            return false;
+        }
+        
+        class FieldHolder {
+            static final Field allgrayopaque;
+            static {
+                try {
+                    allgrayopaque = IndexColorModel.class.getDeclaredField("allgrayopaque");
+                    allgrayopaque.setAccessible(true);
+                } catch (ReflectiveOperationException e) {
+                    throw new AssertionError(e);
+                }
+            }
+        }
+        return (boolean)FieldHolder.allgrayopaque.get(icm);
+    }
 
     /**
      * For our purposes null and NullSurfaceData are the same as
