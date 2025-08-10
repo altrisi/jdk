@@ -39,7 +39,6 @@
 static jclass pInvalidPipeClass;
 static jclass pNullSurfaceDataClass;
 static jfieldID pDataID;
-static jfieldID allGrayID;
 
 jfieldID validID;
 GeneralDisposeFunc SurfaceData_DisposeOps;
@@ -78,8 +77,6 @@ do { \
 JNIEXPORT void JNICALL
 Java_sun_java2d_SurfaceData_initIDs(JNIEnv *env, jclass sd)
 {
-    jclass pICMClass;
-
     InitGlobalClassRef(pInvalidPipeClass, env,
                        "sun/java2d/InvalidPipeException");
 
@@ -88,24 +85,6 @@ Java_sun_java2d_SurfaceData_initIDs(JNIEnv *env, jclass sd)
 
     InitField(pDataID, env, sd, "pData", "J");
     InitField(validID, env, sd, "valid", "Z");
-
-    InitClass(pICMClass, env, "java/awt/image/IndexColorModel");
-    InitField(allGrayID, env, pICMClass, "allgrayopaque", "Z");
-}
-
-/*
- * Class:     sun_java2d_SurfaceData
- * Method:    isOpaqueGray
- * Signature: ()Z
- */
-JNIEXPORT jboolean JNICALL
-Java_sun_java2d_SurfaceData_isOpaqueGray(JNIEnv *env, jclass sdClass,
-                                         jobject icm)
-{
-    if (icm == NULL) {
-        return JNI_FALSE;
-    }
-    return (*env)->GetBooleanField(env, icm, allGrayID);
 }
 
 static SurfaceDataOps *
