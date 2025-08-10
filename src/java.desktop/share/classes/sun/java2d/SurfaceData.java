@@ -33,6 +33,7 @@ import java.awt.Image;
 import java.awt.image.ColorModel;
 import java.awt.image.IndexColorModel;
 import java.awt.image.Raster;
+import java.lang.reflect.Field;
 
 import sun.font.FontUtilities;
 import sun.java2d.loops.RenderCache;
