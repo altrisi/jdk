@@ -1024,7 +1024,11 @@ public abstract class SurfaceData
                 }
             }
         }
-        return (boolean)FieldHolder.allgrayopaque.get(icm);
+        try {
+            return (boolean)FieldHolder.allgrayopaque.get(icm);
+        } catch (ReflectiveOperationException e) {
+            throw new AssertionError(e);
+        }
     }
 
     /**
