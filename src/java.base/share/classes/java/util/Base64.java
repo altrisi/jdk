@@ -1041,7 +1041,7 @@ public final class Base64 {
         private boolean eof = false;
         private boolean closed = false;
 
-        DecInputStream(InputStream is, int[] base64, boolean isMIME) {
+        DecInputStream(InputStream is, byte[] base64, boolean isMIME) {
             this.is = is;
             this.base64 = base64;
             this.isMIME = isMIME;
