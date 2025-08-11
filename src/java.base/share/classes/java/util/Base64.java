@@ -33,6 +33,7 @@ import java.nio.ByteBuffer;
 
 import sun.nio.cs.ISO_8859_1;
 import jdk.internal.util.Preconditions;
+import jdk.internal.vm.annotation.Stable;
 import jdk.internal.vm.annotation.IntrinsicCandidate;
 
 /**
@@ -219,6 +220,7 @@ public final class Base64 {
          * index values into their "Base64 Alphabet" equivalents as specified
          * in "Table 1: The Base64 Alphabet" of RFC 2045 (and RFC 4648).
          */
+        @Stable
         private static final char[] toBase64 = {
             'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M',
             'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z',
@@ -232,6 +234,7 @@ public final class Base64 {
          * in Table 2 of the RFC 4648, with the '+' and '/' changed to '-' and
          * '_'. This table is used when BASE64_URL is specified.
          */
+        @Stable
         private static final char[] toBase64URL = {
             'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M',
             'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z',
@@ -241,6 +244,7 @@ public final class Base64 {
         };
 
         private static final int MIMELINEMAX = 76;
+        @Stable
         private static final byte[] CRLF = new byte[] {'\r', '\n'};
 
         static final Encoder RFC4648 = new Encoder(false, null, -1, true);
@@ -526,25 +530,32 @@ public final class Base64 {
          * the array are encoded to -1.
          *
          */
-        private static final int[] fromBase64 = new int[256];
+        @Stable
+        private static final int[] fromBase64;
         static {
-            Arrays.fill(fromBase64, -1);
+            int[] fromBase64Local = new int[256];
+            Arrays.fill(fromBase64Local, -1);
             for (int i = 0; i < Encoder.toBase64.length; i++)
-                fromBase64[Encoder.toBase64[i]] = i;
-            fromBase64['='] = -2;
+                fromBase64Local[Encoder.toBase64[i]] = i;
+            fromBase64Local['='] = -2;
+            
+            fromBase64 = fromBase64Local;
         }
 
         /**
          * Lookup table for decoding "URL and Filename safe Base64 Alphabet"
          * as specified in Table2 of the RFC 4648.
          */
-        private static final int[] fromBase64URL = new int[256];
+        @Stable
+        private static final int[] fromBase64URL;
 
         static {
-            Arrays.fill(fromBase64URL, -1);
+            int[] fromBase64UrlLocal = new int[256];
+            Arrays.fill(fromBase64UrlLocal, -1);
             for (int i = 0; i < Encoder.toBase64URL.length; i++)
-                fromBase64URL[Encoder.toBase64URL[i]] = i;
-            fromBase64URL['='] = -2;
+                fromBase64UrlLocal[Encoder.toBase64URL[i]] = i;
+            fromBase64UrlLocal['='] = -2;
+            fromBase64URL = fromBase64UrlLocal;
         }
 
         static final Decoder RFC4648         = new Decoder(false, false);
@@ -893,7 +904,9 @@ public final class Base64 {
         private int b0, b1, b2;
         private boolean closed = false;
 
+        @Stable
         private final char[] base64;    // byte->base64 mapping
+        @Stable
         private final byte[] newline;   // line separator, if needed
         private final int linemax;
         private final boolean doPadding;// whether or not to pad
@@ -1021,6 +1034,7 @@ public final class Base64 {
 
         private final InputStream is;
         private final boolean isMIME;
+        @Stable
         private final int[] base64;     // base64 -> byte mapping
         private int bits = 0;           // 24-bit buffer for decoding
 
