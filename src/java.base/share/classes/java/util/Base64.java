@@ -137,7 +137,7 @@ public final class Base64 {
      */
     public static Encoder getMimeEncoder(int lineLength, byte[] lineSeparator) {
          Objects.requireNonNull(lineSeparator);
-         int[] base64 = Decoder.fromBase64;
+         byte[] base64 = Decoder.fromBase64;
          for (byte b : lineSeparator) {
              if (base64[b & 0xff] != -1)
                  throw new IllegalArgumentException(
@@ -526,7 +526,7 @@ public final class Base64 {
         private static final byte[] fromBase64;
         static {
             byte[] fromBase64Local = new byte[256];
-            Arrays.fill(fromBase64Local, -1);
+            Arrays.fill(fromBase64Local, (byte)-1);
             assert Encoder.toBase64.length < Byte.MAX_VALUE;
             for (byte i = 0; i < Encoder.toBase64.length; i++)
                 fromBase64Local[Encoder.toBase64[i]] = i;
@@ -544,7 +544,7 @@ public final class Base64 {
 
         static {
             byte[] fromBase64UrlLocal = new byte[256];
-            Arrays.fill(fromBase64UrlLocal, -1);
+            Arrays.fill(fromBase64UrlLocal, (byte)-1);
             assert Encoder.toBase64URL.length < Byte.MAX_VALUE;
             for (byte i = 0; i < Encoder.toBase64URL.length; i++)
                 fromBase64UrlLocal[Encoder.toBase64URL[i]] = i;
