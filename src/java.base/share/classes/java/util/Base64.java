@@ -221,13 +221,9 @@ public final class Base64 {
          * in "Table 1: The Base64 Alphabet" of RFC 2045 (and RFC 4648).
          */
         @Stable
-        private static final char[] toBase64 = {
-            'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M',
-            'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z',
-            'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm',
-            'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z',
-            '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '+', '/'
-        };
+        private static final byte[] toBase64 = 
+            "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/"
+                .getBytes(ISO_8859_1.INSTANCE);
 
         /**
          * It's the lookup table for "URL and Filename safe Base64" as specified
@@ -235,13 +231,9 @@ public final class Base64 {
          * '_'. This table is used when BASE64_URL is specified.
          */
         @Stable
-        private static final char[] toBase64URL = {
-            'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M',
-            'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z',
-            'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm',
-            'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z',
-            '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '-', '_'
-        };
+        private static final byte[] toBase64URL = 
+            "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_"
+                .getBytes(ISO_8859_1.INSTANCE);
 
         private static final int MIMELINEMAX = 76;
         @Stable
@@ -428,20 +420,20 @@ public final class Base64 {
 
         @IntrinsicCandidate
         private void encodeBlock(byte[] src, int sp, int sl, byte[] dst, int dp, boolean isURL) {
-            char[] base64 = isURL ? toBase64URL : toBase64;
+            byte[] base64 = isURL ? toBase64URL : toBase64;
             for (int sp0 = sp, dp0 = dp ; sp0 < sl; ) {
                 int bits = (src[sp0++] & 0xff) << 16 |
                            (src[sp0++] & 0xff) <<  8 |
                            (src[sp0++] & 0xff);
-                dst[dp0++] = (byte)base64[(bits >>> 18) & 0x3f];
-                dst[dp0++] = (byte)base64[(bits >>> 12) & 0x3f];
-                dst[dp0++] = (byte)base64[(bits >>> 6)  & 0x3f];
-                dst[dp0++] = (byte)base64[bits & 0x3f];
+                dst[dp0++] = base64[(bits >>> 18) & 0x3f];
+                dst[dp0++] = base64[(bits >>> 12) & 0x3f];
+                dst[dp0++] = base64[(bits >>> 6)  & 0x3f];
+                dst[dp0++] = base64[bits & 0x3f];
             }
         }
 
         private int encode0(byte[] src, int off, int end, byte[] dst) {
-            char[] base64 = isURL ? toBase64URL : toBase64;
+            byte[] base64 = isURL ? toBase64URL : toBase64;
             int sp = off;
             int slen = (end - off) / 3 * 3;
             int sl = off + slen;
@@ -462,17 +454,17 @@ public final class Base64 {
             }
             if (sp < end) {               // 1 or 2 leftover bytes
                 int b0 = src[sp++] & 0xff;
-                dst[dp++] = (byte)base64[b0 >> 2];
+                dst[dp++] = base64[b0 >> 2];
                 if (sp == end) {
-                    dst[dp++] = (byte)base64[(b0 << 4) & 0x3f];
+                    dst[dp++] = base64[(b0 << 4) & 0x3f];
                     if (doPadding) {
                         dst[dp++] = '=';
                         dst[dp++] = '=';
                     }
                 } else {
                     int b1 = src[sp++] & 0xff;
-                    dst[dp++] = (byte)base64[(b0 << 4) & 0x3f | (b1 >> 4)];
-                    dst[dp++] = (byte)base64[(b1 << 2) & 0x3f];
+                    dst[dp++] = base64[(b0 << 4) & 0x3f | (b1 >> 4)];
+                    dst[dp++] = base64[(b1 << 2) & 0x3f];
                     if (doPadding) {
                         dst[dp++] = '=';
                     }
@@ -531,11 +523,12 @@ public final class Base64 {
          *
          */
         @Stable
-        private static final int[] fromBase64;
+        private static final byte[] fromBase64;
         static {
-            int[] fromBase64Local = new int[256];
+            byte[] fromBase64Local = new byte[256];
             Arrays.fill(fromBase64Local, -1);
-            for (int i = 0; i < Encoder.toBase64.length; i++)
+            assert Encoder.toBase64.length < Byte.MAX_VALUE;
+            for (byte i = 0; i < Encoder.toBase64.length; i++)
                 fromBase64Local[Encoder.toBase64[i]] = i;
             fromBase64Local['='] = -2;
             
@@ -547,12 +540,13 @@ public final class Base64 {
          * as specified in Table2 of the RFC 4648.
          */
         @Stable
-        private static final int[] fromBase64URL;
+        private static final byte[] fromBase64URL;
 
         static {
-            int[] fromBase64UrlLocal = new int[256];
+            byte[] fromBase64UrlLocal = new byte[256];
             Arrays.fill(fromBase64UrlLocal, -1);
-            for (int i = 0; i < Encoder.toBase64URL.length; i++)
+            assert Encoder.toBase64URL.length < Byte.MAX_VALUE;
+            for (byte i = 0; i < Encoder.toBase64URL.length; i++)
                 fromBase64UrlLocal[Encoder.toBase64URL[i]] = i;
             fromBase64UrlLocal['='] = -2;
             fromBase64URL = fromBase64UrlLocal;
@@ -713,7 +707,7 @@ public final class Base64 {
          *
          */
         private int decodedOutLength(byte[] src, int sp, int sl) {
-            int[] base64 = isURL ? fromBase64URL : fromBase64;
+            byte[] base64 = isURL ? fromBase64URL : fromBase64;
             int paddings = 0;
             int len = sl - sp;
             if (len == 0)
@@ -729,7 +723,7 @@ public final class Base64 {
                 // trade-off of pre-scan or Arrays.copyOf
                 int n = 0;
                 while (sp < sl) {
-                    int b = src[sp++] & 0xff;
+                    byte b = src[sp++];
                     if (b == '=') {
                         len -= (sl - sp + 1);
                         break;
@@ -799,14 +793,14 @@ public final class Base64 {
          */
         @IntrinsicCandidate
         private int decodeBlock(byte[] src, int sp, int sl, byte[] dst, int dp, boolean isURL, boolean isMIME) {
-            int[] base64 = isURL ? fromBase64URL : fromBase64;
+            byte[] base64 = isURL ? fromBase64URL : fromBase64;
             int sl0 = sp + ((sl - sp) & ~0b11);
             int new_dp = dp;
             while (sp < sl0) {
-                int b1 = base64[src[sp++] & 0xff];
-                int b2 = base64[src[sp++] & 0xff];
-                int b3 = base64[src[sp++] & 0xff];
-                int b4 = base64[src[sp++] & 0xff];
+                byte b1 = base64[src[sp++] & 0xff];
+                byte b2 = base64[src[sp++] & 0xff];
+                byte b3 = base64[src[sp++] & 0xff];
+                byte b4 = base64[src[sp++] & 0xff];
                 if ((b1 | b2 | b3 | b4) < 0) {    // non base64 byte
                     return new_dp - dp;
                 }
@@ -819,7 +813,7 @@ public final class Base64 {
         }
 
         private int decode0(byte[] src, int sp, int sl, byte[] dst) {
-            int[] base64 = isURL ? fromBase64URL : fromBase64;
+            byte[] base64 = isURL ? fromBase64URL : fromBase64;
             int dp = 0;
             int bits = 0;
             int shiftto = 18;       // pos of first byte of 4-byte atom
@@ -840,7 +834,7 @@ public final class Base64 {
                     // we're done
                     break;
                 }
-                int b = src[sp++] & 0xff;
+                byte b = src[sp++];
                 if ((b = base64[b]) < 0) {
                     if (b == -2) {         // padding byte '='
                         // =     shiftto==18 unnecessary padding
@@ -905,7 +899,7 @@ public final class Base64 {
         private boolean closed = false;
 
         @Stable
-        private final char[] base64;    // byte->base64 mapping
+        private final byte[] base64;    // byte->base64 mapping
         @Stable
         private final byte[] newline;   // line separator, if needed
         private final int linemax;
@@ -913,7 +907,7 @@ public final class Base64 {
         private int linepos = 0;
         private byte[] buf;
 
-        EncOutputStream(OutputStream os, char[] base64,
+        EncOutputStream(OutputStream os, byte[] base64,
                         byte[] newline, int linemax, boolean doPadding) {
             super(os);
             this.base64 = base64;
@@ -937,11 +931,11 @@ public final class Base64 {
             }
         }
 
-        private void writeb4(char b1, char b2, char b3, char b4) throws IOException {
-            buf[0] = (byte)b1;
-            buf[1] = (byte)b2;
-            buf[2] = (byte)b3;
-            buf[3] = (byte)b4;
+        private void writeb4(byte b1, byte b2, byte b3, byte b4) throws IOException {
+            buf[0] = b1;
+            buf[1] = b2;
+            buf[2] = b3;
+            buf[3] = b4;
             out.write(buf, 0, 4);
         }
 
@@ -982,10 +976,10 @@ public final class Base64 {
                     int bits = (b[sp++] & 0xff) << 16 |
                                (b[sp++] & 0xff) <<  8 |
                                (b[sp++] & 0xff);
-                    buf[dp++] = (byte)base64[(bits >>> 18) & 0x3f];
-                    buf[dp++] = (byte)base64[(bits >>> 12) & 0x3f];
-                    buf[dp++] = (byte)base64[(bits >>> 6)  & 0x3f];
-                    buf[dp++] = (byte)base64[bits & 0x3f];
+                    buf[dp++] = base64[(bits >>> 18) & 0x3f];
+                    buf[dp++] = base64[(bits >>> 12) & 0x3f];
+                    buf[dp++] = base64[(bits >>> 6)  & 0x3f];
+                    buf[dp++] = base64[bits & 0x3f];
                 }
                 out.write(buf, 0, dp);
                 off = sl;
@@ -1035,7 +1029,7 @@ public final class Base64 {
         private final InputStream is;
         private final boolean isMIME;
         @Stable
-        private final int[] base64;     // base64 -> byte mapping
+        private final byte[] base64;     // base64 -> byte mapping
         private int bits = 0;           // 24-bit buffer for decoding
 
         /* writing bit pos inside bits; one of 24 (left, msb), 18, 12, 6, 0 */
@@ -1162,7 +1156,7 @@ public final class Base64 {
                 if (i < 0) {
                     return eof(b, off, pos, limit);
                 }
-                final int v = base64[i];
+                final byte v = base64[i];
                 if (v < 0) {
                     /*
                      * i not in alphabet, thus
