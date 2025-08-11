@@ -721,7 +721,7 @@ public final class Base64 {
                 // trade-off of pre-scan or Arrays.copyOf
                 int n = 0;
                 while (sp < sl) {
-                    byte b = src[sp++];
+                    int b = src[sp++] & 0xff;
                     if (b == '=') {
                         len -= (sl - sp + 1);
                         break;
@@ -832,7 +832,7 @@ public final class Base64 {
                     // we're done
                     break;
                 }
-                byte b = src[sp++];
+                int b = src[sp++] & 0xff;
                 if ((b = base64[b]) < 0) {
                     if (b == -2) {         // padding byte '='
                         // =     shiftto==18 unnecessary padding
