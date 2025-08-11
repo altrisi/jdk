@@ -898,7 +898,6 @@ public final class Base64 {
 
         @Stable
         private final byte[] base64;    // byte->base64 mapping
-        @Stable
         private final byte[] newline;   // line separator, if needed
         private final int linemax;
         private final boolean doPadding;// whether or not to pad
