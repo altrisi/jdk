@@ -527,7 +527,6 @@ public final class Base64 {
         static {
             byte[] fromBase64Local = new byte[256];
             Arrays.fill(fromBase64Local, (byte)-1);
-            assert Encoder.toBase64.length < Byte.MAX_VALUE;
             for (byte i = 0; i < Encoder.toBase64.length; i++)
                 fromBase64Local[Encoder.toBase64[i]] = i;
             fromBase64Local['='] = -2;
@@ -545,7 +544,6 @@ public final class Base64 {
         static {
             byte[] fromBase64UrlLocal = new byte[256];
             Arrays.fill(fromBase64UrlLocal, (byte)-1);
-            assert Encoder.toBase64URL.length < Byte.MAX_VALUE;
             for (byte i = 0; i < Encoder.toBase64URL.length; i++)
                 fromBase64UrlLocal[Encoder.toBase64URL[i]] = i;
             fromBase64UrlLocal['='] = -2;
