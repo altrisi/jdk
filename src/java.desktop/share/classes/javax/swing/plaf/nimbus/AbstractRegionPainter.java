@@ -27,6 +27,7 @@ package javax.swing.plaf.nimbus;
 import java.awt.*;
 import java.awt.image.*;
 import java.lang.reflect.Method;
+import java.util.Arrays;
 import java.util.Objects;
 import javax.swing.*;
 import javax.swing.plaf.UIResource;
