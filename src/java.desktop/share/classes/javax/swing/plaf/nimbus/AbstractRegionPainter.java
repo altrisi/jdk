@@ -32,6 +32,7 @@ import javax.swing.plaf.UIResource;
 import javax.swing.Painter;
 import java.awt.print.PrinterGraphics;
 import sun.reflect.misc.MethodUtil;
+import sun.awt.image.ImageCache;
 
 /**
  * Convenient base class for defining Painter instances for rendering a
@@ -149,7 +150,7 @@ public abstract class AbstractRegionPainter implements Painter<JComponent> {
         ctx = getPaintContext();
         PaintContext.CacheMode cacheMode = ctx == null ? PaintContext.CacheMode.NO_CACHING : ctx.cacheMode;
         if (cacheMode == PaintContext.CacheMode.NO_CACHING ||
-                !ImageCache.getInstance().isImageCachable(w, h) ||
+                w * h > 300 * 300 || // don't cache large images
                 g instanceof PrinterGraphics) {
             // no caching so paint directly
             paint0(g, c, w, h, extendedCacheKeys);
