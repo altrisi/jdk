@@ -847,8 +847,7 @@ public class SynthLookAndFeel extends BasicLookAndFeel {
                 return;
             }
 
-            LookAndFeel laf = get();
-            if (laf == null || laf != UIManager.getLookAndFeel()) {
+            if (!refersTo(UIManager.getLookAndFeel())) {
                 dispose();
                 return;
             }
