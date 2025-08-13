@@ -65,6 +65,7 @@ runs:
 
     - name: 'Check cache for BootJDK'
       id: get-cached-bootjdk
+      if: runner.os != 'Windows' # restoring cache is significantly slower on windows, see actions/cache#752
       uses: actions/cache@v4
       with:
         path: bootjdk/jdk
