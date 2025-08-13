@@ -27,6 +27,7 @@ package javax.swing.plaf.nimbus;
 import java.awt.*;
 import java.awt.image.*;
 import java.lang.reflect.Method;
+import java.util.Objects;
 import javax.swing.*;
 import javax.swing.plaf.UIResource;
 import javax.swing.Painter;
@@ -689,7 +690,8 @@ public abstract class AbstractRegionPainter implements Painter<JComponent> {
                                    int w, int h, Object[] extendedCacheKeys) {
         ImageCache imageCache = ImageCache.getInstance();
         //get the buffer for this component
-        VolatileImage buffer = (VolatileImage) imageCache.getImage(config, w, h, this, extendedCacheKeys);
+        ImageCacheKey key = new ImageCacheKey(config, w, h, this, extendedCacheKeys);
+        VolatileImage buffer = (VolatileImage) imageCache.getImage(key);
 
         int renderCounter = 0; //to avoid any potential, though unlikely, infinite loop
         do {
@@ -714,7 +716,7 @@ public abstract class AbstractRegionPainter implements Painter<JComponent> {
                     buffer = config.createCompatibleVolatileImage(w, h,
                             Transparency.TRANSLUCENT);
                     // put in cache for future
-                    imageCache.setImage(buffer, config, w, h, this, extendedCacheKeys);
+                    imageCache.setImage(key, buffer);
                 }
                 //create the graphics context with which to paint to the buffer
                 Graphics2D bg = buffer.createGraphics();
@@ -746,6 +748,50 @@ public abstract class AbstractRegionPainter implements Painter<JComponent> {
         configureGraphics(g);
         doPaint(g, c, width, height, extendedCacheKeys);
         g.dispose();
+    }
+
+    static class ImageCacheKey implements ImageCache.PixelsKey {
+        private final GraphicsConfiguration config;
+        private final int w;
+        private final int h;
+        private final AbstractRegionPainter painter;
+        private final Object[] extendedCacheKeys;
+        
+        private final int hash;
+
+        public ImageCacheKey(GraphicsConfiguration config, int w, int h, AbstractRegionPainter painter, Object[] extendedCacheKeys) {
+            this.config = config;
+            this.w = w;
+            this.h = h;
+            this.painter = painter;
+            this.extendedCacheKeys = extendedCacheKeys;
+
+            this.hash = hash();
+        }
+
+        private int hash() {
+            return Objects.hashCode(config, w, h, painter, Arrays.deepHashCode(extendedCacheKeys));
+        }
+
+        @Override
+        public int getPixelCount() {
+            return w * h;
+        }
+
+        @Override
+        public int hashCode() {
+            return hash;
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (o instanceof ImageCacheKey key) {
+                return Objects.equals(config, key.painter) && w == key.w && h == key.h
+                    && Objects.equals(painter, key.painter)
+                    && Arrays.deepEquals(extendedCacheKeys, key.extendedCacheKeys);
+            }
+            return false;
+        }
     }
 
     private float clamp(float value) {
