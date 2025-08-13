@@ -193,7 +193,7 @@ public class AlphaPaintPipe implements CompositePipe {
             if (context.lastData != null) {
                 cachedLastRaster = context.lastRaster;
                 if (cachedLastColorModel == null ||
-                    cachedLastColorModel.get() != context.paintModel)
+                    !cachedLastColorModel.refersTo(context.paintModel))
                 {
                     // Avoid creating new WeakReference if possible
                     cachedLastColorModel =
