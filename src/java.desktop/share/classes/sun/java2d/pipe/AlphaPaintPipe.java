@@ -69,7 +69,7 @@ public class AlphaPaintPipe implements CompositePipe {
             dstData = sg.getSurfaceData();
             synchronized (AlphaPaintPipe.class) {
                 if (cachedLastColorModel != null &&
-                    cachedLastColorModel.get() == paintModel)
+                    cachedLastColorModel.refersTo(paintModel))
                 {
                     this.lastRaster = cachedLastRaster;
                     this.lastData = cachedLastData;
