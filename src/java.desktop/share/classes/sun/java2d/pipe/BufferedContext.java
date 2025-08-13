@@ -213,7 +213,7 @@ public abstract class BufferedContext {
                 updatePaint = true;
                 isValidatedPaintJustAColor = true;
             }
-        } else if (validPaintRef.get() != paint) {
+        } else if (!validPaintRef.refersTo(paint)) {
             updatePaint = true;
             // this should be set when we are switching from paint to color
             // in which case this condition will be true
