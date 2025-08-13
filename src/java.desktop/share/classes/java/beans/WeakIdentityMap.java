@@ -184,7 +184,7 @@ abstract class WeakIdentityMap<T> {
         }
 
         boolean isMatched(Object key, int hash) {
-            return (this.hash == hash) && (key == get());
+            return (this.hash == hash) && refersTo(key);
         }
     }
 }
