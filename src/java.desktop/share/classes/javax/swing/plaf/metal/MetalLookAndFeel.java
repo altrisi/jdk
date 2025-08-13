@@ -2230,7 +2230,7 @@ public class MetalLookAndFeel extends BasicLookAndFeel
         }
 
         public void propertyChange(PropertyChangeEvent pce) {
-            if (!refersTo(UIManager.getLookAndFeel())) {
+            if (refersTo(null) || !refersTo(UIManager.getLookAndFeel())) {
                 dispose();
                 return;
             }
