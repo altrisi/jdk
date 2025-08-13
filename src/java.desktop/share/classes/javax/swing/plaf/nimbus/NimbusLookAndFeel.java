@@ -54,6 +54,7 @@ import sun.swing.ImageIconUIResource;
 import javax.swing.plaf.synth.SynthIcon;
 import sun.swing.plaf.GTKKeybindings;
 import sun.swing.plaf.WindowsKeybindings;
+import sun.awt.image.ImageCache;
 
 /**
  * <p>The NimbusLookAndFeel class.</p>
