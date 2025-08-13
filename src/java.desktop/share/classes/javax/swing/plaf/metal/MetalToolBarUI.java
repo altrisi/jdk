@@ -109,9 +109,9 @@ public class MetalToolBarUI extends BasicToolBarUI
         for (int counter = components.size() - 1; counter >= 0; counter--) {
             // Search for the component, removing any flushed references
             // along the way.
-            JComponent target = components.get(counter).get();
+            WeakReference<JComponent> target = components.get(counter);
 
-            if (target == c || target == null) {
+            if (target.refersTo(c) || target.refersTo(null)) {
                 components.remove(counter);
             }
         }
