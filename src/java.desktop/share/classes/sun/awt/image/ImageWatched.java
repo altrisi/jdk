@@ -99,18 +99,17 @@ public abstract class ImageWatched {
         }
 
         public boolean isWatcher(ImageObserver iw) {
-            return (myref.get() == iw || next.isWatcher(iw));
+            return (myref.refersTo(iw) || next.isWatcher(iw));
         }
 
         public Link removeWatcher(ImageObserver iw) {
-            ImageObserver myiw = myref.get();
-            if (myiw == null) {
+            if (myref.refersTo(null)) {
                 // Remove me from the chain, but continue recursion.
                 return next.removeWatcher(iw);
             }
             // At this point myiw is not null so we know this test will
             // never succeed if this is a pruning pass (iw == null).
-            if (myiw == iw) {
+            if (myref.refersTo(iw)) {
                 // Remove me from the chain and end the recursion here.
                 return next;
             }
