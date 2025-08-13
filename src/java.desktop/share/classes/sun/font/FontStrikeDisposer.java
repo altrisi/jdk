@@ -97,11 +97,8 @@ class FontStrikeDisposer
     public synchronized void dispose() {
         if (!disposed) {
             Reference<FontStrike> ref = strikeCache.get(desc);
-            if (ref != null) {
-                Object o = ref.get();
-                if (o == null) {
-                    strikeCache.remove(desc);
-                }
+            if (ref != null && ref.refersTo(null)) {
+                strikeCache.remove(desc);
             }
             StrikeCache.disposeStrike(this);
             disposed = true;
