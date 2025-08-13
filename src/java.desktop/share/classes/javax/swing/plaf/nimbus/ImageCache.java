@@ -137,7 +137,7 @@ class ImageCache {
         try {
             PixelCountSoftReference ref = map.get(hash);
             // check if currently in map
-            if (ref != null && ref.get() == image) {
+            if (ref != null && ref.refersTo(image)) {
                 return true;
             }
             // clear out old
