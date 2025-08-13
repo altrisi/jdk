@@ -145,8 +145,7 @@ abstract class WeakIdentityMap<T> {
             oldTable[i] = null;
             while (entry != null) {
                 Entry<T> next = entry.next;
-                Object key = entry.get();
-                if (key == null) {
+                if (entry.refersTo(null)) {
                     entry.value = null; // Help GC
                     entry.next = null; // Help GC
                     this.size--;
