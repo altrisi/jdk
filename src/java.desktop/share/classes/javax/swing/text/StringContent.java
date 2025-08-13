@@ -228,7 +228,7 @@ public final class StringContent implements AbstractDocument.Content, Serializab
         int n = marks.size();
         for (int i = 0; i < n; i++) {
             PosRec mark = marks.elementAt(i);
-            if (mark.get() == null) {
+            if (mark.refersTo(null)) {
                 // this record is no longer used, get rid of it
                 marks.removeElementAt(i);
                 i -= 1;
@@ -243,7 +243,7 @@ public final class StringContent implements AbstractDocument.Content, Serializab
         int n = marks.size();
         for (int i = 0; i < n; i++) {
             PosRec mark = marks.elementAt(i);
-            if (mark.get() == null) {
+            if (mark.refersTo(null)) {
                 // this record is no longer used, get rid of it
                 marks.removeElementAt(i);
                 i -= 1;
@@ -279,7 +279,7 @@ public final class StringContent implements AbstractDocument.Content, Serializab
         Vector placeIn = (v == null) ? new Vector() : v;
         for (int i = 0; i < n; i++) {
             PosRec mark = marks.elementAt(i);
-            if (mark.get() == null) {
+            if (mark.refersTo(null)) {
                 // this record is no longer used, get rid of it
                 marks.removeElementAt(i);
                 i -= 1;
@@ -304,7 +304,7 @@ public final class StringContent implements AbstractDocument.Content, Serializab
         for(int counter = positions.size() - 1; counter >= 0; counter--) {
             UndoPosRef ref = (UndoPosRef) positions.elementAt(counter);
             // Check if the Position is still valid.
-            if(ref.rec.get() == null) {
+            if (ref.rec.refersTo(null)) {
                 positions.removeElementAt(counter);
             }
             else
