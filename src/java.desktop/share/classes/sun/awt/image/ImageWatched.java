@@ -107,9 +107,10 @@ public abstract class ImageWatched {
                 // Remove me from the chain, but continue recursion.
                 return next.removeWatcher(iw);
             }
-            // At this point myiw is not null so we know this test will
-            // never succeed if this is a pruning pass (iw == null).
-            if (myref.refersTo(iw)) {
+            // We add the iw != null check here to guard from stopping a
+            // pruning pass if the GC collects myref between the
+            // previous check and this one
+            if (iw != null && myref.refersTo(iw)) {
                 // Remove me from the chain and end the recursion here.
                 return next;
             }
