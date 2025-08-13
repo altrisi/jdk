@@ -771,7 +771,7 @@ public abstract class AbstractRegionPainter implements Painter<JComponent> {
         }
 
         private int hash() {
-            return Objects.hashCode(config, w, h, painter, Arrays.deepHashCode(extendedCacheKeys));
+            return Objects.hash(config, w, h, painter, Arrays.deepHashCode(extendedCacheKeys));
         }
 
         @Override
