@@ -252,7 +252,7 @@ public abstract class Cache<K,V> {
     private V getEntryValue(K key, int hash, CacheEntry<K,V> entry) {
         while (entry != null) {
             if (entry.matches(hash, key)) {
-                return entry.value.getReferent();
+                return entry.value.get();
             }
             entry = entry.next;
         }
@@ -351,7 +351,7 @@ public abstract class Cache<K,V> {
             if (this.hash != hash) {
                 return false;
             }
-            Object key = this.key.getReferent();
+            Object key = this.key.get();
             return (key == object) || !Cache.this.identity && (key != null) && key.equals(object);
         }
 
@@ -385,7 +385,7 @@ public abstract class Cache<K,V> {
          *
          * @return the referred object or {@code null} if it was collected
          */
-        T getReferent();
+        T get();
 
         /**
          * Determines whether the referred object was taken by the garbage collector or not.
@@ -458,36 +458,22 @@ public abstract class Cache<K,V> {
                 this.referent = referent;
             }
 
-            /**
-             * Returns the object that possesses information about the reference.
-             *
-             * @return the owner of the reference or {@code null} if the owner is unknown
-             */
+            @Override
             public Object getOwner() {
                 return this.owner;
             }
 
-            /**
-             * Returns the object to refer.
-             *
-             * @return the referred object
-             */
-            public T getReferent() {
+            @Override
+            public T get() {
                 return this.referent;
             }
 
-            /**
-             * Determines whether the referred object was taken by the garbage collector or not.
-             *
-             * @return {@code true} if the referred object was collected
-             */
+            @Override
             public boolean isStale() {
                 return false;
             }
 
-            /**
-             * Marks this reference as removed from the cache.
-             */
+            @Override
             public void removeOwner() {
                 this.owner = null;
             }
@@ -517,36 +503,17 @@ public abstract class Cache<K,V> {
                 this.owner = owner;
             }
 
-            /**
-             * Returns the object that possesses information about the reference.
-             *
-             * @return the owner of the reference or {@code null} if the owner is unknown
-             */
+            @Override
             public Object getOwner() {
                 return this.owner;
             }
 
-            /**
-             * Returns the object to refer.
-             *
-             * @return the referred object or {@code null} if it was collected
-             */
-            public T getReferent() {
-                return get();
-            }
-
-            /**
-             * Determines whether the referred object was taken by the garbage collector or not.
-             *
-             * @return {@code true} if the referred object was collected
-             */
+            @Override
             public boolean isStale() {
-                return null == get();
+                return refersTo(null);
             }
 
-            /**
-             * Marks this reference as removed from the cache.
-             */
+            @Override
             public void removeOwner() {
                 this.owner = null;
             }
@@ -576,36 +543,17 @@ public abstract class Cache<K,V> {
                 this.owner = owner;
             }
 
-            /**
-             * Returns the object that possesses information about the reference.
-             *
-             * @return the owner of the reference or {@code null} if the owner is unknown
-             */
+            @Override
             public Object getOwner() {
                 return this.owner;
             }
 
-            /**
-             * Returns the object to refer.
-             *
-             * @return the referred object or {@code null} if it was collected
-             */
-            public T getReferent() {
-                return get();
-            }
-
-            /**
-             * Determines whether the referred object was taken by the garbage collector or not.
-             *
-             * @return {@code true} if the referred object was collected
-             */
+            @Override
             public boolean isStale() {
-                return null == get();
+                return refersTo(null);
             }
 
-            /**
-             * Marks this reference as removed from the cache.
-             */
+            @Override
             public void removeOwner() {
                 this.owner = null;
             }
