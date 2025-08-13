@@ -1097,12 +1097,12 @@ public final class WToolkit extends SunToolkit implements Runnable {
                 }
             } else if (me.getID() == MouseEvent.MOUSE_RELEASED) {
                 if (AWTAccessor.getMouseEventAccessor().isCausedByTouchEvent(me)) {
-                    if (compOnTouchDownEvent.get() == comp) {
+                    if (compOnTouchDownEvent.refersTo(comp)) {
                         showTouchKeyboard(true);
                     }
                     compOnTouchDownEvent = NULL_COMPONENT_WR;
                 } else {
-                    if (compOnMousePressedEvent.get() == comp) {
+                    if (compOnMousePressedEvent.refersTo(comp)) {
                         showTouchKeyboard(false);
                     }
                     compOnMousePressedEvent = NULL_COMPONENT_WR;
