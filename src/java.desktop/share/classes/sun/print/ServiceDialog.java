@@ -502,7 +502,6 @@ public class ServiceDialog extends JDialog implements ActionListener {
     /**
      * Returns the mnemonic as a KeyEvent.VK constant from the resource.
      */
-    static Class<?> _keyEventClazz = null;
     private static int getVKMnemonic(String key) {
         String s = String.valueOf(getMnemonic(key));
         if ( s == null || s.length() != 1) {
@@ -511,11 +510,7 @@ public class ServiceDialog extends JDialog implements ActionListener {
         String vkString = "VK_" + s.toUpperCase();
 
         try {
-            if (_keyEventClazz == null) {
-                _keyEventClazz= Class.forName("java.awt.event.KeyEvent",
-                                 true, (ServiceDialog.class).getClassLoader());
-            }
-            Field field = _keyEventClazz.getDeclaredField(vkString);
+            Field field = KeyEvent.class.getDeclaredField(vkString);
             int value = field.getInt(null);
             return value;
         } catch (Exception e) {
