@@ -108,7 +108,6 @@ public abstract class VSyncedBSManager {
         @Override
         public synchronized void relinquishVsync(BufferStrategy bs) {
             if (strategy != null) {
-                BufferStrategy b = strategy.get();
                 if (strategy.refersTo(bs)) {
                     strategy.clear();
                     strategy = null;
