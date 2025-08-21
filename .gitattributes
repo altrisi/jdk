@@ -10,3 +10,4 @@
 *.html	diff=html
 *.css	diff=css
 *.java.template linguist-language=Java
+*.js.template linguist-language=JavaScript
