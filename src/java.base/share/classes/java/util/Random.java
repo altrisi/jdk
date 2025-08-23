@@ -297,7 +297,7 @@ public class Random implements RandomGenerator, java.io.Serializable {
     private volatile long seed;
 
     private static final AtomicLongFieldUpdater<Random> SEED_UPDATER
-                    = AtomicLongFieldUpdater.newUpdater(Random.class, "seed");
+            = AtomicLongFieldUpdater.newUpdater(Random.class, "seed");
 
     private static final long multiplier = 0x5DEECE66DL;
     private static final long addend = 0xBL;
@@ -316,7 +316,6 @@ public class Random implements RandomGenerator, java.io.Serializable {
     }
 
     private Random(Void unused) {
-        this.seed = null;
     }
 
     private static long seedUniquifier() {
@@ -350,10 +349,9 @@ public class Random implements RandomGenerator, java.io.Serializable {
     @SuppressWarnings("this-escape")
     public Random(long seed) {
         if (getClass() == Random.class)
-            this.seed = new AtomicLong(initialScramble(seed));
+            SEED_UPDATER.set(this, initialScramble(seed));
         else {
             // subclass might have overridden setSeed
-            this.seed = new AtomicLong();
             setSeed(seed);
         }
     }
