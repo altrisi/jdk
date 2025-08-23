@@ -828,16 +828,10 @@ public class Random implements RandomGenerator, java.io.Serializable {
     }
 
     // Support for resetting seed while deserializing
-    private static final Unsafe unsafe = Unsafe.getUnsafe();
-    private static final long seedOffset;
-    static {
-        try {
-            seedOffset = unsafe.objectFieldOffset
-                    (Random.class.getDeclaredField("seed"));
-        } catch (Exception ex) { throw new Error(ex); }
-    }
+    private static final Unsafe UNSAFE = Unsafe.getUnsafe();
+    private static final long SEED_OFFSET = UNSAFE.objectFieldOffset(Random.class, "seed");
     private void resetSeed(long seedVal) {
-        unsafe.putReferenceVolatile(this, seedOffset, new AtomicLong(seedVal));
+        UNSAFE.putReferenceVolatile(this, SEED_OFFSET, new AtomicLong(seedVal));
     }
 
     /**
