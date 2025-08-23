@@ -27,6 +27,7 @@ package java.util;
 
 import java.io.*;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.concurrent.atomic.AtomicLongFieldUpdater;
 import java.util.random.RandomGenerator;
 import java.util.stream.DoubleStream;
 import java.util.stream.IntStream;
@@ -293,7 +294,10 @@ public class Random implements RandomGenerator, java.io.Serializable {
      * (The specs for the methods in this class describe the ongoing
      * computation of this value.)
      */
-    private final AtomicLong seed;
+    private volatile long seed;
+
+    private static final AtomicLongFieldUpdater<Random> SEED_UPDATER
+                    = AtomicLongFieldUpdater.newUpdater(Random.class, "seed");
 
     private static final long multiplier = 0x5DEECE66DL;
     private static final long addend = 0xBL;
@@ -395,7 +399,7 @@ public class Random implements RandomGenerator, java.io.Serializable {
      *         operation is not supported by this random number generator
      */
     public synchronized void setSeed(long seed) {
-        this.seed.set(initialScramble(seed));
+        SEED_UPDATER.set(this, initialScramble(seed));
         haveNextNextGaussian = false;
     }
 
@@ -431,11 +435,10 @@ public class Random implements RandomGenerator, java.io.Serializable {
      */
     protected int next(int bits) {
         long oldseed, nextseed;
-        AtomicLong seed = this.seed;
         do {
-            oldseed = seed.get();
+            oldseed = SEED_UPDATER.get(this);
             nextseed = (oldseed * multiplier + addend) & mask;
-        } while (!seed.compareAndSet(oldseed, nextseed));
+        } while (!SEED_UPDATER.compareAndSet(this, oldseed, nextseed));
         return (int)(nextseed >>> (48 - bits));
     }
 
@@ -771,7 +774,7 @@ public class Random implements RandomGenerator, java.io.Serializable {
      * @serialField      haveNextNextGaussian boolean
      *              nextNextGaussian is valid
      */
-    @java.io.Serial
+    @java.io.Serial // TODO remove, after moving the docs to their fields
     private static final ObjectStreamField[] serialPersistentFields = {
             new ObjectStreamField("seed", Long.TYPE),
             new ObjectStreamField("nextNextGaussian", Double.TYPE),
@@ -790,48 +793,9 @@ public class Random implements RandomGenerator, java.io.Serializable {
     @java.io.Serial
     private void readObject(java.io.ObjectInputStream s)
             throws java.io.IOException, ClassNotFoundException {
-
-        ObjectInputStream.GetField fields = s.readFields();
-
-        // The seed is read in as {@code long} for
-        // historical reasons, but it is converted to an AtomicLong.
-        long seedVal = fields.get("seed", -1L);
-        if (seedVal < 0)
-            throw new java.io.StreamCorruptedException(
-                    "Random: invalid seed");
-        resetSeed(seedVal);
-        nextNextGaussian = fields.get("nextNextGaussian", 0.0);
-        haveNextNextGaussian = fields.get("haveNextNextGaussian", false);
-    }
-
-    /**
-     * Save the {@code Random} instance to a stream.
-     *
-     * @param  s the {@code ObjectOutputStream} to which data is written
-     *
-     * @throws IOException if an I/O error occurs
-     */
-    @java.io.Serial
-    private synchronized void writeObject(ObjectOutputStream s)
-            throws IOException {
-
-        // set the values of the Serializable fields
-        ObjectOutputStream.PutField fields = s.putFields();
-
-        // The seed is serialized as a long for historical reasons.
-        fields.put("seed", seed.get());
-        fields.put("nextNextGaussian", nextNextGaussian);
-        fields.put("haveNextNextGaussian", haveNextNextGaussian);
-
-        // save them
-        s.writeFields();
-    }
-
-    // Support for resetting seed while deserializing
-    private static final Unsafe UNSAFE = Unsafe.getUnsafe();
-    private static final long SEED_OFFSET = UNSAFE.objectFieldOffset(Random.class, "seed");
-    private void resetSeed(long seedVal) {
-        UNSAFE.putReferenceVolatile(this, SEED_OFFSET, new AtomicLong(seedVal));
+        s.defaultReadObject();
+        if (seed < 0)
+            throw new java.io.StreamCorruptedException("Random: invalid seed");
     }
 
     /**
