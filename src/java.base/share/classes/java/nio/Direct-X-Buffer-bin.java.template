@@ -30,7 +30,6 @@ class XXX {
 #begin
 
 #if[rw]
-
     private $type$ get$Type$(long a) {
         try {
             $memtype$ x = SCOPED_MEMORY_ACCESS.get$Memtype$Unaligned(session(), null, a, bigEndian);
@@ -56,9 +55,6 @@ class XXX {
         }
     }
 
-#end[rw]
-
-#if[rw]
     private ByteBuffer put$Type$(long a, $type$ x) {
         try {
             $memtype$ y = $toBits$(x);
@@ -96,36 +92,15 @@ class XXX {
 
         int size = rem >> $LG_BYTES_PER_VALUE$;
         if (!UNALIGNED && ((address + off) % $BYTES_PER_VALUE$ != 0)) {
-            return (bigEndian
-                    ? ($Type$Buffer)(new ByteBufferAs$Type$Buffer$RW$B(this,
-                                                                       -1,
-                                                                       0,
-                                                                       size,
-                                                                       size,
-                                                                       address + off, segment))
-                    : ($Type$Buffer)(new ByteBufferAs$Type$Buffer$RW$L(this,
-                                                                       -1,
-                                                                       0,
-                                                                       size,
-                                                                       size,
-                                                                       address + off, segment)));
+            return bigEndian
+                    ? new ByteBufferAs$Type$Buffer$RW$B(this, -1, 0, size, size, address + off, segment)
+                    : new ByteBufferAs$Type$Buffer$RW$L(this, -1, 0, size, size, address + off, segment);
         } else {
-            return (nativeByteOrder
-                    ? ($Type$Buffer)(new Direct$Type$Buffer$RW$U(this,
-                                                                 -1,
-                                                                 0,
-                                                                 size,
-                                                                 size,
-                                                                 off, segment))
-                    : ($Type$Buffer)(new Direct$Type$Buffer$RW$S(this,
-                                                                 -1,
-                                                                 0,
-                                                                 size,
-                                                                 size,
-                                                                 off, segment)));
+            return nativeByteOrder
+                    ? new Direct$Type$Buffer$RW$U(this, -1, 0, size, size, off, segment)
+                    : new Direct$Type$Buffer$RW$S(this, -1, 0, size, size, off, segment);
         }
     }
-
 #end
 
 }
