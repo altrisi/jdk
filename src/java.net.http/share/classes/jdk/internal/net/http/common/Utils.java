@@ -466,7 +466,7 @@ public final class Utils {
     private static final boolean[] LOWER_CASE_CHARS = new boolean[128];
 
     // ABNF primitives defined in RFC 7230
-    private static final boolean[] tchar      = new boolean[256];
+    private static final boolean[] tchar      = new boolean[128];
     private static final boolean[] fieldvchar = new boolean[256];
 
     static {
@@ -489,7 +489,7 @@ public final class Utils {
     public static boolean isValidLowerCaseName(String token) {
         for (int i = 0; i < token.length(); i++) {
             char c = token.charAt(i);
-            if (c > 255 || !LOWER_CASE_CHARS[c]) {
+            if (c > 127 || !LOWER_CASE_CHARS[c]) {
                 return false;
             }
         }
@@ -502,7 +502,7 @@ public final class Utils {
     public static boolean isValidName(String token) {
         for (int i = 0; i < token.length(); i++) {
             char c = token.charAt(i);
-            if (c > 255 || !tchar[c]) {
+            if (c > 127 || !tchar[c]) {
                 return false;
             }
         }
