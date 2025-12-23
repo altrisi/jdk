@@ -149,12 +149,12 @@ public abstract class Charset$Coder$ {
 
     // Internal states
     //
-    private static final int ST_RESET   = 0;
-    private static final int ST_CODING  = 1;
-    private static final int ST_END     = 2;
-    private static final int ST_FLUSHED = 3;
+    private static final byte ST_RESET   = 0;
+    private static final byte ST_CODING  = 1;
+    private static final byte ST_END     = 2;
+    private static final byte ST_FLUSHED = 3;
 
-    private int state = ST_RESET;
+    private byte state = ST_RESET;
 
     private static String stateNames[]
         = { "RESET", "CODING", "CODING_END", "FLUSHED" };
@@ -584,7 +584,7 @@ public abstract class Charset$Coder$ {
     public final CoderResult $code$($Itype$Buffer in, $Otype$Buffer out,
                                     boolean endOfInput)
     {
-        int newState = endOfInput ? ST_END : ST_CODING;
+        byte newState = endOfInput ? ST_END : ST_CODING;
         if ((state != ST_RESET) && (state != ST_CODING)
             && !(endOfInput && (state == ST_END)))
             throwIllegalStateException(state, newState);
@@ -1019,7 +1019,7 @@ public abstract class Charset$Coder$ {
 #end[encoder]
 
 
-    private void throwIllegalStateException(int from, int to) {
+    private static void throwIllegalStateException(int from, int to) {
         throw new IllegalStateException("Current state = " + stateNames[from]
                                         + ", new state = " + stateNames[to]);
     }
