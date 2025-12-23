@@ -36,14 +36,14 @@ public abstract class UnicodeEncoder extends CharsetEncoder {
     protected static final char BYTE_ORDER_MARK = '\uFEFF';
     protected static final char REVERSED_MARK = '\uFFFE';
 
-    protected static final int BIG = 0;
-    protected static final int LITTLE = 1;
+    protected static final byte BIG = 0;
+    protected static final byte LITTLE = 1;
 
-    private int byteOrder;      /* Byte order in use */
+    private byte byteOrder;      /* Byte order in use */
     private boolean usesMark;   /* Write an initial BOM */
     private boolean needsMark;
 
-    protected UnicodeEncoder(Charset cs, int bo, boolean m) {
+    protected UnicodeEncoder(Charset cs, byte bo, boolean m) {
         super(cs, 2.0f,
               // Four bytes max if you need a BOM
               m ? 4.0f : 2.0f,
