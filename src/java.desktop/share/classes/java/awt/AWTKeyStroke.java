@@ -381,6 +381,7 @@ public class AWTKeyStroke implements Serializable {
      * @throws NullPointerException if {@code anEvent} is null
      * @return the {@code AWTKeyStroke} that precipitated the event
      */
+    @SuppressWarnings("deprecation")
     public static AWTKeyStroke getAWTKeyStrokeForEvent(KeyEvent anEvent) {
         int id = anEvent.getID();
         switch(id) {
@@ -428,7 +429,6 @@ public class AWTKeyStroke implements Serializable {
      * @throws IllegalArgumentException if {@code s} is {@code null},
      *        or is formatted incorrectly
      */
-    @SuppressWarnings("deprecation")
     public static AWTKeyStroke getAWTKeyStroke(String s) {
         if (s == null) {
             throw new IllegalArgumentException("String cannot be null");
