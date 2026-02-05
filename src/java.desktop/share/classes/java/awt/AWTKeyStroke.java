@@ -71,7 +71,17 @@ public class AWTKeyStroke implements Serializable {
     @Serial
     private static final long serialVersionUID = -6430539691155161871L;
 
-    private static Map<String, Integer> modifierKeywords;
+    private static final Map<String, Integer> modifierKeywords = Map.of(
+            "shift", InputEvent.SHIFT_DOWN_MASK | InputEvent.SHIFT_MASK,
+            "control", InputEvent.CTRL_DOWN_MASK | InputEvent.CTRL_MASK,
+            "ctrl", InputEvent.CTRL_DOWN_MASK | InputEvent.CTRL_MASK,
+            "meta", InputEvent.META_DOWN_MASK | InputEvent.META_MASK,
+            "alt", InputEvent.ALT_DOWN_MASK | InputEvent.ALT_MASK,
+            "altGraph", InputEvent.ALT_GRAPH_DOWN_MASK | InputEvent.ALT_GRAPH_MASK,
+            "button1", InputEvent.BUTTON1_DOWN_MASK,
+            "button2", InputEvent.BUTTON2_DOWN_MASK,
+            "button3", InputEvent.BUTTON3_DOWN_MASK
+    );
     /**
      * Associates VK_XXX (as a String) with code (as Integer). This is
      * done to avoid the overhead of the reflective call to find the
@@ -175,17 +185,12 @@ public class AWTKeyStroke implements Serializable {
     protected static void registerSubclass(Class<?> subclass) {
     }
 
-    private static Map<AWTKeyStroke, AWTKeyStroke> cache;
+    private static final Map<AWTKeyStroke, AWTKeyStroke> cache = new HashMap<>();
     private static AWTKeyStroke cacheKey;
 
     private static synchronized AWTKeyStroke getCachedStroke
         (char keyChar, int keyCode, int modifiers, boolean onKeyRelease)
     {
-
-        if (cache == null) {
-            cache = new HashMap<>();
-        }
-
         if (cacheKey == null) {
             cacheKey = SwingAccessor.getKeyStrokeAccessor().create();
         }
@@ -437,38 +442,6 @@ public class AWTKeyStroke implements Serializable {
         boolean released = false;
         boolean typed = false;
         boolean pressed = false;
-
-        synchronized (AWTKeyStroke.class) {
-            if (modifierKeywords == null) {
-                Map<String, Integer> uninitializedMap = new HashMap<>(8, 1.0f);
-                uninitializedMap.put("shift",
-                                     Integer.valueOf(InputEvent.SHIFT_DOWN_MASK
-                                                     |InputEvent.SHIFT_MASK));
-                uninitializedMap.put("control",
-                                     Integer.valueOf(InputEvent.CTRL_DOWN_MASK
-                                                     |InputEvent.CTRL_MASK));
-                uninitializedMap.put("ctrl",
-                                     Integer.valueOf(InputEvent.CTRL_DOWN_MASK
-                                                     |InputEvent.CTRL_MASK));
-                uninitializedMap.put("meta",
-                                     Integer.valueOf(InputEvent.META_DOWN_MASK
-                                                     |InputEvent.META_MASK));
-                uninitializedMap.put("alt",
-                                     Integer.valueOf(InputEvent.ALT_DOWN_MASK
-                                                     |InputEvent.ALT_MASK));
-                uninitializedMap.put("altGraph",
-                                     Integer.valueOf(InputEvent.ALT_GRAPH_DOWN_MASK
-                                                     |InputEvent.ALT_GRAPH_MASK));
-                uninitializedMap.put("button1",
-                                     Integer.valueOf(InputEvent.BUTTON1_DOWN_MASK));
-                uninitializedMap.put("button2",
-                                     Integer.valueOf(InputEvent.BUTTON2_DOWN_MASK));
-                uninitializedMap.put("button3",
-                                     Integer.valueOf(InputEvent.BUTTON3_DOWN_MASK));
-                modifierKeywords =
-                    Collections.synchronizedMap(uninitializedMap);
-            }
-        }
 
         int count = st.countTokens();
 
