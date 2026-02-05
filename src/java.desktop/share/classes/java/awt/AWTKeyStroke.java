@@ -71,6 +71,7 @@ public class AWTKeyStroke implements Serializable {
     @Serial
     private static final long serialVersionUID = -6430539691155161871L;
 
+    @SuppressWarnings("deprecation")
     private static final Map<String, Integer> modifierKeywords = Map.of(
             "shift", InputEvent.SHIFT_DOWN_MASK | InputEvent.SHIFT_MASK,
             "control", InputEvent.CTRL_DOWN_MASK | InputEvent.CTRL_MASK,
@@ -380,7 +381,6 @@ public class AWTKeyStroke implements Serializable {
      * @throws NullPointerException if {@code anEvent} is null
      * @return the {@code AWTKeyStroke} that precipitated the event
      */
-    @SuppressWarnings("deprecation")
     public static AWTKeyStroke getAWTKeyStrokeForEvent(KeyEvent anEvent) {
         int id = anEvent.getID();
         switch(id) {
