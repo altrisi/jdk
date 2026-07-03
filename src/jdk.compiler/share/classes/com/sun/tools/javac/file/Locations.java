@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2003, 2025, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2003, 2026, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -77,12 +77,11 @@ import javax.tools.StandardJavaFileManager;
 import javax.tools.StandardJavaFileManager.PathFactory;
 import javax.tools.StandardLocation;
 
-import com.sun.tools.javac.code.Lint;
-import com.sun.tools.javac.resources.CompilerProperties.LintWarnings;
 import jdk.internal.jmod.JmodFile;
 
 import com.sun.tools.javac.main.Option;
 import com.sun.tools.javac.resources.CompilerProperties.Errors;
+import com.sun.tools.javac.resources.CompilerProperties.LintWarnings;
 import com.sun.tools.javac.util.DefinedBy;
 import com.sun.tools.javac.util.DefinedBy.Api;
 import com.sun.tools.javac.util.ListBuffer;
@@ -122,11 +121,6 @@ public class Locations {
      * Access to (possibly cached) file info
      */
     private FSInfo fsInfo;
-
-    /**
-     * The root {@link Lint} instance.
-     */
-    private Lint lint;
 
     private ModuleNameReader moduleNameReader;
 
@@ -168,9 +162,8 @@ public class Locations {
         }
     }
 
-    void update(Log log, Lint lint, FSInfo fsInfo) {
+    void update(Log log, FSInfo fsInfo) {
         this.log = log;
-        this.lint = lint;
         this.fsInfo = fsInfo;
     }
 
@@ -221,7 +214,7 @@ public class Locations {
                 try {
                     entries.add(getPath(s));
                 } catch (IllegalArgumentException e) {
-                    lint.logIfEnabled(LintWarnings.InvalidPath(s));
+                    log.warning(LintWarnings.InvalidPath(s));
                 }
             }
         }
@@ -316,7 +309,7 @@ public class Locations {
         private void addDirectory(Path dir, boolean warn) {
             if (!Files.isDirectory(dir)) {
                 if (warn) {
-                    lint.logIfEnabled(LintWarnings.DirPathElementNotFound(dir));
+                    log.warning(LintWarnings.DirPathElementNotFound(dir));
                 }
                 return;
             }
@@ -361,7 +354,7 @@ public class Locations {
             if (!fsInfo.exists(file)) {
                 /* No such file or directory exists */
                 if (warn) {
-                    lint.logIfEnabled(LintWarnings.PathElementNotFound(file));
+                    log.warning(LintWarnings.PathElementNotFound(file));
                 }
                 super.add(file);
                 return;
@@ -383,12 +376,12 @@ public class Locations {
                         try {
                             FileSystems.newFileSystem(file, (ClassLoader)null).close();
                             if (warn) {
-                                lint.logIfEnabled(LintWarnings.UnexpectedArchiveFile(file));
+                                log.warning(LintWarnings.UnexpectedArchiveFile(file));
                             }
                         } catch (IOException | ProviderNotFoundException e) {
                             // FIXME: include e.getLocalizedMessage in warning
                             if (warn) {
-                                lint.logIfEnabled(LintWarnings.InvalidArchiveFile(file));
+                                log.warning(LintWarnings.InvalidArchiveFile(file));
                             }
                             return;
                         }
@@ -1651,7 +1644,7 @@ public class Locations {
 
         void add(Map<String, List<Path>> map, Path prefix, Path suffix) {
             if (!Files.isDirectory(prefix)) {
-                lint.logIfEnabled(Files.exists(prefix) ?
+                log.warning(Files.exists(prefix) ?
                     LintWarnings.DirPathElementNotDirectory(prefix) :
                     LintWarnings.DirPathElementNotFound(prefix));
                 return;
@@ -1959,13 +1952,19 @@ public class Locations {
                     if (isCurrentPlatform(systemJavaHome)) {
                         jrtfs = FileSystems.getFileSystem(jrtURI);
                     } else {
+                        ClassLoader currentLoader = Locations.class.getClassLoader();
                         try {
                             Map<String, String> attrMap =
                                     Collections.singletonMap("java.home", systemJavaHome.toString());
                             jrtfs = FileSystems.newFileSystem(jrtURI, attrMap);
+                            // Ensure the file system’s class loader is closed so that
+                            // the ${systemJavaHome}/lib/jrt-fs.jar is not left open.
+                            ClassLoader cl = jrtfs.provider().getClass().getClassLoader();
+                            if (cl != currentLoader && cl instanceof URLClassLoader urlcl) {
+                                closeables.add(urlcl);
+                            }
                         } catch (ProviderNotFoundException ex) {
                             URL jfsJar = resolveInJavaHomeLib(systemJavaHome, "jrt-fs.jar").toUri().toURL();
-                            ClassLoader currentLoader = Locations.class.getClassLoader();
                             URLClassLoader fsLoader =
                                     new URLClassLoader(new URL[] {jfsJar}, currentLoader);
 
