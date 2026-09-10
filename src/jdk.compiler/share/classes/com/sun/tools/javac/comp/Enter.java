@@ -209,7 +209,7 @@ public class Enter extends JCTree.Visitor {
         localEnv.info.lint = null; // leave this to be filled in by Attr,
                                    // when annotations have been processed
         localEnv.info.isAnonymousDiamond = TreeInfo.isDiamond(env.tree);
-        localEnv.info.ctorPrologue = false;
+        localEnv.info.earlyContext = localEnv.info.earlyContext.nested(true);
         return localEnv;
     }
 
@@ -503,7 +503,7 @@ public class Enter extends JCTree.Visitor {
 
         // Fill out class fields.
         c.completer = Completer.NULL_COMPLETER; // do not allow the initial completer linger on.
-        c.flags_field = chk.checkFlags(tree.pos(), tree.mods.flags, c, tree) | FROM_SOURCE;
+        c.flags_field = chk.checkFlags(tree.mods.flags, c, tree) | FROM_SOURCE;
         c.classfile = c.sourcefile = env.toplevel.sourcefile;
         c.members_field = WriteableScope.create(c);
         c.isPermittedExplicit = tree.permitting.nonEmpty();

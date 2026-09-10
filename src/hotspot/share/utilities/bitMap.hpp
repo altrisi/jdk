@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1997, 2025, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997, 2026, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -26,10 +26,11 @@
 #define SHARE_UTILITIES_BITMAP_HPP
 
 #include "nmt/memTag.hpp"
-#include "runtime/atomic.hpp"
+#include "runtime/atomicAccess.hpp"
 #include "utilities/globalDefinitions.hpp"
 
 // Forward decl;
+class Arena;
 class BitMapClosure;
 
 // Operations for bitmaps represented as arrays of unsigned integers.
@@ -393,7 +394,7 @@ class BitMap {
   void write_to(bm_word_t* buffer, size_t buffer_size_in_bytes) const;
 
   // Printing
-  void print_on_error(outputStream* st, const char* prefix) const;
+  void print_range_on(outputStream* st, const char* prefix) const;
   void print_on(outputStream* st) const;
 };
 
@@ -653,6 +654,9 @@ class CHeapBitMap : public GrowableBitMap<CHeapBitMap> {
   bm_word_t* allocate(idx_t size_in_words) const;
   bm_word_t* reallocate(bm_word_t* old_map, size_t old_size_in_words, size_t new_size_in_words) const;
   void free(bm_word_t* map, idx_t size_in_words) const;
+
+  // Move other's map into this, invalidating other.
+  void move(CHeapBitMap& other);
 };
 
 // Convenience class wrapping BitMap which provides multiple bits per slot.

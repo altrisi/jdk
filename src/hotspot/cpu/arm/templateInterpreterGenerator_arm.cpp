@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008, 2025, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2008, 2026, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -174,7 +174,9 @@ address TemplateInterpreterGenerator::generate_math_entry(AbstractInterpreter::M
     break;
   case Interpreter::java_lang_math_fmaD:
   case Interpreter::java_lang_math_fmaF:
+  case Interpreter::java_lang_math_sinh:
   case Interpreter::java_lang_math_tanh:
+  case Interpreter::java_lang_math_cbrt:
     // TODO: Implement intrinsic
     break;
   default:
@@ -794,10 +796,6 @@ address TemplateInterpreterGenerator::generate_currentThread() { return nullptr;
 address TemplateInterpreterGenerator::generate_CRC32_update_entry() { return nullptr; }
 address TemplateInterpreterGenerator::generate_CRC32_updateBytes_entry(AbstractInterpreter::MethodKind kind) { return nullptr; }
 address TemplateInterpreterGenerator::generate_CRC32C_updateBytes_entry(AbstractInterpreter::MethodKind kind) { return nullptr; }
-address TemplateInterpreterGenerator::generate_Float_intBitsToFloat_entry() { return nullptr; }
-address TemplateInterpreterGenerator::generate_Float_floatToRawIntBits_entry() { return nullptr; }
-address TemplateInterpreterGenerator::generate_Double_longBitsToDouble_entry() { return nullptr; }
-address TemplateInterpreterGenerator::generate_Double_doubleToRawLongBits_entry() { return nullptr; }
 address TemplateInterpreterGenerator::generate_Float_float16ToFloat_entry() { return nullptr; }
 address TemplateInterpreterGenerator::generate_Float_floatToFloat16_entry() { return nullptr; }
 
@@ -1015,8 +1013,8 @@ address TemplateInterpreterGenerator::generate_native_entry(bool synchronized) {
     __ restore_default_fp_mode();
   }
 
-  // Do safepoint check
-  __ mov(Rtemp, _thread_in_native_trans);
+  // Perform Native->Java thread transition
+  __ mov(Rtemp, _thread_in_Java);
   __ str_32(Rtemp, Address(Rthread, JavaThread::thread_state_offset()));
 
   // Force this write out before the read below
@@ -1035,6 +1033,7 @@ address TemplateInterpreterGenerator::generate_native_entry(bool synchronized) {
   saved_result_fp = fnoreg;
 #endif // __ABI_HARD__
 
+  // Do safepoint check
   {
   Label call, skip_call;
   __ safepoint_poll(Rtemp, call);
@@ -1043,17 +1042,13 @@ address TemplateInterpreterGenerator::generate_native_entry(bool synchronized) {
   __ b(skip_call, eq);
   __ bind(call);
   __ mov(R0, Rthread);
-  __ call(CAST_FROM_FN_PTR(address, JavaThread::check_special_condition_for_native_trans), relocInfo::none);
+  __ call(CAST_FROM_FN_PTR(address, SharedRuntime::check_special_condition_for_native_trans), relocInfo::none);
   __ bind(skip_call);
 
 #if R9_IS_SCRATCHED
   __ restore_method();
 #endif
   }
-
-  // Perform Native->Java thread transition
-  __ mov(Rtemp, _thread_in_Java);
-  __ str_32(Rtemp, Address(Rthread, JavaThread::thread_state_offset()));
 
   // Zero handles and last_java_sp
   __ reset_last_Java_frame(Rtemp);
@@ -1141,7 +1136,7 @@ address TemplateInterpreterGenerator::generate_native_entry(bool synchronized) {
 //
 // Generic interpreted method entry to (asm) interpreter
 //
-address TemplateInterpreterGenerator::generate_normal_entry(bool synchronized) {
+address TemplateInterpreterGenerator::generate_normal_entry(bool synchronized, bool object_init) {
   // determine code generation flags
   bool inc_counter  = UseCompiler || CountCompiledCalls;
 
@@ -1254,6 +1249,12 @@ address TemplateInterpreterGenerator::generate_normal_entry(bool synchronized) {
         __ bind(L);
       }
 #endif
+  }
+
+  // Issue a StoreStore barrier on entry to Object_init if the
+  // class has strict field fields.  Be lazy, always do it.
+  if (object_init) {
+    __ membar(MacroAssembler::StoreStore, R1_tmp);
   }
 
   // start execution
@@ -1471,11 +1472,11 @@ void TemplateInterpreterGenerator::generate_throw_exception() {
 
   // preserve exception over this code sequence
   __ pop_ptr(R0_tos);
-  __ str(R0_tos, Address(Rthread, JavaThread::vm_result_offset()));
+  __ str(R0_tos, Address(Rthread, JavaThread::vm_result_oop_offset()));
   // remove the activation (without doing throws on illegalMonitorExceptions)
   __ remove_activation(vtos, Rexception_pc, false, true, false);
   // restore exception
-  __ get_vm_result(Rexception_obj, Rtemp);
+  __ get_vm_result_oop(Rexception_obj, Rtemp);
 
   // In between activations - previous activation type unknown yet
   // compute continuation point - the continuation point expects

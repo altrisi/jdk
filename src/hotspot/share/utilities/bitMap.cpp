@@ -24,7 +24,7 @@
 
 #include "memory/allocation.inline.hpp"
 #include "memory/resourceArea.hpp"
-#include "runtime/atomic.hpp"
+#include "runtime/atomicAccess.hpp"
 #include "utilities/bitMap.inline.hpp"
 #include "utilities/copy.hpp"
 #include "utilities/debug.hpp"
@@ -195,6 +195,13 @@ bm_word_t* CHeapBitMap::reallocate(bm_word_t* map, size_t old_size_in_words, siz
   return MallocArrayAllocator<bm_word_t>::reallocate(map, new_size_in_words, _mem_tag);
 }
 
+void CHeapBitMap::move(CHeapBitMap &other) {
+  free(map(), size_in_words());
+  update(other.map(), other.size());
+  other.update(nullptr, 0);
+}
+
+
 #ifdef ASSERT
 void BitMap::verify_index(idx_t bit) const {
   assert(bit < _size,
@@ -243,11 +250,11 @@ void BitMap::par_put_range_within_word(idx_t beg, idx_t end, bool value) {
   // required by inverted_bit_mask_for_range.  Also avoids an unnecessary write.
   if (beg != end) {
     volatile bm_word_t* pw = word_addr(beg);
-    bm_word_t w = Atomic::load(pw);
+    bm_word_t w = AtomicAccess::load(pw);
     bm_word_t mr = inverted_bit_mask_for_range(beg, end);
     bm_word_t nw = value ? (w | ~mr) : (w & mr);
     while (true) {
-      bm_word_t res = Atomic::cmpxchg(pw, w, nw);
+      bm_word_t res = AtomicAccess::cmpxchg(pw, w, nw);
       if (res == w) break;
       w  = res;
       nw = value ? (w | ~mr) : (w & mr);
@@ -688,7 +695,7 @@ BitMap::idx_t BitMap::count_one_bits(idx_t beg, idx_t end) const {
 
 }
 
-void BitMap::print_on_error(outputStream* st, const char* prefix) const {
+void BitMap::print_range_on(outputStream* st, const char* prefix) const {
   st->print_cr("%s[" PTR_FORMAT ", " PTR_FORMAT ")",
       prefix, p2i(map()), p2i((char*)map() + (size() >> LogBitsPerByte)));
 }

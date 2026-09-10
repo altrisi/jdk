@@ -1,6 +1,6 @@
 /*
- * Copyright (c) 1998, 2025, Oracle and/or its affiliates. All rights reserved.
- * Copyright (c) 2012, 2025 SAP SE. All rights reserved.
+ * Copyright (c) 1998, 2026, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2012, 2026 SAP SE. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -46,7 +46,6 @@
 
 //------------------------------generate_exception_blob---------------------------
 // Creates exception blob at the end.
-// Using exception blob, this code is jumped from a compiled method.
 //
 // Given an exception pc at a call we call into the runtime for the
 // handler in this method. This handler might merely restore state
@@ -67,11 +66,15 @@
 //
 // Note: the exception pc MUST be at a call (precise debug information)
 //
-void OptoRuntime::generate_exception_blob() {
+ExceptionBlob* OptoRuntime::generate_exception_blob() {
   // Allocate space for the code.
   ResourceMark rm;
   // Setup code generation tools.
-  CodeBuffer buffer("exception_blob", 2048, 1024);
+  const char* name = OptoRuntime::stub_name(StubId::c2_exception_id);
+  CodeBuffer buffer(name, 2048, 1024);
+  if (buffer.blob() == nullptr) {
+    return nullptr;
+  }
   InterpreterMacroAssembler* masm = new InterpreterMacroAssembler(&buffer);
 
   address start = __ pc();
@@ -138,11 +141,10 @@ void OptoRuntime::generate_exception_blob() {
   __ mtlr(R4_ARG2);
   __ bctr();
 
-  // Make sure all code is generated.
-  masm->flush();
+  // Code will be copied. No ICache sync required.
 
   // Set exception blob.
-  _exception_blob = ExceptionBlob::create(&buffer, oop_maps,
+  return ExceptionBlob::create(&buffer, oop_maps,
                                           frame_size_in_bytes/wordSize);
 }
 
