@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012, 2025, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2012, 2026, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -92,7 +92,7 @@ import java.time.temporal.UnsupportedTemporalTypeException;
 import java.time.temporal.ValueRange;
 import java.util.Objects;
 
-import jdk.internal.util.DecimalDigits;
+import jdk.internal.util.DateTimeHelper;
 
 /**
  * A time without a time-zone in the ISO-8601 calendar system,
@@ -113,11 +113,18 @@ import jdk.internal.util.DecimalDigits;
  * representation, this class, for time-of-day.
  * <p>
  * This is a <a href="{@docRoot}/java.base/java/lang/doc-files/ValueBased.html">value-based</a>
- * class; programmers should treat instances that are
- * {@linkplain #equals(Object) equal} as interchangeable and should not
- * use instances for synchronization, or unpredictable behavior may
- * occur. For example, in a future release, synchronization may fail.
- * The {@code equals} method should be used for comparisons.
+ * class; programmers should treat instances that are {@linkplain #equals(Object) equal}
+ * as interchangeable and should not use instances for synchronization or
+ * with {@linkplain java.lang.ref.Reference object references}.
+ *
+ * <div class="preview-block">
+ *      <div class="preview-comment">
+ *          When preview features are enabled, {@code LocalTime} is a {@linkplain Class#isValue value class}.
+ *          Use of value class instances for synchronization or with
+ *          {@linkplain java.lang.ref.Reference object references} result in
+ *          {@link IdentityException}.
+ *      </div>
+ * </div>
  *
  * @implSpec
  * This class is immutable and thread-safe.
@@ -125,7 +132,8 @@ import jdk.internal.util.DecimalDigits;
  * @since 1.8
  */
 @jdk.internal.ValueBased
-public final class LocalTime
+// See doc/value-class-preview.md for an overview of value class generation
+public final /*value*/ class LocalTime
         implements Temporal, TemporalAdjuster, Comparable<LocalTime>, Serializable {
 
     /**
@@ -1632,40 +1640,8 @@ public final class LocalTime
     @Override
     public String toString() {
         var buf = new StringBuilder(18);
-        formatTo(buf);
+        DateTimeHelper.formatTo(buf, this);
         return buf.toString();
-    }
-
-    /**
-     * Prints the toString result to the given buf, avoiding extra string allocations.
-     * Requires extra capacity of 18 to avoid StringBuilder reallocation.
-     */
-    void formatTo(StringBuilder buf) {
-        int hourValue = hour;
-        int minuteValue = minute;
-        int secondValue = second;
-        int nanoValue = nano;
-        buf.append(hourValue < 10 ? "0" : "").append(hourValue)
-            .append(minuteValue < 10 ? ":0" : ":").append(minuteValue);
-        if (secondValue > 0 || nanoValue > 0) {
-            buf.append(secondValue < 10 ? ":0" : ":").append(secondValue);
-            if (nanoValue > 0) {
-                buf.append('.');
-                int zeros = 9 - DecimalDigits.stringSize(nanoValue);
-                if (zeros > 0) {
-                    buf.repeat('0', zeros);
-                }
-                int digits;
-                if (nanoValue % 1_000_000 == 0) {
-                    digits = nanoValue / 1_000_000;
-                } else if (nanoValue % 1000 == 0) {
-                    digits = nanoValue / 1000;
-                } else {
-                    digits = nanoValue;
-                }
-                buf.append(digits);
-            }
-        }
     }
 
     //-----------------------------------------------------------------------
@@ -1712,6 +1688,7 @@ public final class LocalTime
      * @throws InvalidObjectException always
      */
     @java.io.Serial
+    @SuppressWarnings("serial") // this method is not invoked for value classes
     private void readObject(ObjectInputStream s) throws InvalidObjectException {
         throw new InvalidObjectException("Deserialization via serialization delegate");
     }

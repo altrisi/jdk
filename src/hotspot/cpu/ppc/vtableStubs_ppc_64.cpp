@@ -1,6 +1,6 @@
 /*
- * Copyright (c) 1997, 2025, Oracle and/or its affiliates. All rights reserved.
- * Copyright (c) 2012, 2024 SAP SE. All rights reserved.
+ * Copyright (c) 1997, 2026, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2012, 2026 SAP SE. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -44,10 +44,10 @@ extern "C" void bad_compiled_vtable_index(JavaThread* thread, oopDesc* receiver,
 #endif
 
 // Used by compiler only; may use only caller saved, non-argument registers.
-VtableStub* VtableStubs::create_vtable_stub(int vtable_index) {
+VtableStub* VtableStubs::create_vtable_stub(int vtable_index, bool caller_is_c1) {
   // Read "A word on VtableStub sizing" in share/code/vtableStubs.hpp for details on stub sizing.
   const int stub_code_length = code_size_limit(true);
-  VtableStub* s = new(stub_code_length) VtableStub(true, vtable_index);
+  VtableStub* s = new(stub_code_length) VtableStub(true, vtable_index, caller_is_c1);
   // Can be null if there is no free space in the code cache.
   if (s == nullptr) {
     return nullptr;
@@ -91,8 +91,8 @@ VtableStub* VtableStubs::create_vtable_stub(int vtable_index) {
     // Check offset vs vtable length.
     const Register vtable_len = R12_scratch2;
     __ lwz(vtable_len, in_bytes(Klass::vtable_length_offset()), rcvr_klass);
-    __ cmpwi(CCR0, vtable_len, vtable_index*vtableEntry::size());
-    __ bge(CCR0, L);
+    __ cmpwi(CR0, vtable_len, vtable_index*vtableEntry::size());
+    __ bge(CR0, L);
     __ li(R12_scratch2, vtable_index);
     __ call_VM(noreg, CAST_FROM_FN_PTR(address, bad_compiled_vtable_index), R3_ARG1, R12_scratch2, false);
     __ bind(L);
@@ -108,8 +108,8 @@ VtableStub* VtableStubs::create_vtable_stub(int vtable_index) {
 #ifndef PRODUCT
   if (DebugVtables) {
     Label L;
-    __ cmpdi(CCR0, R19_method, 0);
-    __ bne(CCR0, L);
+    __ cmpdi(CR0, R19_method, 0);
+    __ bne(CR0, L);
     __ stop("Vtable entry is ZERO");
     __ bind(L);
   }
@@ -124,16 +124,16 @@ VtableStub* VtableStubs::create_vtable_stub(int vtable_index) {
   __ mtctr(R12_scratch2);
   __ bctr();
 
-  masm->flush();
+  masm->invalidate_icache();
   bookkeeping(masm, tty, s, npe_addr, ame_addr, true, vtable_index, slop_bytes, 0);
 
   return s;
 }
 
-VtableStub* VtableStubs::create_itable_stub(int itable_index) {
+VtableStub* VtableStubs::create_itable_stub(int itable_index, bool caller_is_c1) {
   // Read "A word on VtableStub sizing" in share/code/vtableStubs.hpp for details on stub sizing.
   const int stub_code_length = code_size_limit(false);
-  VtableStub* s = new(stub_code_length) VtableStub(false, itable_index);
+  VtableStub* s = new(stub_code_length) VtableStub(false, itable_index, caller_is_c1);
   // Can be null if there is no free space in the code cache.
   if (s == nullptr) {
     return nullptr;
@@ -194,8 +194,8 @@ VtableStub* VtableStubs::create_itable_stub(int itable_index) {
 #ifndef PRODUCT
   if (DebugVtables) {
     Label ok;
-    __ cmpdi(CCR0, R19_method, 0);
-    __ bne(CCR0, ok);
+    __ cmpdi(CR0, R19_method, 0);
+    __ bne(CR0, ok);
     __ stop("method is null");
     __ bind(ok);
   }
@@ -224,7 +224,7 @@ VtableStub* VtableStubs::create_itable_stub(int itable_index) {
   __ mtctr(R11_scratch1);
   __ bctr();
 
-  masm->flush();
+  masm->invalidate_icache();
   bookkeeping(masm, tty, s, npe_addr, ame_addr, false, itable_index, slop_bytes, 0);
 
   return s;

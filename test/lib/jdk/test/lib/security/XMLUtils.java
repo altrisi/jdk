@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021, 2024, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2021, 2026, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -187,6 +187,7 @@ public class XMLUtils {
 
     public static class Signer {
 
+        private String baseURI = null;
         final PrivateKey privateKey;  // signer key, never null
 
         X509Certificate cert;   // certificate, optional
@@ -250,6 +251,11 @@ public class XMLUtils {
 
         public Signer prop(String name, Object o) {
             props.put(name, o);
+            return this;
+        }
+
+        public Signer baseURI(String base) {
+            this.baseURI = base;
             return this;
         }
 
@@ -340,6 +346,9 @@ public class XMLUtils {
         private DOMSignContext withProps(DOMSignContext ctxt) {
             for (var e : props.entrySet()) {
                 ctxt.setProperty(e.getKey(), e.getValue());
+            }
+            if (baseURI != null) {
+                ctxt.setBaseURI(baseURI);
             }
             return ctxt;
         }
@@ -559,6 +568,7 @@ public class XMLUtils {
     /**
      * Adds a new rule to "jdk.xml.dsig.secureValidationPolicy"
      */
+    @SuppressWarnings("dangling-doc-comments")
     public static void addPolicy(String rule) {
         String value = Security.getProperty("jdk.xml.dsig.secureValidationPolicy");
         value = rule + "," + value;
