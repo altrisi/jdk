@@ -1,5 +1,6 @@
 /*
- * Copyright (c) 2025, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2025, 2026, Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2026 Arm Limited and/or its affiliates.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -20,7 +21,7 @@
  * or visit www.oracle.com if you need additional information or have any
  * questions.
  */
-package org.openjdk.bench.java.lang;
+package org.openjdk.bench.jdk.incubator.vector;
 
 import java.util.stream.IntStream;
 import java.util.concurrent.TimeUnit;
@@ -28,10 +29,11 @@ import jdk.incubator.vector.*;
 import org.openjdk.jmh.annotations.*;
 import static jdk.incubator.vector.Float16.*;
 import static java.lang.Float.*;
+import java.util.Random;
 
 @OutputTimeUnit(TimeUnit.MILLISECONDS)
 @State(Scope.Thread)
-@Fork(jvmArgsPrepend = {"--add-modules=jdk.incubator.vector", "-Xbatch",  "-XX:-TieredCompilation"})
+@Fork(jvmArgs = {"--add-modules=jdk.incubator.vector", "-Xbatch", "-XX:-TieredCompilation"})
 public class Float16OperationsBenchmark {
     @Param({"256", "512", "1024", "2048"})
     int vectorDim;
@@ -41,24 +43,42 @@ public class Float16OperationsBenchmark {
     short [] vector1;
     short [] vector2;
     short [] vector3;
+    short [] vector4;
+    short [] vector5;
     boolean [] vectorPredicate;
+
+    private int c0, c1, c2, s1, s2;
+
+    Random r;
 
     static final short f16_one = Float.floatToFloat16(1.0f);
     static final short f16_two = Float.floatToFloat16(2.0f);
 
     @Setup(Level.Trial)
     public void BmSetup() {
+        r = new Random();
+
+        c1 = s1 = step();
+        c2 = vectorDim - (s2 = step());
+
         rexp      = new int[vectorDim];
         vectorRes = new short[vectorDim];
         vector1   = new short[vectorDim];
         vector2   = new short[vectorDim];
         vector3   = new short[vectorDim];
+        vector4   = new short[vectorDim];
+        vector5   = new short[vectorDim];
         vectorPredicate = new boolean[vectorDim];
 
         IntStream.range(0, vectorDim).forEach(i -> {vector1[i] = Float.floatToFloat16((float)i);});
         IntStream.range(0, vectorDim).forEach(i -> {vector2[i] = Float.floatToFloat16((float)i);});
         IntStream.range(0, vectorDim).forEach(i -> {vector3[i] = Float.floatToFloat16((float)i);});
-
+        IntStream.range(0, vectorDim).forEach(i -> {vector4[i] = ((i & 0x1) == 0) ?
+                                                                  float16ToRawShortBits(Float16.POSITIVE_INFINITY) :
+                                                                  Float.floatToFloat16((float)i);});
+        IntStream.range(0, vectorDim).forEach(i -> {vector5[i] = ((i & 0x1) == 0) ?
+                                                                  float16ToRawShortBits(Float16.NaN) :
+                                                                  Float.floatToFloat16((float)i);});
         // Special Values
         Float16 [] specialValues = {Float16.NaN, Float16.NEGATIVE_INFINITY, Float16.valueOf(0.0), Float16.valueOf(-0.0), Float16.POSITIVE_INFINITY};
         IntStream.range(0, vectorDim).forEach(
@@ -73,6 +93,16 @@ public class Float16OperationsBenchmark {
                 }
             }
         );
+    }
+
+    private int step() {
+        return (r.nextInt() & 0xf) + 1;
+    }
+
+    private void inc() {
+        c1 = c1 + s1 < vectorDim ? c1 + s1 : (s1 = step());
+        c2 = c2 - s2 > 0 ? c2 - s2 : vectorDim - (s2 = step());
+        c0 = Math.abs(c2 - c1);
     }
 
     @Benchmark
@@ -140,7 +170,7 @@ public class Float16OperationsBenchmark {
     @Benchmark
     public void isNaNStoreBenchmark() {
         for (int i = 0; i < vectorDim; i++) {
-            vectorPredicate[i] = Float16.isNaN(shortBitsToFloat16(vector1[i]));
+            vectorPredicate[i] = isNaN(shortBitsToFloat16(vector1[i]));
         }
     }
 
@@ -148,7 +178,7 @@ public class Float16OperationsBenchmark {
     @Benchmark
     public void isNaNCMovBenchmark() {
         for (int i = 0; i < vectorDim; i++) {
-            vectorRes[i] = Float16.isNaN(shortBitsToFloat16(vector1[i])) ? f16_one : f16_two;
+            vectorRes[i] = isNaN(shortBitsToFloat16(vector5[i])) ? vector1[i] : vector2[i];
         }
     }
 
@@ -156,7 +186,7 @@ public class Float16OperationsBenchmark {
     @Benchmark
     public void isInfiniteStoreBenchmark() {
         for (int i = 0; i < vectorDim; i++) {
-            vectorPredicate[i] = Float16.isInfinite(shortBitsToFloat16(vector1[i]));
+            vectorPredicate[i] = isInfinite(shortBitsToFloat16(vector1[i]));
         }
     }
 
@@ -164,7 +194,7 @@ public class Float16OperationsBenchmark {
     @Benchmark
     public void isInfiniteCMovBenchmark() {
         for (int i = 0; i < vectorDim; i++) {
-            vectorRes[i] = Float16.isInfinite(shortBitsToFloat16(vector1[i])) ? f16_one : f16_two;
+            vectorRes[i] = isInfinite(shortBitsToFloat16(vector4[i])) ? vector1[i] : vector2[i];
         }
     }
 
@@ -172,7 +202,7 @@ public class Float16OperationsBenchmark {
     @Benchmark
     public void isFiniteStoreBenchmark() {
         for (int i = 0; i < vectorDim; i++) {
-            vectorPredicate[i] = Float16.isFinite(shortBitsToFloat16(vector1[i]));
+            vectorPredicate[i] = isFinite(shortBitsToFloat16(vector1[i]));
         }
     }
 
@@ -180,7 +210,7 @@ public class Float16OperationsBenchmark {
     @Benchmark
     public void isFiniteCMovBenchmark() {
         for (int i = 0; i < vectorDim; i++) {
-            vectorRes[i] = Float16.isFinite(shortBitsToFloat16(vector1[i])) ? f16_one : f16_two;
+            vectorRes[i] = isFinite(shortBitsToFloat16(vector4[i])) ? vector1[i] : vector2[i];
         }
     }
 
@@ -192,9 +222,25 @@ public class Float16OperationsBenchmark {
     }
 
     @Benchmark
+    public void maxScalarBenchmark() {
+        for (int i = 0; i < vectorDim; i++) {
+            inc(); // Ensures no auto-vectorization
+            vectorRes[c0] = float16ToRawShortBits(max(shortBitsToFloat16(vector1[c1]), shortBitsToFloat16(vector2[c2])));
+        }
+    }
+
+    @Benchmark
     public void minBenchmark() {
         for (int i = 0; i < vectorDim; i++) {
             vectorRes[i] = float16ToRawShortBits(min(shortBitsToFloat16(vector1[i]), shortBitsToFloat16(vector2[i])));
+        }
+    }
+
+    @Benchmark
+    public void minScalarBenchmark() {
+        for (int i = 0; i < vectorDim; i++) {
+            inc(); // Ensures no auto-vectorization
+            vectorRes[c0] = float16ToRawShortBits(min(shortBitsToFloat16(vector1[c1]), shortBitsToFloat16(vector2[c2])));
         }
     }
 
@@ -292,5 +338,35 @@ public class Float16OperationsBenchmark {
             distRes = distRes + squareRes * squareRes;
         }
         return float16ToRawShortBits(sqrt(shortBitsToFloat16(floatToFloat16(distRes))));
+    }
+
+    @Benchmark
+    public short dotProductFP16() {
+        short distRes = floatToFloat16(0.0f);
+        for (int i = 0; i < vectorDim; i++) {
+            vectorRes[i] = float16ToRawShortBits(multiply(shortBitsToFloat16(vector1[i]), shortBitsToFloat16(vector2[i])));
+        }
+        for (int i = 0; i < vectorDim; i++) {
+            distRes = float16ToRawShortBits(add(shortBitsToFloat16(vectorRes[i]), shortBitsToFloat16(distRes)));
+        }
+        return distRes;
+    }
+
+    @Benchmark
+    public short reductionAddFP16() {
+        short result = (short) 0;
+        for (int i = 0; i < vectorDim; i++) {
+            result = float16ToRawShortBits(add(shortBitsToFloat16(result), shortBitsToFloat16(vector1[i])));
+        }
+        return result;
+    }
+
+    @Benchmark
+    public short reductionMulFP16() {
+        short result = floatToFloat16(1.0f);
+        for (int i = 0; i < vectorDim; i++) {
+            result = float16ToRawShortBits(multiply(shortBitsToFloat16(result), shortBitsToFloat16(vector1[i])));
+        }
+        return result;
     }
 }

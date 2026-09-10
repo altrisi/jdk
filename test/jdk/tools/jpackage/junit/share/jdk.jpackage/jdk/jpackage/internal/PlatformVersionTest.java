@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019, 2024, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2019, 2026, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -22,12 +22,15 @@
  */
 package jdk.jpackage.internal;
 
-import java.lang.reflect.InvocationTargetException;
-import java.util.function.Function;
-import java.lang.reflect.Method;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrowsExactly;
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
+
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.util.function.Function;
+import jdk.internal.util.OperatingSystem;
+import jdk.jpackage.internal.model.DottedVersion;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 
@@ -59,15 +62,9 @@ public class PlatformVersionTest {
     }
 
     @ParameterizedTest
-    @ValueSource(strings = {"1", "1.2", "1.2.3"})
+    @ValueSource(strings = {"0", "0.1", "1", "1.2", "1.2.3", "1.2.3.4"})
     public void testValidCfBundleVersion(String version) {
         testImpl(PlatformVersion.MAC_CFBUNDLE_VERSION_CLASS, version, true);
-    }
-
-    @ParameterizedTest
-    @ValueSource(strings = {"0", "0.1", "1.2.3.4"})
-    public void testInvalidCfBundleVersion(String version) {
-        testImpl(PlatformVersion.MAC_CFBUNDLE_VERSION_CLASS, version, false);
     }
 
     private static void testImpl(PlatformVersion parser, String version, boolean valid) {
@@ -80,11 +77,15 @@ public class PlatformVersionTest {
     }
 
     enum PlatformVersion {
-        MAC_CFBUNDLE_VERSION_CLASS("jdk.jpackage.internal.CFBundleVersion"),
-        WIN_MSI_PRODUCT_VERSION_CLASS("jdk.jpackage.internal.MsiVersion");
+        MAC_CFBUNDLE_VERSION_CLASS("jdk.jpackage.internal.CFBundleVersion", OperatingSystem.MACOS),
+        WIN_MSI_PRODUCT_VERSION_CLASS("jdk.jpackage.internal.model.MsiVersion", OperatingSystem.WINDOWS);
 
-        PlatformVersion(String className) {
-            parser = findParser(className);
+        PlatformVersion(String className, OperatingSystem os) {
+            if (os.equals(OperatingSystem.current())) {
+                parser = getParser(className);
+            } else {
+                parser = null;
+            }
         }
 
         DottedVersion parse(String versionString) {
@@ -94,7 +95,7 @@ public class PlatformVersionTest {
         private Function<String, DottedVersion> parser;
     }
 
-    private static Function<String, DottedVersion> findParser(String className) {
+    private static Function<String, DottedVersion> getParser(String className) {
         try {
             Method method = Class.forName(className).getDeclaredMethod("of",
                     String.class);
@@ -111,9 +112,7 @@ public class PlatformVersionTest {
                     throw new RuntimeException(causeEx);
                 }
             };
-        } catch (ClassNotFoundException e) {
-            return null;
-        } catch (SecurityException | NoSuchMethodException ex) {
+        } catch (SecurityException | NoSuchMethodException | ClassNotFoundException ex) {
             throw new IllegalArgumentException(ex);
         }
     }

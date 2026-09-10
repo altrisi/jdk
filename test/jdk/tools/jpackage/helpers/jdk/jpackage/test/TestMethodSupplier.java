@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024, 2025, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2024, 2026, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -62,8 +62,8 @@ final class TestMethodSupplier {
 
     record MethodQuery(String className, String methodName) {
 
-        List<Method> lookup() throws ClassNotFoundException {
-            final Class<?> methodClass = Class.forName(className);
+        List<Method> lookup(ClassLoader classLoader) throws ClassNotFoundException {
+            final Class<?> methodClass = Class.forName(className, true, classLoader);
 
             // Get the list of all public methods as need to deal with overloads.
             return Stream.of(methodClass.getMethods()).filter(method -> {
@@ -84,11 +84,11 @@ final class TestMethodSupplier {
         }
     }
 
-    List<Method> findNullaryLikeMethods(MethodQuery query) throws NoSuchMethodException {
+    List<Method> findNullaryLikeMethods(MethodQuery query, ClassLoader classLoader) throws NoSuchMethodException {
         List<Method> methods;
 
         try {
-            methods = query.lookup();
+            methods = query.lookup(classLoader);
         } catch (ClassNotFoundException ex) {
             throw new NoSuchMethodException(
                     String.format("Class [%s] not found", query.className()));
@@ -273,8 +273,10 @@ final class TestMethodSupplier {
 
         final Method supplierMethod;
         try {
-            final var parameterSupplierCandidates = findNullaryLikeMethods(methodQuery);
-            final Function<String, Class<?>> classForName = toFunction(Class::forName);
+            final var parameterSupplierCandidates = findNullaryLikeMethods(methodQuery, execClass.getClassLoader());
+            final Function<String, Class<?>> classForName = toFunction(name -> {
+                return Class.forName(name, true, execClass.getClassLoader());
+            });
             final var supplierMethodClass = classForName.apply(methodQuery.className());
             if (parameterSupplierCandidates.isEmpty()) {
                 throw new RuntimeException(String.format(
@@ -284,7 +286,7 @@ final class TestMethodSupplier {
 
             var allParameterSuppliers = filterParameterSuppliers(supplierMethodClass).toList();
 
-            supplierMethod = findNullaryLikeMethods(methodQuery)
+            supplierMethod = findNullaryLikeMethods(methodQuery, execClass.getClassLoader())
                     .stream()
                     .filter(allParameterSuppliers::contains)
                     .findFirst().orElseThrow(() -> {
@@ -393,7 +395,7 @@ final class TestMethodSupplier {
     }
 
     @SuppressWarnings({"unchecked", "rawtypes"})
-    private static Object fromString(String value, Class<?> toType) {
+    static Object fromString(String value, Class<?> toType) {
         if (toType.isEnum()) {
             return Enum.valueOf((Class<? extends Enum>)toType, value);
         }
@@ -407,7 +409,7 @@ final class TestMethodSupplier {
     }
 
     private static void trace(String msg) {
-        if (TKit.VERBOSE_TEST_SETUP) {
+        if (TKit.verboseTestSetup()) {
             TKit.log(msg);
         }
     }

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008, 2025, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2008, 2026, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -32,7 +32,9 @@ import jdk.internal.reflect.CallerSensitive;
 import jdk.internal.reflect.CallerSensitiveAdapter;
 import jdk.internal.reflect.Reflection;
 import jdk.internal.util.ClassFileDumper;
+import jdk.internal.vm.annotation.AOTSafeClassInitializer;
 import jdk.internal.vm.annotation.ForceInline;
+import jdk.internal.vm.annotation.Stable;
 import sun.invoke.util.ValueConversions;
 import sun.invoke.util.VerifyAccess;
 import sun.invoke.util.Wrapper;
@@ -64,9 +66,7 @@ import java.util.stream.Stream;
 import static java.lang.classfile.ClassFile.*;
 import static java.lang.invoke.LambdaForm.BasicType.V_TYPE;
 import static java.lang.invoke.MethodHandleNatives.Constants.*;
-import static java.lang.invoke.MethodHandleStatics.UNSAFE;
-import static java.lang.invoke.MethodHandleStatics.newIllegalArgumentException;
-import static java.lang.invoke.MethodHandleStatics.newInternalError;
+import static java.lang.invoke.MethodHandleStatics.*;
 import static java.lang.invoke.MethodType.methodType;
 
 /**
@@ -84,6 +84,7 @@ import static java.lang.invoke.MethodType.methodType;
  * @author John Rose, JSR 292 EG
  * @since 1.7
  */
+@AOTSafeClassInitializer
 public final class MethodHandles {
 
     private MethodHandles() { }  // do not instantiate
@@ -502,7 +503,7 @@ public final class MethodHandles {
      * <tbody>
      * <tr>
      *     <th scope="row">{@link java.lang.invoke.MethodHandles.Lookup#findGetter lookup.findGetter(C.class,"f",FT.class)}</th>
-     *     <td>{@code FT f;}</td><td>{@code (T) this.f;}</td>
+     *     <td>{@code FT f;}</td><td>{@code (FT) this.f;}</td>
      * </tr>
      * <tr>
      *     <th scope="row">{@link java.lang.invoke.MethodHandles.Lookup#findStaticGetter lookup.findStaticGetter(C.class,"f",FT.class)}</th>
@@ -2811,10 +2812,10 @@ assertEquals("[x, y, z]", pb.command().toString());
          * if and only if one of the following is true:
          * <ul>
          * <li>{@code targetClass} is in {@code M0} and {@code M1}
-         *     {@linkplain Module#reads reads} {@code M0} and the type is
+         *     {@linkplain Module#canRead(Module)}  reads} {@code M0} and the type is
          *     in a package that is exported to at least {@code M1}.
          * <li>{@code targetClass} is in {@code M1} and {@code M0}
-         *     {@linkplain Module#reads reads} {@code M1} and the type is
+         *     {@linkplain Module#canRead(Module)}  reads} {@code M1} and the type is
          *     in a package that is exported to at least {@code M0}.
          * <li>{@code targetClass} is in a third module {@code M2} and both {@code M0}
          *     and {@code M1} reads {@code M2} and the type is in a package
@@ -3043,6 +3044,12 @@ assertEquals(""+l, (String) MH_this.invokeExact(subl)); // Listie method
          * <p>
          * If the returned method handle is invoked, the field's class will
          * be initialized, if it has not already been initialized.
+         * {@link ExceptionInInitializerError} is thrown if invoking the method handle
+         * provokes the class to be initialized and the initializer fails.
+         * {@link IllegalStateException} is thrown if the field is a {@linkplain
+         * Field#isStrictInit() strictly-initialized} static field and the method handle
+         * is invoked by the thread initializing the field's class before the field has
+         * been initialized.
          * @param refc the class or interface from which the method is accessed
          * @param name the field's name
          * @param type the field's type
@@ -3088,9 +3095,6 @@ assertEquals(""+l, (String) MH_this.invokeExact(subl)); // Listie method
          * Access checking is performed immediately on behalf of the lookup
          * class.
          * <p>
-         * If the returned VarHandle is operated on, the declaring class will be
-         * initialized, if it has not already been initialized.
-         * <p>
          * Certain access modes of the returned VarHandle are unsupported under
          * the following conditions:
          * <ul>
@@ -3116,6 +3120,15 @@ assertEquals(""+l, (String) MH_this.invokeExact(subl)); // Listie method
          * and atomic update access modes compare values using their bitwise
          * representation (see {@link Float#floatToRawIntBits} and
          * {@link Double#doubleToRawLongBits}, respectively).
+         * <p>
+         * If the returned VarHandle is operated on, the declaring class will be
+         * initialized, if it has not already been initialized.
+         * {@link ExceptionInInitializerError} is thrown if operating on the VarHandle
+         * provokes the class to be initialized and the initializer fails.
+         * {@link IllegalStateException} is thrown if the field is a {@linkplain
+         * Field#isStrictInit() strictly-initialized} static field and the VarHandle
+         * is operated on by the thread initializing the field's class to read the
+         * field before it has been initialized.
          * @apiNote
          * Bitwise comparison of {@code float} values or {@code double} values,
          * as performed by the numeric and atomic update access modes, differ
@@ -3378,9 +3391,14 @@ return mh1;
          * If the {@code Field} object's {@code accessible} flag is not set,
          * access checking is performed immediately on behalf of the lookup class.
          * <p>
-         * If the field is static, and
-         * if the returned method handle is invoked, the field's class will
-         * be initialized, if it has not already been initialized.
+         * If the field is static, and if the returned method handle is invoked, the
+         * field's class will be initialized, if it has not already been initialized.
+         * {@link ExceptionInInitializerError} is thrown if invoking the method handle
+         * provokes the class to be initialized and the initializer fails.
+         * {@link IllegalStateException} is thrown if the field is a {@linkplain
+         * Field#isStrictInit() strictly-initialized} static field and the method handle
+         * is invoked by the thread initializing the field's class before the field has
+         * been initialized.
          * @param f the reflected field
          * @return a method handle which can load values from the reflected field
          * @throws IllegalAccessException if access checking fails
@@ -3417,12 +3435,15 @@ return mh1;
          *         or if the field is {@code final} and write access
          *         is not enabled on the {@code Field} object
          * @throws NullPointerException if the argument is null
+         * @see <a href="{@docRoot}/java.base/java/lang/reflect/doc-files/MutationMethods.html">Mutation methods</a>
          */
         public MethodHandle unreflectSetter(Field f) throws IllegalAccessException {
             return unreflectField(f, true);
         }
 
         private MethodHandle unreflectField(Field f, boolean isSetter) throws IllegalAccessException {
+            @SuppressWarnings("deprecation")
+            boolean isAccessible = f.isAccessible();
             MemberName field = new MemberName(f, isSetter);
             if (isSetter && field.isFinal()) {
                 if (field.isTrustedFinalField()) {
@@ -3430,12 +3451,20 @@ return mh1;
                                                   : "final field has no write access";
                     throw field.makeAccessException(msg, this);
                 }
+                // strictly-initialized finals not trusted finals at this time
+                if (field.isStrictInit()) {
+                    throw field.makeAccessException("strictly-initialized final field has no write access", this);
+                }
+
+                // check if write access to final field allowed
+                if (!field.isStatic() && isAccessible) {
+                    SharedSecrets.getJavaLangReflectAccess().checkAllowedToUnreflectFinalSetter(lookupClass, f);
+                }
             }
             assert(isSetter
                     ? MethodHandleNatives.refKindIsSetter(field.getReferenceKind())
                     : MethodHandleNatives.refKindIsGetter(field.getReferenceKind()));
-            @SuppressWarnings("deprecation")
-            Lookup lookup = f.isAccessible() ? IMPL_LOOKUP : this;
+            Lookup lookup = isAccessible ? IMPL_LOOKUP : this;
             return lookup.getDirectField(field.getReferenceKind(), f.getDeclaringClass(), field);
         }
 
@@ -3450,10 +3479,6 @@ return mh1;
          * Access checking is performed immediately on behalf of the lookup
          * class, regardless of the value of the field's {@code accessible}
          * flag.
-         * <p>
-         * If the field is static, and if the returned VarHandle is operated
-         * on, the field's declaring class will be initialized, if it has not
-         * already been initialized.
          * <p>
          * Certain access modes of the returned VarHandle are unsupported under
          * the following conditions:
@@ -3480,6 +3505,16 @@ return mh1;
          * and atomic update access modes compare values using their bitwise
          * representation (see {@link Float#floatToRawIntBits} and
          * {@link Double#doubleToRawLongBits}, respectively).
+         * <p>
+         * If the field is static, and if the returned VarHandle is operated
+         * on, the field's declaring class will be initialized, if it has not
+         * already been initialized.
+         * {@link ExceptionInInitializerError} is thrown if operating on the VarHandle
+         * provokes the class to be initialized and the initializer fails.
+         * {@link IllegalStateException} is thrown if the field is a {@linkplain
+         * Field#isStrictInit() strictly-initialized} static field and the VarHandle
+         * is operated on by the thread initializing the field's class to read the
+         * field before it has been initialized.
          * @apiNote
          * Bitwise comparison of {@code float} values or {@code double} values,
          * as performed by the numeric and atomic update access modes, differ
@@ -3943,7 +3978,7 @@ return mh1;
                 refc = lookupClass();
             }
             return VarHandles.makeFieldHandle(getField, refc,
-                                              this.allowedModes == TRUSTED && !getField.isTrustedFinalField());
+                                              this.allowedModes == TRUSTED);
         }
         /** Check access and get the requested constructor. */
         private MethodHandle getDirectConstructor(Class<?> refc, MemberName ctor) throws IllegalAccessException {
@@ -4295,9 +4330,10 @@ return mh1;
      * If access is aligned then following access modes are supported and are
      * guaranteed to support atomic access:
      * <ul>
-     * <li>read write access modes for all {@code T}, with the exception of
-     *     access modes {@code get} and {@code set} for {@code long} and
-     *     {@code double} on 32-bit platforms.
+     * <li>read write access modes for all {@code T}.  Access modes {@code get}
+     *     and {@code set} for {@code long} and {@code double} are supported but
+     *     have no atomicity guarantee, as described in Section {@jls 17.7} of
+     *     <cite>The Java Language Specification</cite>.
      * <li>atomic update access modes for {@code int}, {@code long},
      *     {@code float} or {@code double}.
      *     (Future major platform releases of the JDK may support additional
@@ -4807,7 +4843,9 @@ assert((int)twice.invokeExact(21) == 42);
      * Before the method handle is returned, the passed-in value is converted to the requested type.
      * If the requested type is primitive, widening primitive conversions are attempted,
      * else reference conversions are attempted.
-     * <p>The returned method handle is equivalent to {@code identity(type).bindTo(value)}.
+     * <p>The returned method handle is equivalent to {@code identity(type).bindTo(value)},
+     * for reference types.  For all types it is equivalent to
+     * {@code insertArguments(identity(type), 0, value)}.
      * @param type the return type of the desired method handle
      * @param value the value to return
      * @return a method handle of the given return type and no arguments, which always returns the given value
@@ -4816,19 +4854,9 @@ assert((int)twice.invokeExact(21) == 42);
      * @throws IllegalArgumentException if the given type is {@code void.class}
      */
     public static MethodHandle constant(Class<?> type, Object value) {
-        if (type.isPrimitive()) {
-            if (type == void.class)
-                throw newIllegalArgumentException("void type");
-            Wrapper w = Wrapper.forPrimitiveType(type);
-            value = w.convert(value, type);
-            if (w.zero().equals(value))
-                return zero(w, type);
-            return insertArguments(identity(type), 0, value);
-        } else {
-            if (value == null)
-                return zero(Wrapper.OBJECT, type);
-            return identity(type).bindTo(value);
-        }
+        if (Objects.requireNonNull(type) == void.class)
+            throw newIllegalArgumentException("void type");
+        return MethodHandleImpl.makeConstantReturning(type, value);
     }
 
     /**
@@ -4870,7 +4898,8 @@ assert((int)twice.invokeExact(21) == 42);
      */
     public static MethodHandle zero(Class<?> type) {
         Objects.requireNonNull(type);
-        return type.isPrimitive() ?  zero(Wrapper.forPrimitiveType(type), type) : zero(Wrapper.OBJECT, type);
+        return type.isPrimitive() ? primitiveZero(Wrapper.forPrimitiveType(type))
+                : MethodHandleImpl.makeConstantReturning(type, null);
     }
 
     private static MethodHandle identityOrVoid(Class<?> type) {
@@ -4889,7 +4918,7 @@ assert((int)twice.invokeExact(21) == 42);
      * @param type the type of the desired method handle
      * @return a constant method handle of the given type, which returns a default value of the given return type
      * @throws NullPointerException if the argument is null
-     * @see MethodHandles#zero
+     * @see MethodHandles#zero(Class)
      * @see MethodHandles#constant
      * @since 9
      */
@@ -4900,28 +4929,32 @@ assert((int)twice.invokeExact(21) == 42);
 
     private static final MethodHandle[] IDENTITY_MHS = new MethodHandle[Wrapper.COUNT];
     private static MethodHandle makeIdentity(Class<?> ptype) {
-        MethodType mtype = methodType(ptype, ptype);
+        MethodType mtype = methodType(ptype, ptype); // throws IAE for void
         LambdaForm lform = LambdaForm.identityForm(BasicType.basicType(ptype));
         return MethodHandleImpl.makeIntrinsic(mtype, lform, Intrinsic.IDENTITY);
     }
 
-    private static MethodHandle zero(Wrapper btw, Class<?> rtype) {
-        int pos = btw.ordinal();
-        MethodHandle zero = ZERO_MHS[pos];
-        if (zero == null) {
-            zero = setCachedMethodHandle(ZERO_MHS, pos, makeZero(btw.primitiveType()));
+    private static MethodHandle primitiveZero(Wrapper w) {
+        assert w != Wrapper.OBJECT : w;
+        int pos = w.ordinal();
+        MethodHandle mh = PRIMITIVE_ZERO_MHS[pos];
+        if (mh == null) {
+            mh = setCachedMethodHandle(PRIMITIVE_ZERO_MHS, pos, makePrimitiveZero(w));
         }
-        if (zero.type().returnType() == rtype)
-            return zero;
-        assert(btw == Wrapper.OBJECT);
-        return makeZero(rtype);
+        assert (mh.type().returnType() == w.primitiveType()) : mh;
+        return mh;
     }
-    private static final MethodHandle[] ZERO_MHS = new MethodHandle[Wrapper.COUNT];
-    private static MethodHandle makeZero(Class<?> rtype) {
-        MethodType mtype = methodType(rtype);
-        LambdaForm lform = LambdaForm.zeroForm(BasicType.basicType(rtype));
-        return MethodHandleImpl.makeIntrinsic(mtype, lform, Intrinsic.ZERO);
+
+    private static MethodHandle makePrimitiveZero(Wrapper w) {
+        if (w == Wrapper.VOID) {
+            var lf = LambdaForm.identityForm(V_TYPE); // ensures BMH & SimpleMH are initialized
+            return SimpleMethodHandle.make(MethodType.methodType(void.class), lf);
+        } else {
+            return MethodHandleImpl.makeConstantReturning(w.primitiveType(), w.zero());
+        }
     }
+
+    private static final @Stable MethodHandle[] PRIMITIVE_ZERO_MHS = new MethodHandle[Wrapper.COUNT];
 
     private static synchronized MethodHandle setCachedMethodHandle(MethodHandle[] cache, int pos, MethodHandle value) {
         // Simulate a CAS, to avoid racy duplication of results.

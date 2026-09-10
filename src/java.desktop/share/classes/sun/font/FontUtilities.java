@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008, 2025, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2008, 2026, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -369,6 +369,28 @@ public final class FontUtilities {
         }
     }
 
+    /**
+     * <p>Checks whether or not the specified codepoint is whitespace which is
+     * ignorable at the shaping stage of text rendering. These ignorable
+     * whitespace characters should be used prior to text shaping and
+     * rendering to determine the position of the text, but are not themselves
+     * rendered.
+     *
+     * <p>Includes 0x0009 (horizontal tab / TAB), 0x000A (line feed / LF),
+     * 0x000B (vertical tab / VT), 0x000C (form feed / FF),
+     * 0x000D (carriage return / CR), 0x0085 (next line / NEL),
+     * 0x2028 (line separator / LS), 0x2029 (paragraph separator / PS).
+     *
+     * @param ch the codepoint to check
+     * @return whether the specified codepoint is ignorable whitespace
+     */
+    public static boolean isIgnorableWhitespace(int ch) {
+        return (ch >= 0x0009 && ch <= 0x000d)
+            || ch == 0x0085
+            || ch == 0x2028
+            || ch == 0x2029;
+    }
+
     public static PlatformLogger getLogger() {
         return logger;
     }
@@ -459,7 +481,7 @@ public final class FontUtilities {
         FontUIResource fuir = new FontUIResource(font);
         Font2D font2D = FontUtilities.getFont2D(font);
 
-        if (!(font2D instanceof PhysicalFont)) {
+        if (!(font2D instanceof PhysicalFont physicalFont)) {
             /* Swing should only be calling this when a font is obtained
              * from desktop properties, so should generally be a physical font,
              * an exception might be for names like "MS Serif" which are
@@ -477,7 +499,6 @@ public final class FontUtilities {
         if (!(dialog instanceof CompositeFont dialog2D)) {
             return fuir;
         }
-        PhysicalFont physicalFont = (PhysicalFont)font2D;
         ConcurrentHashMap<PhysicalFont, CompositeFont> compMap = compMapRef.get();
         if (compMap == null) { // Its been collected.
             compMap = new ConcurrentHashMap<PhysicalFont, CompositeFont>();
@@ -543,15 +564,13 @@ public final class FontUtilities {
 
         FontUIResource fuir;
         FontManager fm = FontManagerFactory.getInstance();
-        if (fm instanceof SunFontManager) {
-            SunFontManager sfm = (SunFontManager) fm;
+        if (fm instanceof SunFontManager sfm) {
             fuir = sfm.getFontConfigFUIR(mapped, style, size);
         } else {
             fuir = new FontUIResource(mapped, style, size);
         }
         return fuir;
     }
-
 
     /**
      * Used by windows printing to assess if a font is likely to
@@ -561,10 +580,8 @@ public final class FontUtilities {
      * fonts GDI handles differently.
      */
     public static boolean textLayoutIsCompatible(Font font) {
-
         Font2D font2D = getFont2D(font);
-        if (font2D instanceof TrueTypeFont) {
-            TrueTypeFont ttf = (TrueTypeFont) font2D;
+        if (font2D instanceof TrueTypeFont ttf) {
             return
                 ttf.getDirectoryEntry(TrueTypeFont.GSUBTag) == null ||
                 ttf.getDirectoryEntry(TrueTypeFont.GPOSTag) != null;

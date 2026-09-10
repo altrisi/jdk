@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019, 2025, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2019, 2026, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -22,6 +22,8 @@
  */
 
 
+import static jdk.jpackage.test.JPackageCommand.cannedArgument;
+
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -35,14 +37,15 @@ import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-
 import jdk.jpackage.internal.util.function.ThrowingConsumer;
 import jdk.jpackage.test.Annotations.Parameters;
 import jdk.jpackage.test.Annotations.Test;
+import jdk.jpackage.test.CannedFormattedString;
 import jdk.jpackage.test.CfgFile;
 import jdk.jpackage.test.Executor;
 import jdk.jpackage.test.HelloApp;
 import jdk.jpackage.test.JPackageCommand;
+import jdk.jpackage.test.JPackageCommand.MessageCategory;
 import jdk.jpackage.test.JavaAppDesc;
 import jdk.jpackage.test.JavaTool;
 import jdk.jpackage.test.TKit;
@@ -55,7 +58,7 @@ import jdk.jpackage.test.TKit;
  * @library /test/jdk/tools/jpackage/helpers
  * @build jdk.jpackage.test.*
  * @compile -Xlint:all -Werror MainClassTest.java
- * @run main/othervm/timeout=720 -Xmx512m jdk.jpackage.test.Main
+ * @run main/othervm/timeout=2880 -Xmx512m jdk.jpackage.test.Main
  *  --jpt-run=MainClassTest
  */
 
@@ -87,8 +90,8 @@ public final class MainClassTest {
             return this;
         }
 
-        Script expectedErrorMessage(String v) {
-            expectedErrorMessage = v;
+        Script expectedErrorMessage(String key, Object... args) {
+            expectedErrorMessage = JPackageCommand.makeError(key, args);
             return this;
         }
 
@@ -131,7 +134,7 @@ public final class MainClassTest {
         private boolean withJLink;
         private MainClassType mainClass;
         private MainClassType jarMainClass;
-        private String expectedErrorMessage;
+        private CannedFormattedString expectedErrorMessage;
     }
 
     public MainClassTest(Script script) {
@@ -143,6 +146,7 @@ public final class MainClassTest {
 
         cmd = JPackageCommand
                 .helloAppImage(script.appDesc)
+                .enableMessageCategories(MessageCategory.ERRORS)
                 .ignoreDefaultRuntime(true);
         if (!script.withJLink) {
             cmd.addArguments("--runtime-image", Path.of(System.getProperty(
@@ -194,11 +198,12 @@ public final class MainClassTest {
                         if (withMainClass.contains(jarMainClass)
                                 || withMainClass.contains(mainClass)) {
                         } else if (modular) {
-                            script.expectedErrorMessage(
-                                    "Error: Main application class is missing");
+                            script.expectedErrorMessage("ERR_NoMainClass");
                         } else {
                             script.expectedErrorMessage(
-                                    "A main class was not specified nor was one found in the jar");
+                                    "error.no-main-class-with-main-jar", cannedArgument(cmd -> {
+                                        return cmd.getArgumentValue("--main-jar");
+                                    }, "MAIN-JAR"));
                         }
 
                         scripts.add(new Script[]{script});
@@ -218,11 +223,7 @@ public final class MainClassTest {
         if (script.expectedErrorMessage != null) {
             // This is the case when main class is not found nor in jar
             // file nor on command line.
-            List<String> output = cmd
-                    .saveConsoleOutput(true)
-                    .execute(1)
-                    .getOutput();
-            TKit.assertTextStream(script.expectedErrorMessage).apply(output.stream());
+            cmd.validateErr(script.expectedErrorMessage).execute(1);
             return;
         }
 
@@ -240,16 +241,15 @@ public final class MainClassTest {
             cmd.executeAndAssertHelloAppImageCreated();
         } else {
             cmd.executeAndAssertImageCreated();
-            var appVerifier = HelloApp.assertMainLauncher(cmd);
-            if (appVerifier != null) {
+            HelloApp.assertMainLauncher(cmd).ifPresent(appVerifier -> {
                 List<String> output = appVerifier
                         .saveOutput(true)
                         .expectedExitCode(1)
                         .execute().getOutput();
                 TKit.assertTextStream(String.format(
                         "Error: Could not find or load main class %s",
-                        nonExistingMainClass)).apply(output.stream());
-            }
+                        nonExistingMainClass)).apply(output);
+            });
         }
 
         CfgFile cfg = cmd.readLauncherCfgFile();
