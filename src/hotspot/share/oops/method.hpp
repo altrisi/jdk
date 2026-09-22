@@ -561,19 +561,6 @@ public:
   M_STATUS_DO(M_STATUS_GET_SET)
 #undef M_STATUS_GET_SET
 
-  // returns true if the method has any backward branches.
-  bool has_loops() {
-    return has_loops_flag_init() ? has_loops_flag() : compute_has_loops_flag();
-  };
-
-  bool compute_has_loops_flag();
-  bool set_has_loops() {
-    // set both the flags and that it's been initialized.
-    set_has_loops_flag();
-    set_has_loops_flag_init();
-    return true;
-  }
-
   // returns true if the method has any monitors.
   bool has_monitors() const                      { return is_synchronized() || has_monitor_bytecodes(); }
 
