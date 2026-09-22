@@ -1421,7 +1421,6 @@ bool AOTMetaspace::try_link_class(JavaThread* current, InstanceKlass* ik) {
       SystemDictionaryShared::set_class_has_failed_verification(ik);
     } else {
       assert(!SystemDictionaryShared::has_class_failed_verification(ik), "sanity");
-      ik->compute_has_loops_flag_for_methods();
     }
     BytecodeVerificationLocal = saved;
     return true;
