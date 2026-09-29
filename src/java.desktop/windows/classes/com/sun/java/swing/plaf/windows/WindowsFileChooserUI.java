@@ -94,7 +94,6 @@ import javax.swing.plaf.basic.BasicFileChooserUI;
 import sun.awt.shell.ShellFolder;
 import sun.swing.FilePane;
 import sun.swing.SwingUtilities2;
-import sun.swing.WindowsPlacesBar;
 
 /**
  * Windows {@literal L&F} implementation of a FileChooser.

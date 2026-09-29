@@ -22,7 +22,7 @@
  * or visit www.oracle.com if you need additional information or have any
  * questions.
  */
-package sun.swing;
+package com.sun.java.swing.plaf.windows;
 
 import java.awt.Dimension;
 import java.awt.Insets;
@@ -52,7 +52,6 @@ import javax.swing.border.BevelBorder;
 import javax.swing.filechooser.FileSystemView;
 
 import sun.awt.shell.ShellFolder;
-import sun.awt.OSInfo;
 
 /**
  * <b>WARNING:</b> This class is an implementation detail and is only
@@ -76,15 +75,13 @@ public class WindowsPlacesBar extends JToolBar
         setFloatable(false);
         putClientProperty("JToolBar.isRollover", Boolean.TRUE);
 
-        boolean isXPPlatform = (OSInfo.getOSType() == OSInfo.OSType.WINDOWS);
-
         if (isXPStyle) {
             buttonSize = new Dimension(83, 69);
             putClientProperty("XPStyle.subAppName", "placesbar");
             setBorder(new EmptyBorder(1, 1, 1, 1));
         } else {
             // The button size almost matches the XP style when in Classic style on XP
-            buttonSize = new Dimension(83, isXPPlatform ? 65 : 54);
+            buttonSize = new Dimension(83, 65);
             setBorder(new BevelBorder(BevelBorder.LOWERED,
                                       UIManager.getColor("ToolBar.highlight"),
                                       UIManager.getColor("ToolBar.background"),
