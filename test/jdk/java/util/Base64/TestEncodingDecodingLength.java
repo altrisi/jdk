@@ -40,6 +40,7 @@ import static org.junit.jupiter.api.Assertions.fail;
  *          "decodedOutLength".
  * @modules java.base/jdk.internal.util
  * @run junit/othervm --add-opens java.base/java.util=ALL-UNNAMED TestEncodingDecodingLength
+ * @run junit/othervm -XX:-UseBASE64Intrinsics --add-opens java.base/java.util=ALL-UNNAMED TestEncodingDecodingLength
  */
 
 // We perform a white-box test due to the heavy memory usage that testing
