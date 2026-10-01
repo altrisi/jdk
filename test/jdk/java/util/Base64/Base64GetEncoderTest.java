@@ -36,6 +36,8 @@ import static java.nio.charset.StandardCharsets.US_ASCII;
  * @test
  * @bug 8007799 8176379
  * @summary test Encoder with linemax == 0, line separator should not appear in encoded data
+ * @run main Base64GetEncoderTest
+ * @run main/othervm -XX:-UseBASE64Intrinsics Base64GetEncoderTest
  */
 
 public class Base64GetEncoderTest {
