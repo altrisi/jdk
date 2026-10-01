@@ -26,6 +26,8 @@
  * @bug 4235519
  * @author Eric Wang <yiming.wang@oracle.com>
  * @summary tests java.util.Base64
+ * @run main TestBase64Golden
+ * @run main/othervm -XX:-UseBASE64Intrinsics TestBase64Golden
  */
 
 import java.io.BufferedReader;
