@@ -29,6 +29,7 @@
  * @library /test/lib
  * @build jdk.test.lib.RandomFactory
  * @run main TestBase64
+ * @run main/othervm -XX:-UseBASE64Intrinsics TestBase64
  * @key randomness
  */
 
