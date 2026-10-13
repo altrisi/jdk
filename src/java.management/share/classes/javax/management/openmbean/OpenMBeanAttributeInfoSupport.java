@@ -691,7 +691,7 @@ public class OpenMBeanAttributeInfoSupport
     private static <T> T convertFromString(String s, OpenType<T> openType) {
         Class<T> c;
         try {
-            String className = openType.safeGetClassName();
+            String className = openType.getClassName();
             c = cast(Class.forName(className));
         } catch (ClassNotFoundException e) {
             throw new NoClassDefFoundError(e.toString());  // can't happen
@@ -756,7 +756,7 @@ public class OpenMBeanAttributeInfoSupport
         Class<?> stringArrayClass;
         Class<?> targetArrayClass;
         try {
-            String baseClassName = baseType.safeGetClassName();
+            String baseClassName = baseType.getClassName();
 
             stringArrayClass =
                 Class.forName(squareBrackets + "Ljava.lang.String;");
