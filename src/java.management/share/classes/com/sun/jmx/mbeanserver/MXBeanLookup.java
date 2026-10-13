@@ -37,6 +37,8 @@ import javax.management.MBeanServerInvocationHandler;
 import javax.management.ObjectName;
 import javax.management.openmbean.OpenDataException;
 
+import jdk.internal.util.ReferencedKeyMap;
+
 /**
  * @since 1.6
  */
@@ -173,11 +175,11 @@ public class MXBeanLookup {
             new ThreadLocal<>();
 
     private final MBeanServerConnection mbsc;
-    private final WeakIdentityHashMap<Object, ObjectName>
-        mxbeanToObjectName = WeakIdentityHashMap.make();
+    private final ReferencedKeyMap<Object, ObjectName>
+        mxbeanToObjectName = ReferencedKeyMap.create(false, ReferencedKeyMap.concurrentHashMapSupplier());
     private final Map<ObjectName, WeakReference<Object>>
         objectNameToProxy = newMap();
-    private static final WeakIdentityHashMap<MBeanServerConnection,
+    private static final ReferencedKeyMap<MBeanServerConnection,
                                              WeakReference<MXBeanLookup>>
-        mbscToLookup = WeakIdentityHashMap.make();
+        mbscToLookup = ReferencedKeyMap.create(false, ReferencedKeyMap.concurrentHashMapSupplier());
 }
