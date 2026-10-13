@@ -357,7 +357,6 @@ public abstract class OpenType<T> implements Serializable {
      */
     private void readObject(ObjectInputStream in)
             throws IOException, ClassNotFoundException {
-        checkClassNameOverride();
         ObjectInputStream.GetField fields = in.readFields();
         final String classNameField;
         final String descriptionField;
