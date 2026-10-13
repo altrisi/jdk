@@ -174,7 +174,6 @@ public abstract class OpenType<T> implements Serializable {
     protected OpenType(String  className,
                        String  typeName,
                        String  description) throws OpenDataException {
-        checkClassNameOverride();
         this.typeName = valid("typeName", typeName);
         this.description = valid("description", description);
         this.className = validClassName(className);
@@ -188,23 +187,6 @@ public abstract class OpenType<T> implements Serializable {
         this.typeName    = valid("typeName", typeName);
         this.description = valid("description", description);
         this.isArray     = isArray;
-    }
-
-    private void checkClassNameOverride() throws SecurityException {
-        if (this.getClass().getClassLoader() == null)
-            return;  // We trust bootstrap classes.
-        if (overridesGetClassName(this.getClass())) {
-            throw new SecurityException("Cannot override getClassName()");
-        }
-    }
-
-    @SuppressWarnings("removal")
-    private static boolean overridesGetClassName(final Class<?> c) {
-        try {
-            return (c.getMethod("getClassName").getDeclaringClass() != OpenType.class);
-        } catch (Exception e) {
-            return true;  // fail safe
-        }
     }
 
     private static String validClassName(String className) throws OpenDataException {
@@ -291,13 +273,7 @@ public abstract class OpenType<T> implements Serializable {
      *
      * @return the class name.
      */
-    public String getClassName() {
-        return className;
-    }
-
-    // A version of getClassName() that can only be called from within this
-    // package and that cannot be overridden.
-    String safeGetClassName() {
+    public final String getClassName() {
         return className;
     }
 
