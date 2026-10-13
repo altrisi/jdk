@@ -32,6 +32,8 @@ import java.awt.GraphicsEnvironment;
 import java.util.Map;
 import java.util.WeakHashMap;
 
+import jdk.internal.util.ReferencedKeyMap;
+
 /**
  * The {@code ThreadGroupContext} is an application-dependent
  * context referenced by the specific {@link ThreadGroup}.
