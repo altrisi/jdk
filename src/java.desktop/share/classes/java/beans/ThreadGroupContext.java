@@ -40,12 +40,7 @@ import java.util.WeakHashMap;
  */
 final class ThreadGroupContext {
 
-    private static final WeakIdentityMap<ThreadGroupContext> contexts = new WeakIdentityMap<ThreadGroupContext>() {
-        @Override
-        protected ThreadGroupContext create(Object key) {
-            return new ThreadGroupContext();
-        }
-    };
+    private static final ReferencedKeyMap<ThreadGroup, ThreadGroupContext> contexts = ReferencedKeyMap.create(false, ReferencedKeyMap.concurrentHashMapSupplier());
 
     /**
      * Returns the appropriate {@code ThreadGroupContext} for the caller,
@@ -54,7 +49,7 @@ final class ThreadGroupContext {
      * @return  the application-dependent context
      */
     static ThreadGroupContext getContext() {
-        return contexts.get(Thread.currentThread().getThreadGroup());
+        return contexts.putIfAbsent(Thread.currentThread().getThreadGroup(), new ThreadGroupContext());
     }
 
     private volatile boolean isDesignTime;
