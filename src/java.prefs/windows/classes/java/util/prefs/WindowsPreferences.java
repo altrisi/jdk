@@ -957,8 +957,7 @@ class WindowsPreferences extends AbstractPreferences {
      */
 
     private static String toJavaAlt64Name(String windowsName) {
-        byte[] byteBuffer =
-                Base64.altBase64ToByteArray(windowsName.substring(2));
+        byte[] byteBuffer = AltBase64.decode(windowsName.substring(2));
         StringBuilder result = new StringBuilder();
         for (int i = 0; i < byteBuffer.length; i++) {
             int firstbyte = (byteBuffer[i++] & 0xff);
@@ -1025,8 +1024,7 @@ class WindowsPreferences extends AbstractPreferences {
             javaNameArray[counter++] = (byte)ch;
         }
 
-        return stringToByteArray("/!" +
-                Base64.byteArrayToAltBase64(javaNameArray));
+        return stringToByteArray("/!" + AltBase64.encode(javaNameArray));
     }
 
     /**

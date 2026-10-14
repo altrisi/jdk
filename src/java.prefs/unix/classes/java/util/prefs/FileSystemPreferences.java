@@ -793,7 +793,7 @@ class FileSystemPreferences extends AbstractPreferences {
     private static String dirName(String nodeName) {
         for (int i=0, n=nodeName.length(); i < n; i++)
             if (!isDirChar(nodeName.charAt(i)))
-                return "_" + Base64.byteArrayToAltBase64(byteArray(nodeName));
+                return "_" + AltBase64.encode(byteArray(nodeName));
         return nodeName;
     }
 
@@ -819,7 +819,7 @@ class FileSystemPreferences extends AbstractPreferences {
     private static String nodeName(String dirName) {
         if (dirName.charAt(0) != '_')
             return dirName;
-        byte a[] = Base64.altBase64ToByteArray(dirName.substring(1));
+        byte a[] = AltBase64.decode(dirName.substring(1));
         StringBuffer result = new StringBuffer(a.length/2);
         for (int i = 0; i < a.length; ) {
             int highByte = a[i++] & 0xff;

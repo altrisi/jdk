@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2000, 2005, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2000, 2026, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -33,14 +33,7 @@ package java.util.prefs;
  * @see     Preferences
  * @since   1.4
  */
-class Base64 {
-    /**
-     * Translates the specified byte array into a Base64 string as per
-     * Preferences.put(byte[]).
-     */
-    static String byteArrayToBase64(byte[] a) {
-        return byteArrayToBase64(a, false);
-    }
+class AltBase64 {
 
     /**
      * Translates the specified byte array into an "alternate representation"
@@ -48,17 +41,13 @@ class Base64 {
      * not contain the uppercase alphabetic characters, which makes it
      * suitable for use in situations where case-folding occurs.
      */
-    static String byteArrayToAltBase64(byte[] a) {
-        return byteArrayToBase64(a, true);
-    }
-
-    private static String byteArrayToBase64(byte[] a, boolean alternate) {
+    static String encode(byte[] a) {
         int aLen = a.length;
         int numFullGroups = aLen/3;
         int numBytesInPartialGroup = aLen - 3*numFullGroups;
         int resultLen = 4*((aLen + 2)/3);
         StringBuilder result = new StringBuilder(resultLen);
-        char[] intToAlpha = (alternate ? intToAltBase64 : intToBase64);
+        char[] intToAlpha = intToAltBase64;
 
         // Translate all full groups from byte array elements to Base64
         int inCursor = 0;
@@ -94,19 +83,6 @@ class Base64 {
 
     /**
      * This array is a lookup table that translates 6-bit positive integer
-     * index values into their "Base64 Alphabet" equivalents as specified
-     * in Table 1 of RFC 2045.
-     */
-    private static final char intToBase64[] = {
-        'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M',
-        'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z',
-        'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm',
-        'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z',
-        '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '+', '/'
-    };
-
-    /**
-     * This array is a lookup table that translates 6-bit positive integer
      * index values into their "Alternate Base64 Alphabet" equivalents.
      * This is NOT the real Base64 Alphabet as per in Table 1 of RFC 2045.
      * This alternate alphabet does not use the capital letters.  It is
@@ -121,17 +97,6 @@ class Base64 {
     };
 
     /**
-     * Translates the specified Base64 string (as per Preferences.get(byte[]))
-     * into a byte array.
-     *
-     * @throws IllegalArgumentException if {@code s} is not a valid Base64
-     *         string.
-     */
-    static byte[] base64ToByteArray(String s) {
-        return base64ToByteArray(s, false);
-    }
-
-    /**
      * Translates the specified "alternate representation" Base64 string
      * into a byte array.
      *
@@ -139,12 +104,8 @@ class Base64 {
      *         if {@code s} is not a valid alternate representation
      *         Base64 string.
      */
-    static byte[] altBase64ToByteArray(String s) {
-        return base64ToByteArray(s, true);
-    }
-
-    private static byte[] base64ToByteArray(String s, boolean alternate) {
-        byte[] alphaToInt = (alternate ?  altBase64ToInt : base64ToInt);
+    static byte[] decode(String s) {
+        byte[] alphaToInt = altBase64ToInt;
         int sLen = s.length();
         int numGroups = sLen/4;
         if (4*numGroups != sLen)
@@ -205,23 +166,6 @@ class Base64 {
     }
 
     /**
-     * This array is a lookup table that translates unicode characters
-     * drawn from the "Base64 Alphabet" (as specified in Table 1 of RFC 2045)
-     * into their 6-bit positive integer equivalents.  Characters that
-     * are not in the Base64 alphabet but fall within the bounds of the
-     * array are translated to -1.
-     */
-    private static final byte base64ToInt[] = {
-        -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
-        -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
-        -1, -1, -1, -1, -1, -1, -1, -1, -1, 62, -1, -1, -1, 63, 52, 53, 54,
-        55, 56, 57, 58, 59, 60, 61, -1, -1, -1, -1, -1, -1, -1, 0, 1, 2, 3, 4,
-        5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23,
-        24, 25, -1, -1, -1, -1, -1, -1, 26, 27, 28, 29, 30, 31, 32, 33, 34,
-        35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51
-    };
-
-    /**
      * This array is the analogue of base64ToInt, but for the nonstandard
      * variant that avoids the use of uppercase alphabetic characters.
      */
@@ -246,15 +190,10 @@ class Base64 {
                 for (int k=0; k<j; k++)
                     arr[k] = (byte)rnd.nextInt();
 
-                String s = byteArrayToBase64(arr);
-                byte [] b = base64ToByteArray(s);
+                String s = encode(arr);
+                byte[] b = decode(s);
                 if (!java.util.Arrays.equals(arr, b))
                     System.out.println("Dismal failure!");
-
-                s = byteArrayToAltBase64(arr);
-                b = altBase64ToByteArray(s);
-                if (!java.util.Arrays.equals(arr, b))
-                    System.out.println("Alternate dismal failure!");
             }
         }
     }

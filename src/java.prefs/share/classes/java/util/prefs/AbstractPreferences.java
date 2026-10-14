@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2000, 2024, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2000, 2026, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -665,7 +665,7 @@ public abstract class AbstractPreferences extends Preferences {
      *         removed with the {@link #removeNode()} method.
      */
     public void putByteArray(String key, byte[] value) {
-        put(key, Base64.byteArrayToBase64(value));
+        put(key, Base64.getEncoder().encodeToString(value));
     }
 
     /**
@@ -691,8 +691,8 @@ public abstract class AbstractPreferences extends Preferences {
         byte[] result = def;
         String value = get(key, null);
         try {
-            if (value != null)
-                result = Base64.base64ToByteArray(value);
+            if (value != null && value.length() % 4 == 0)
+                result = Base64.getDecoder().decode(value);
         }
         catch (RuntimeException e) {
             // Ignoring exception causes specified default to be returned
