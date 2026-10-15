@@ -139,15 +139,6 @@ public final class Cleaner {
      */
     final CleanerImpl impl;
 
-    static {
-        CleanerImpl.setCleanerImplAccess(new Function<Cleaner, CleanerImpl>() {
-            @Override
-            public CleanerImpl apply(Cleaner cleaner) {
-                return cleaner.impl;
-            }
-        });
-    }
-
     /**
      * Construct a Cleaner implementation and start it.
      */
@@ -224,7 +215,7 @@ public final class Cleaner {
     public Cleanable register(@jdk.internal.RequiresIdentity Object obj, Runnable action) {
         Objects.requireIdentity(obj, "obj");
         Objects.requireNonNull(action, "action");
-        return new CleanerImpl.PhantomCleanableRef(obj, this, action);
+        return new CleanerImpl.PhantomCleanableRef(obj, impl, action);
     }
 
     /**

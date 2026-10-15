@@ -70,10 +70,10 @@ public abstract class PhantomCleanable<T> extends PhantomReference<T>
      * @param cleaner  the {@code Cleaner} to register with
      */
     @SuppressWarnings("this-escape")
-    public PhantomCleanable(T referent, Cleaner cleaner) {
-        super(Objects.requireNonNull(referent), CleanerImpl.getCleanerImpl(cleaner).queue);
+    public PhantomCleanable(T referent, CleanerImpl cleaner) {
+        super(Objects.requireNonNull(referent), cleaner.queue);
         index = -1;
-        list = CleanerImpl.getCleanerImpl(cleaner).activeList;
+        list = cleaner.activeList;
         list.insert(this);
 
         // Check that list insertion populated the backlinks.

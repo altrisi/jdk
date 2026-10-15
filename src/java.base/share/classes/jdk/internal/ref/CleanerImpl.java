@@ -43,39 +43,12 @@ import jdk.internal.misc.InnocuousThread;
 public final class CleanerImpl implements Runnable {
 
     /**
-     * An object to access the CleanerImpl from a Cleaner; set by Cleaner init.
-     */
-    private static Function<Cleaner, CleanerImpl> cleanerImplAccess = null;
-
-    /**
      * Currently active PhantomCleanable-s.
      */
     final CleanableList activeList;
 
     // The ReferenceQueue of pending cleaning actions
     final ReferenceQueue<Object> queue;
-
-    /**
-     * Called by Cleaner static initialization to provide the function
-     * to map from Cleaner to CleanerImpl.
-     * @param access a function to map from Cleaner to CleanerImpl
-     */
-    public static void setCleanerImplAccess(Function<Cleaner, CleanerImpl> access) {
-        if (cleanerImplAccess == null) {
-            cleanerImplAccess = access;
-        } else {
-            throw new InternalError("cleanerImplAccess");
-        }
-    }
-
-    /**
-     * Called to get the CleanerImpl for a Cleaner.
-     * @param cleaner the cleaner
-     * @return the corresponding CleanerImpl
-     */
-    static CleanerImpl getCleanerImpl(Cleaner cleaner) {
-        return cleanerImplAccess.apply(cleaner);
-    }
 
     /**
      * Constructor for CleanerImpl.
@@ -93,9 +66,6 @@ public final class CleanerImpl implements Runnable {
      * @param threadFactory the thread factory
      */
     public void start(Cleaner cleaner, ThreadFactory threadFactory) {
-        if (getCleanerImpl(cleaner) != this) {
-            throw new AssertionError("wrong cleaner");
-        }
         // schedule a nop cleaning action for the cleaner, so the associated thread
         // will continue to run at least until the cleaner is reclaimable.
         new CleanerCleanable(cleaner);
@@ -166,7 +136,7 @@ public final class CleanerImpl implements Runnable {
          * @param cleaner the cleaner
          * @param action the action Runnable
          */
-        public PhantomCleanableRef(Object obj, Cleaner cleaner, Runnable action) {
+        public PhantomCleanableRef(Object obj, CleanerImpl cleaner, Runnable action) {
             super(obj, cleaner);
             this.action = action;
         }
