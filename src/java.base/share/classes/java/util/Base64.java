@@ -894,8 +894,8 @@ public final class Base64 {
      */
     private static class EncOutputStream extends FilterOutputStream {
 
-        private int leftover = 0;
-        private int b0, b1, b2;
+        private byte leftover = 0;
+        private short b0, b1; // unsigned bytes
         private boolean closed = false;
 
         @Stable
@@ -954,7 +954,7 @@ public final class Base64 {
                         return;
                     }
                 }
-                b2 = b[off++] & 0xff;
+                int b2 = b[off++] & 0xff;
                 len--;
                 checkNewline();
                 writeb4(base64[b0 >> 2],
@@ -964,7 +964,7 @@ public final class Base64 {
                 linepos += 4;
             }
             int nBits24 = len / 3;
-            leftover = len - (nBits24 * 3);
+            leftover = (byte)(len - (nBits24 * 3));
 
             while (nBits24 > 0) {
                 checkNewline();
@@ -1032,10 +1032,10 @@ public final class Base64 {
         private int bits = 0;           // 24-bit buffer for decoding
 
         /* writing bit pos inside bits; one of 24 (left, msb), 18, 12, 6, 0 */
-        private int wpos = 0;
+        private byte wpos = 0;
 
         /* reading bit pos inside bits: one of 24 (left, msb), 16, 8, 0 */
-        private int rpos = 0;
+        private byte rpos = 0;
 
         private boolean eof = false;
         private boolean closed = false;
