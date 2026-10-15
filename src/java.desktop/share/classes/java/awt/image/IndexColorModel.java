@@ -30,6 +30,8 @@ import java.awt.color.ColorSpace;
 import java.math.BigInteger;
 import java.util.Arrays;
 
+import sun.awt.AWTAccessor;
+
 /**
  * The {@code IndexColorModel} class is a {@code ColorModel}
  * class that works with pixel values consisting of a
@@ -141,6 +143,7 @@ public class IndexColorModel extends ColorModel {
     static {
         ColorModel.loadLibraries();
         initIDs();
+        AWTAccessor.setIndexColorModelAccessor(icm -> icm.allgrayopaque);
     }
     /**
      * Constructs an {@code IndexColorModel} from the specified

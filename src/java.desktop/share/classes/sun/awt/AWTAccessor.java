@@ -39,6 +39,7 @@ import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
 import java.awt.geom.Point2D;
 import java.awt.image.BufferStrategy;
+import java.awt.image.IndexColorModel;
 import java.awt.peer.ComponentPeer;
 
 import java.awt.peer.MenuComponentPeer;
@@ -772,6 +773,16 @@ public final class AWTAccessor {
     }
 
     /*
+     * An accessor object for the IndexColorModel class
+     */
+    public interface IndexColorModelAccessor {
+        /**
+         * Returns if all colors are opaque grays
+         */
+        boolean allOpaqueGray(IndexColorModel icm);
+    }
+
+    /*
      * An accessor object for the DropTargetContext class
      */
     public interface DropTargetContextAccessor {
@@ -822,6 +833,7 @@ public final class AWTAccessor {
     private static AccessibleBundleAccessor accessibleBundleAccessor;
     private static DragSourceContextAccessor dragSourceContextAccessor;
     private static DropTargetContextAccessor dropTargetContextAccessor;
+    private static IndexColorModelAccessor indexColorModelAccessor;
 
     /*
      * Set an accessor object for the java.awt.color.ICC_Profile class.
@@ -1428,6 +1440,25 @@ public final class AWTAccessor {
      */
     public static void setDropTargetContextAccessor(DropTargetContextAccessor accessor) {
         AWTAccessor.dropTargetContextAccessor = accessor;
+    }
+
+    /*
+     * Get the accessor object for the java.awt.image.IndexColorModel class.
+     */
+    public static IndexColorModelAccessor getIndexColorModelAccessor() {
+        var access = indexColorModelAccessor;
+        if (access == null) {
+            ensureClassInitialized(IndexColorModel.class);
+            access = indexColorModelAccessor;
+        }
+        return access;
+    }
+
+    /*
+     * Set the accessor object for the java.awt.image.IndexColorModel class.
+     */
+    public static void setIndexColorModelAccessor(IndexColorModelAccessor accessor) {
+        AWTAccessor.indexColorModelAccessor = accessor;
     }
 
     private static void ensureClassInitialized(Class<?> c) {

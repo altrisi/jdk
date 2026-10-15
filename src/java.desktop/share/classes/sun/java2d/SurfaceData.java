@@ -74,6 +74,7 @@ import sun.java2d.pipe.SolidTextRenderer;
 import sun.java2d.pipe.OutlineTextRenderer;
 import sun.java2d.pipe.DrawImagePipe;
 import sun.java2d.pipe.DrawImage;
+import sun.awt.AWTAccessor;
 import sun.awt.SunHints;
 import sun.awt.image.SurfaceManager;
 import sun.java2d.pipe.LoopBasedPipe;
@@ -1007,7 +1008,9 @@ public abstract class SurfaceData
      * which is true when all palette entries in the color
      * model are gray and opaque.
      */
-    protected static native boolean isOpaqueGray(IndexColorModel icm);
+    protected static boolean isOpaqueGray(IndexColorModel icm) {
+        return AWTAccessor.getIndexColorModelAccessor().allOpaqueGray(icm);
+    }
 
     /**
      * For our purposes null and NullSurfaceData are the same as
