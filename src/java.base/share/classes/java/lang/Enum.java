@@ -37,8 +37,6 @@ import java.lang.constant.DynamicConstantDesc;
 import java.lang.invoke.MethodHandles;
 import java.util.Optional;
 
-import jdk.internal.vm.annotation.Stable;
-
 import static java.util.Objects.requireNonNull;
 
 /**
@@ -111,7 +109,8 @@ public abstract class Enum<E extends Enum<E>>
      * for use by sophisticated enum-based data structures, such as
      * {@link java.util.EnumSet} and {@link java.util.EnumMap}.
      */
-    private final int ordinal;
+    /* As a char (unsigned short), as there can't be more than 2^16 fields in a class */
+    private final char ordinal;
 
     /**
      * Returns the ordinal of this enumeration constant (its position
@@ -140,8 +139,10 @@ public abstract class Enum<E extends Enum<E>>
      *         an ordinal of zero).
      */
     protected Enum(String name, int ordinal) {
+        if (ordinal > Character.MAX_VALUE)
+            throw new UnsupportedOperationException("ordinal too large");
         this.name = name;
-        this.ordinal = ordinal;
+        this.ordinal = (char)ordinal;
     }
 
     /**
@@ -169,27 +170,12 @@ public abstract class Enum<E extends Enum<E>>
     }
 
     /**
-     * The hash code of this enumeration constant.
-     */
-    @Stable
-    private int hash;
-
-    /**
      * Returns a hash code for this enum constant.
      *
      * @return a hash code for this enum constant.
      */
     public final int hashCode() {
-        // Once initialized, the hash field value does not change.
-        // HotSpot's identity hash code generation also never returns zero
-        // as the identity hash code. This makes zero a convenient marker
-        // for the un-initialized value for both @Stable and the lazy
-        // initialization code below.
-        int hc = hash;
-        if (hc == 0) {
-            hc = hash = System.identityHashCode(this);
-        }
-        return hc;
+        return super.hashCode();
     }
 
     /**
