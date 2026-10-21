@@ -87,12 +87,10 @@ public class ThreadGroup implements Thread.UncaughtExceptionHandler {
     private volatile boolean daemon;
 
     // strongly reachable from this group
-    private int ngroups;
-    private ThreadGroup[] groups;
+    private List<ThreadGroup> groups;
 
     // weakly reachable from this group
-    private int nweaks;
-    private WeakReference<ThreadGroup>[] weaks;
+    private List<WeakReference<ThreadGroup>> weaks;
 
     /**
      * Creates the top-level "system" ThreadGroup.
@@ -599,11 +597,9 @@ public class ThreadGroup implements Thread.UncaughtExceptionHandler {
     private void synchronizedAddStrong(ThreadGroup group) {
         synchronized (this) {
             if (groups == null) {
-                groups = new ThreadGroup[4];
-            } else if (groups.length == ngroups) {
-                groups = Arrays.copyOf(groups, ngroups + 4);
+                groups = new ArrayList<>();
             }
-            groups[ngroups++] = group;
+            groups.add(group);
         }
     }
 
@@ -613,25 +609,19 @@ public class ThreadGroup implements Thread.UncaughtExceptionHandler {
     private void synchronizedAddWeak(ThreadGroup group) {
         synchronized (this) {
             if (weaks == null) {
-                @SuppressWarnings({"unchecked", "rawtypes"})
-                WeakReference<ThreadGroup>[] array = new WeakReference[4];
-                weaks = array;
+                weaks = new ArrayList<>();
             } else {
                 // expunge
-                for (int i = 0; i < nweaks; ) {
-                    ThreadGroup g = weaks[i].get();
-                    if (g == null) {
+                for (int i = 0; i < weaks.size(); ) {
+                    WeakReference<ThreadGroup> g = weaks.get(i);
+                    if (g.refersTo(null)) {
                         removeWeak(i);
                     } else {
                         i++;
                     }
                 }
-                // expand to make space if needed
-                if (weaks.length == nweaks) {
-                    weaks = Arrays.copyOf(weaks, nweaks + 4);
-                }
             }
-            weaks[nweaks++] = new WeakReference<>(group);
+            weaks.add(new WeakReference<>(group));
         }
     }
 
@@ -639,12 +629,10 @@ public class ThreadGroup implements Thread.UncaughtExceptionHandler {
      * Remove the weakly reachable group at the given index of the weaks array.
      */
     private void removeWeak(int index) {
-        assert Thread.holdsLock(this) && index < nweaks;
-        int last = nweaks - 1;
-        if (index < nweaks)
-            weaks[index] = weaks[last];
-        weaks[last] = null;
-        nweaks--;
+        assert Thread.holdsLock(this) && index < weaks.size();
+        if (index < weaks.size())
+            weaks.set(index, weaks.getLast());
+        weaks.removeLast();
     }
 
     /**
@@ -662,13 +650,7 @@ public class ThreadGroup implements Thread.UncaughtExceptionHandler {
      * because a ClassPrepare event can deadlock the debugger and debug agent.
      */
     private ThreadGroup[] subgroupsAsArray() {
-        List<ThreadGroup> groups = synchronizedSubgroups();
-        int count = groups.size();
-        var array = new ThreadGroup[count];
-        for (int i = 0; i < count; i++) {
-            array[i] = groups.get(i);
-        }
-        return array;
+        return synchronizedSubgroups().toArray(new ThreadGroup[0]);
     }
 
     /**
@@ -677,15 +659,13 @@ public class ThreadGroup implements Thread.UncaughtExceptionHandler {
     private List<ThreadGroup> subgroups() {
         assert Thread.holdsLock(this);
         List<ThreadGroup> snapshot = new ArrayList<>();
-        for (int i = 0; i < ngroups; i++) {
-            snapshot.add(groups[i]);
-        }
-        for (int i = 0; i < nweaks; ) {
-            ThreadGroup g = weaks[i].get();
-            if (g == null) {
+        snapshot.addAll(groups);
+        for (int i = 0; i < weaks.size(); ) {
+            WeakReference<ThreadGroup> g = weaks.get(i);
+            if (g.refersTo(null)) {
                 removeWeak(i);
             } else {
-                snapshot.add(g);
+                snapshot.add(g.get());
                 i++;
             }
         }
