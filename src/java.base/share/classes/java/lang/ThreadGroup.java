@@ -87,10 +87,10 @@ public class ThreadGroup implements Thread.UncaughtExceptionHandler {
     private volatile boolean daemon;
 
     // strongly reachable from this group
-    private List<ThreadGroup> groups;
+    private final List<ThreadGroup> groups = new ArrayList<>();
 
     // weakly reachable from this group
-    private List<WeakReference<ThreadGroup>> weaks;
+    private final List<WeakReference<ThreadGroup>> weaks = new ArrayList<>();
 
     /**
      * Creates the top-level "system" ThreadGroup.
@@ -596,9 +596,6 @@ public class ThreadGroup implements Thread.UncaughtExceptionHandler {
      */
     private void synchronizedAddStrong(ThreadGroup group) {
         synchronized (this) {
-            if (groups == null) {
-                groups = new ArrayList<>();
-            }
             groups.add(group);
         }
     }
@@ -608,17 +605,13 @@ public class ThreadGroup implements Thread.UncaughtExceptionHandler {
      */
     private void synchronizedAddWeak(ThreadGroup group) {
         synchronized (this) {
-            if (weaks == null) {
-                weaks = new ArrayList<>();
-            } else {
-                // expunge
-                for (int i = 0; i < weaks.size(); ) {
-                    WeakReference<ThreadGroup> g = weaks.get(i);
-                    if (g.refersTo(null)) {
-                        removeWeak(i);
-                    } else {
-                        i++;
-                    }
+            // expunge
+            for (int i = 0; i < weaks.size(); ) {
+                WeakReference<ThreadGroup> g = weaks.get(i);
+                if (g.refersTo(null)) {
+                    removeWeak(i);
+                } else {
+                    i++;
                 }
             }
             weaks.add(new WeakReference<>(group));
@@ -661,11 +654,11 @@ public class ThreadGroup implements Thread.UncaughtExceptionHandler {
         List<ThreadGroup> snapshot = new ArrayList<>();
         snapshot.addAll(groups);
         for (int i = 0; i < weaks.size(); ) {
-            WeakReference<ThreadGroup> g = weaks.get(i);
-            if (g.refersTo(null)) {
+            ThreadGroup g = weaks.get(i).get();
+            if (g == null) {
                 removeWeak(i);
             } else {
-                snapshot.add(g.get());
+                snapshot.add(g);
                 i++;
             }
         }
